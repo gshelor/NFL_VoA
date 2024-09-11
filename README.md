@@ -1,0 +1,1 @@
+This repository contains code and probably also data used in or created by the NFL Vortex of Accuracy model, a model which attempts to (or will, if it's not finished yet) measure team strength split up by offense, defense, and special teams unit and evaluates how teams will perform against each other on a neutral field.
