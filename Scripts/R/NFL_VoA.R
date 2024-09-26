@@ -1106,6 +1106,9 @@ if (as.numeric(week) == 0){
            def_ppg_aboveavg = weighted_def_ppg - mean(weighted_def_ppg))
   
   
+  ### removing temp objects
+  rm(list = ls(pattern = "^temp_"))
+  
 } else if (as.numeric(week) <= 2){
   ##### Weeks 1-2 stat collection #####
   for (x in 1:nrow(VoA_Variables)) {
@@ -1696,17 +1699,17 @@ if (as.numeric(week) <= 6){
   ##### Week 0-5 Stan Models #####
   ### VoA Offensive Rating Model
   ### making list of data to declare what goes into stan model
-  Off_VoA_datalist <- list(N = nrow(VoA_Variables), off_ppg = VoA_Variables$weighted_off_ppg, off_epa = VoA_Variables$weighted_off_epa, off_ypp = VoA_Variables$weighted_off_ypp, off_success_rt = VoA_Variables$weighted_off_success_rt, off_explosiveness = VoA_Variables$weighted_off_explosiveness, third_conv_rate = VoA_Variables$weighted_off_third_conv_rate, off_pts_per_opp = VoA_Variables$weighted_off_pts_per_opp, off_plays_pg = VoA_Variables$weighted_off_plays_pg, off_ppg_aboveavg = VoA_Variables$off_ppg_aboveavg, VoA_Output = 1 / VoA_Variables$VoA_Output)
+  Off_VoA_datalist <- list(N = nrow(VoA_Variables), off_ppg = VoA_Variables$weighted_off_ppg, off_epa = VoA_Variables$weighted_off_epa, off_ypp = VoA_Variables$weighted_off_ypp, off_success_rt = VoA_Variables$weighted_off_success_rt, off_explosiveness = VoA_Variables$weighted_off_explosiveness, third_conv_rate = VoA_Variables$weighted_off_third_conv_rate, off_pts_per_opp = VoA_Variables$weighted_off_pts_per_opp, off_plays_pg = VoA_Variables$weighted_off_plays_pg, off_ppg_aboveavg = VoA_Variables$off_ppg_aboveavg, VoA_Output = VoA_Variables$VoA_Output)
   
   ### fitting stan model
   set.seed(802)
   options(mc.cores = parallel::detectCores())
-  Off_VoA_fit <- stan(file=here("Scripts","Stan", "Off_VoA.stan"),data = Off_VoA_datalist, chains = 3, iter = 25000, warmup = 10000, seed = 802)
+  Off_VoA_fit <- stan(file=here("Scripts","Stan", "Off_VoA.stan"),data = Off_VoA_datalist, chains = 3, iter = 50000, warmup = 20000, seed = 802)
   Off_VoA_fit
   
   
   ### Extracting Parameters
-  Off_VoA_pars <- rstan::extract(Off_VoA_fit, c("b0", "beta_off_ppa", "beta_off_ypp", "beta_off_success_rate", "beta_off_explosiveness", "beta_third_conv_rate", "beta_off_pts_per_opp", "beta_off_plays_pg", "beta_off_ppg_aboveavg", "beta_VoA_Output", "sigma"))
+  Off_VoA_pars <- rstan::extract(Off_VoA_fit, c("b0", "beta_off_epa", "beta_off_ypp", "beta_off_success_rt", "beta_off_explosiveness", "beta_third_conv_rate", "beta_off_pts_per_opp", "beta_off_plays_pg", "beta_off_ppg_aboveavg", "beta_VoA_Output", "sigma"))
   
   ### creating matrix to hold ratings
   ### adding in process uncertainty
@@ -1716,7 +1719,7 @@ if (as.numeric(week) <= 6){
   set.seed(802)
   for (p in 1:length(Off_VoA_pars$b0)){
     for(t in 1:nrow(VoA_Variables)){
-      Off_VoA_Rating <- rnorm(1, mean = Off_VoA_pars$b0[p] + Off_VoA_pars$beta_off_epa[p] * VoA_Variables$weighted_off_epa[t] + Off_VoA_pars$beta_off_ypp[p] * VoA_Variables$weighted_off_ypp[t] + Off_VoA_pars$beta_off_success_rate[p] * VoA_Variables$weighted_off_success_rate[t] + Off_VoA_pars$beta_off_explosiveness[p] * VoA_Variables$weighted_off_explosiveness[t] + Off_VoA_pars$beta_third_conv_rate[p] * VoA_Variables$weighted_third_conv_rate[t] + Off_VoA_pars$beta_off_pts_per_opp[p] * VoA_Variables$weighted_off_pts_per_opp[t] + Off_VoA_pars$beta_off_plays_pg[p] * VoA_Variables$weighted_off_plays_pg[t] + Off_VoA_pars$beta_off_ppg_aboveavg[p] * VoA_Variables$off_ppg_aboveavg[t] + Off_VoA_pars$beta_VoA_Output[p] * (1/VoA_Variables$VoA_Output[t]), sd = Off_VoA_pars$sigma[p])
+      Off_VoA_Rating <- rnorm(1, mean = Off_VoA_pars$b0[p] + Off_VoA_pars$beta_off_epa[p] * VoA_Variables$weighted_off_epa[t] + Off_VoA_pars$beta_off_ypp[p] * VoA_Variables$weighted_off_ypp[t] + Off_VoA_pars$beta_off_success_rt[p] * VoA_Variables$weighted_off_success_rt[t] + Off_VoA_pars$beta_off_explosiveness[p] * VoA_Variables$weighted_off_explosiveness[t] + Off_VoA_pars$beta_third_conv_rate[p] * VoA_Variables$weighted_third_conv_rate[t] + Off_VoA_pars$beta_off_pts_per_opp[p] * VoA_Variables$weighted_off_pts_per_opp[t] + Off_VoA_pars$beta_off_plays_pg[p] * VoA_Variables$weighted_off_plays_pg[t] + Off_VoA_pars$beta_off_ppg_aboveavg[p] * VoA_Variables$off_ppg_aboveavg[t] + Off_VoA_pars$beta_VoA_Output[p] * VoA_Variables$VoA_Output[t], sd = Off_VoA_pars$sigma[p])
       Off_VoA_Ratings[p,t] <- Off_VoA_Rating
     }
   }
@@ -1740,13 +1743,13 @@ if (as.numeric(week) <= 6){
   
   ### fitting stan model
   set.seed(802)
-  options(mc.cores = parallel::detectCores())
-  Def_VoA_fit <- stan(file=here("Scripts","Stan", "Def_VoA.stan"),data = Def_VoA_datalist, chains = 3, iter = 25000, warmup = 10000, seed = 802)
+  # options(mc.cores = parallel::detectCores())
+  Def_VoA_fit <- stan(file=here("Scripts","Stan", "Def_VoA.stan"),data = Def_VoA_datalist, chains = 3, iter = 50000, warmup = 20000, seed = 802)
   Def_VoA_fit
   
   
   ### Extracting Parameters
-  Def_VoA_pars <- rstan::extract(Def_VoA_fit, c("b0", "beta_def_ppa", "beta_def_ypp", "beta_def_success_rate", "beta_def_explosiveness", "beta_def_third_conv_rate", "beta_def_pts_per_opp", "beta_def_plays_pg", "beta_def_ppg_aboveavg", "beta_VoA_Output", "sigma"))
+  Def_VoA_pars <- rstan::extract(Def_VoA_fit, c("b0", "beta_def_epa", "beta_def_ypp", "beta_def_success_rt", "beta_def_explosiveness", "beta_def_third_conv_rate", "beta_def_pts_per_opp", "beta_def_plays_pg", "beta_def_ppg_aboveavg", "beta_VoA_Output", "sigma"))
   
   ### creating matrix to hold ratings
   ### adding in process uncertainty
@@ -1781,7 +1784,7 @@ if (as.numeric(week) <= 6){
   ### fitting special teams Stan model
   set.seed(802)
   options(mc.cores = parallel::detectCores())
-  ST_VoA_fit <- stan(file = here("Scripts", "Stan", "ST_VoA.stan"), data = ST_VoA_datalist, chains = 3, iter = 25000, warmup = 10000, seed = 802)
+  ST_VoA_fit <- stan(file = here("Scripts", "Stan", "ST_VoA.stan"), data = ST_VoA_datalist, chains = 3, iter = 50000, warmup = 20000, seed = 802)
   ST_VoA_fit
   
   ### extracting parameters
