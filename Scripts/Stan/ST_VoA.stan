@@ -38,6 +38,6 @@ parameters {
 // and standard deviation 'sigma'.
 model {
   // Define linear predictor directly in the model block
-  net_st_ppg ~ normal(b0 + beta_net_kick_return_avg * net_kick_return_avg + beta_net_punt_return_avg * net_punt_return_avg + beta_net_kick_return_TDs * kick_return_TDs + beta_net_punt_return_TDs * net_punt_return_TDs + beta_net_fg_rate * net_fg_rate + beta_net_fg_made_pg * net_fg_made_pg + beta_net_xp_rate * net_xp_rate + beta_net_xpts_pg * net_xpts_pg, sigma);
+  net_st_ppg ~ normal(b0 + beta_net_kick_return_avg * net_kick_return_avg + beta_net_punt_return_avg * net_punt_return_avg + beta_net_kick_return_TDs * net_kick_return_TDs + beta_net_punt_return_TDs * net_punt_return_TDs + beta_net_fg_rate * net_fg_rate + beta_net_fg_made_pg * net_fg_made_pg + beta_net_xp_rate * net_xp_rate + beta_net_xpts_pg * net_xpts_pg, sigma);
 }
 

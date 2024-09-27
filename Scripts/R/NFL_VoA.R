@@ -1,10 +1,11 @@
+
 ##### NFL Vortex of Accuracy Version 0.0 #####
 ### This script
 
 ##### loading packages #####
 StartTime <- Sys.time()
 library(pacman)
-p_load(tidyverse, gt, nflfastR, nflverse, here, gtExtras, rstan, ggpubr, webshot2, parallel)
+p_load(tidyverse, gt, nflfastR, nflverse, here, gtExtras, rstan, ggpubr, webshot2, parallel, RColorBrewer)
 
 ### Creating week and season strings
 season <- readline(prompt = "What season is it? ")
@@ -1101,9 +1102,15 @@ if (as.numeric(week) == 0){
            weighted_net_fg_made_pg = ((fg_made_pg_PY1 - fg_made_pg_allowed_PY1) * 0.7) + ((fg_made_pg_PY2 - fg_made_pg_allowed_PY2) * 0.25) + ((fg_made_pg_PY3 - fg_made_pg_allowed_PY3) * 0.05),
            weighted_net_xp_rate = ((xp_rate_PY1 - xp_rate_allowed_PY1) * 0.7) + ((xp_rate_PY2 - xp_rate_allowed_PY2) * 0.25) + ((xp_rate_PY3 - xp_rate_allowed_PY3) * 0.05),
            weighted_net_xp_made_pg = ((xp_made_pg_PY1 - xp_made_pg_allowed_PY1) * 0.7) + ((xp_made_pg_PY2 - xp_made_pg_allowed_PY2) * 0.25) + ((xp_made_pg_PY3 - xp_made_pg_allowed_PY3) * 0.05),
-           weighted_net_st_ppg = (net_st_ppg_PY1 + net_st_ppg_PY2 + net_st_ppg_PY3) / 3,
+           weighted_net_st_ppg = (net_st_ppg_PY1 * 0.7) + (net_st_ppg_PY2 * 0.25) + (net_st_ppg_PY3 * 0.05),
            off_ppg_aboveavg = weighted_off_ppg - mean(weighted_off_ppg),
-           def_ppg_aboveavg = weighted_def_ppg - mean(weighted_def_ppg))
+           def_ppg_aboveavg = weighted_def_ppg - mean(weighted_def_ppg),
+           off_ppg_adj = case_when(weighted_off_ppg > quantile(weighted_off_ppg, 0.8) ~ weighted_off_ppg + (off_ppg_aboveavg / 2),
+                                   weighted_off_ppg > mean(weighted_off_ppg) ~ weighted_off_ppg + (off_ppg_aboveavg / 5),
+                                   TRUE ~ weighted_off_ppg),
+           def_ppg_adj = case_when(weighted_def_ppg > quantile(weighted_def_ppg, 0.8) ~ weighted_def_ppg + (def_ppg_aboveavg / 2),
+                                   weighted_def_ppg > mean(weighted_def_ppg) ~ weighted_def_ppg + (def_ppg_aboveavg / 5),
+                                   TRUE ~ weighted_def_ppg))
   
   
   ### removing temp objects
@@ -1265,13 +1272,66 @@ if (as.numeric(week) == 0){
     VoA_Variables$fg_made_pg_allowed[x] = nrow(temp_def_goodFGs) / length(unique(temp_offplays$week))
     VoA_Variables$xp_rate_allowed[x] = nrow(temp_def_good_xps) / nrow(temp_def_xps)
     VoA_Variables$xp_made_pg_allowed[x] = nrow(temp_def_good_xps) / length(unique(temp_offplays$week))
+    VoA_Variables$net_st_ppg[x] = (((nrow(temp_off_goodFGs) * 3) + (nrow(temp_returned_punt_TDs) * 6) + (nrow(temp_returned_kick_TDs) * 6) + nrow(temp_off_good_xps)) - ((nrow(temp_def_goodFGs) * 3) + (nrow(temp_kicked_punt_TDs) * 6) + (nrow(temp_kicked_kick_TDs) * 6) + nrow(temp_def_good_xps))) / length(unique(temp_offplays$week))
   }
   
   
   ### binding csv of PY data to VoA Variables, which should only contain current season data at this point
+  VoA_Vars_dfs <- list(VoA_Variables, PY_VoAVars)
+  VoA_Variables <- VoA_Vars_dfs |>
+    reduce(full_join, by = "team") |>
+    ### Adding columns of variables weighted by season
+    ### adding weighted variables (offense first)
+    mutate(weighted_off_ypp = (off_ypp_PY1 * 0.6) + (off_ypp_PY2 * 0.05) + (off_ypp * 0.35),
+           weighted_off_epa = (off_epa_PY1 * 0.6) + (off_epa_PY2 * 0.05) + (off_epa * 0.35),
+           weighted_off_success_rt = (off_success_rt_PY1 * 0.6) + (off_success_rt_PY2 * 0.05) + (off_success_rt * 0.35),
+           weighted_off_explosiveness = (off_explosiveness_PY1 * 0.6) + (off_explosiveness_PY2 * 0.05) + (off_explosiveness * 0.35),
+           weighted_off_third_conv_rate = (off_third_conv_rate_PY1 * 0.6) + (off_third_conv_rate_PY2 * 0.05) + (off_third_conv_rate * 0.35),
+           weighted_off_fourth_conv_rate = (off_fourth_conv_rate_PY1 * 0.6) + (off_fourth_conv_rate_PY2 * 0.05) + (off_fourth_conv_rate * 0.35),
+           weighted_off_pass_ypa = (off_pass_ypa_PY1 * 0.6) + (off_pass_ypa_PY2 * 0.05) + (off_pass_ypa * 0.35),
+           weighted_off_pass_ypc = (off_pass_ypc_PY1 * 0.6) + (off_pass_ypc_PY2 * 0.05) + (off_pass_ypc * 0.35),
+           weighted_off_rush_ypa = (off_rush_ypa_PY1 * 0.6) + (off_rush_ypa_PY2 * 0.05) + (off_rush_ypa * 0.35),
+           weighted_off_pts_per_opp = (off_pts_per_opp_PY1 * 0.6) + (off_pts_per_opp_PY2 * 0.05) + (off_pts_per_opp * 0.35),
+           weighted_off_turnovers = (off_turnovers_PY1 * 0.6) + (off_turnovers_PY2 * 0.05) + (off_turnovers * 0.35),
+           weighted_off_plays_pg = (off_plays_pg_PY1 * 0.6) + (off_plays_pg_PY2 * 0.05) + (off_plays_pg * 0.35),
+           weighted_off_ppg = (off_ppg_PY1 * 0.6) + (off_ppg_PY2 * 0.05) + (off_ppg * 0.35),
+           ### weighted defensive stats now
+           weighted_def_ypp = (def_ypp_PY1 * 0.6) + (def_ypp_PY2 * 0.05) + (def_ypp * 0.35),
+           weighted_def_epa = (def_epa_PY1 * 0.6) + (def_epa_PY2 * 0.05) + (def_epa * 0.35),
+           weighted_def_success_rt = (def_success_rt_PY1 * 0.6) + (def_success_rt_PY2 * 0.05) + (def_success_rt * 0.35),
+           weighted_def_explosiveness = (def_explosiveness_PY1 * 0.6) + (def_explosiveness_PY2 * 0.05) + (def_explosiveness * 0.35),
+           weighted_def_third_conv_rate = (def_third_conv_rate_PY1 * 0.6) + (def_third_conv_rate_PY2 * 0.05) + (def_third_conv_rate * 0.35),
+           weighted_def_fourth_conv_rate = (def_fourth_conv_rate_PY1 * 0.6) + (def_fourth_conv_rate_PY2 * 0.05) + (def_fourth_conv_rate * 0.35),
+           weighted_def_pass_ypa = (def_pass_ypa_PY1 * 0.6) + (def_pass_ypa_PY2 * 0.05) + (def_pass_ypa * 0.35),
+           weighted_def_pass_ypc = (def_pass_ypc_PY1 * 0.6) + (def_pass_ypc_PY2 * 0.05) + (def_pass_ypc * 0.35),
+           weighted_def_rush_ypa = (def_rush_ypa_PY1 * 0.6) + (def_rush_ypa_PY2 * 0.05) + (def_rush_ypa * 0.35),
+           weighted_def_pts_per_opp = (def_pts_per_opp_PY1 * 0.6) + (def_pts_per_opp_PY2 * 0.05) + (def_pts_per_opp * 0.35),
+           weighted_def_turnovers = (def_turnovers_PY1 * 0.6) + (def_turnovers_PY2 * 0.05) + (def_turnovers * 0.35),
+           weighted_def_plays_pg = (def_plays_pg_PY1 * 0.6) + (def_plays_pg_PY2 * 0.05) + (def_plays_pg * 0.35),
+           weighted_def_ppg = (def_ppg_PY1 * 0.6) + (def_ppg_PY2 * 0.05) + (def_ppg * 0.35),
+           ### weighted special teams stats now
+           weighted_net_st_epa = (st_net_epa_PY1 * 0.6) + (st_net_epa_PY2 * 0.05) + (st_net_epa * 0.35),
+           weighted_net_punt_return_yds = ((st_punt_return_yds_PY1 - st_punt_return_yds_allowed_PY1) * 0.6) + ((st_punt_return_yds_PY2 - st_punt_return_yds_allowed_PY2) * 0.05) + ((st_punt_return_yds - st_punt_return_yds_allowed) * 0.35),
+           weighted_net_kick_return_yds = ((st_kick_return_yds_PY1 - st_kick_return_yds_allowed_PY1) * 0.6) + ((st_kick_return_yds_PY2 - st_kick_return_yds_allowed_PY2) * 0.05) + ((st_kick_return_yds - st_kick_return_yds_allowed) * 0.35),
+           weighted_net_punt_return_TDs = ((st_punt_return_TDs_PY1 - st_punt_return_TDs_allowed_PY1) * 0.6) + ((st_punt_return_TDs_PY2 - st_punt_return_TDs_allowed_PY2) * 0.05) + ((st_punt_return_TDs - st_punt_return_TDs_allowed) * 0.35),
+           weighted_net_kick_return_TDs = ((st_kick_return_TDs_PY1 - st_kick_return_TDs_allowed_PY1) * 0.6) + ((st_kick_return_TDs_PY2 - st_kick_return_TDs_allowed_PY2) * 0.05) + ((st_kick_return_TDs - st_kick_return_TDs_allowed) * 0.35),
+           weighted_net_fg_rate = ((fg_rate_PY1 - fg_rate_allowed_PY1) * 0.6) + ((fg_rate_PY2 - fg_rate_allowed_PY2) * 0.05) + ((fg_rate - fg_rate_allowed) * 0.35),
+           weighted_net_fg_made_pg = ((fg_made_pg_PY1 - fg_made_pg_allowed_PY1) * 0.6) + ((fg_made_pg_PY2 - fg_made_pg_allowed_PY2) * 0.05) + ((fg_made_pg - fg_made_pg_allowed) * 0.35),
+           weighted_net_xp_rate = ((xp_rate_PY1 - xp_rate_allowed_PY1) * 0.6) + ((xp_rate_PY2 - xp_rate_allowed_PY2) * 0.05) + ((xp_rate - xp_rate_allowed) * 0.35),
+           weighted_net_xp_made_pg = ((xp_made_pg_PY1 - xp_made_pg_allowed_PY1) * 0.6) + ((xp_made_pg_PY2 - xp_made_pg_allowed_PY2) * 0.05) + ((xp_made_pg - xp_made_pg_allowed) * 0.35),
+           weighted_net_st_ppg = (net_st_ppg_PY1 * 0.6) + (net_st_ppg_PY2 * 0.05) + (net_st_ppg * 0.35),
+           off_ppg_aboveavg = weighted_off_ppg - mean(weighted_off_ppg),
+           def_ppg_aboveavg = weighted_def_ppg - mean(weighted_def_ppg),
+           off_ppg_adj = case_when(weighted_off_ppg > quantile(weighted_off_ppg, 0.8) ~ weighted_off_ppg + (off_ppg_aboveavg / 2),
+                                   weighted_off_ppg > mean(weighted_off_ppg) ~ weighted_off_ppg + (off_ppg_aboveavg / 5),
+                                   TRUE ~ weighted_off_ppg),
+           def_ppg_adj = case_when(weighted_def_ppg > quantile(weighted_def_ppg, 0.8) ~ weighted_def_ppg + (def_ppg_aboveavg / 2),
+                                   weighted_def_ppg > mean(weighted_def_ppg) ~ weighted_def_ppg + (def_ppg_aboveavg / 5),
+                                   TRUE ~ weighted_def_ppg))
   
-  ### Adding columns of variables weighted by season
   
+  ### removing temp objects
+  rm(list = ls(pattern = "^temp_"))
   
   
 } else if (as.numeric(week) <= 5){
@@ -1430,10 +1490,65 @@ if (as.numeric(week) == 0){
     VoA_Variables$fg_made_pg_allowed[x] = nrow(temp_def_goodFGs) / length(unique(temp_offplays$week))
     VoA_Variables$xp_rate_allowed[x] = nrow(temp_def_good_xps) / nrow(temp_def_xps)
     VoA_Variables$xp_made_pg_allowed[x] = nrow(temp_def_good_xps) / length(unique(temp_offplays$week))
+    VoA_Variables$net_st_ppg[x] = (((nrow(temp_off_goodFGs) * 3) + (nrow(temp_returned_punt_TDs) * 6) + (nrow(temp_returned_kick_TDs) * 6) + nrow(temp_off_good_xps)) - ((nrow(temp_def_goodFGs) * 3) + (nrow(temp_kicked_punt_TDs) * 6) + (nrow(temp_kicked_kick_TDs) * 6) + nrow(temp_def_good_xps))) / length(unique(temp_offplays$week))
   }
   
+  ### binding csv of PY data to VoA Variables, which should only contain current season data at this point
+  VoA_Vars_dfs <- list(VoA_Variables, PY_VoAVars)
+  VoA_Variables <- VoA_Vars_dfs |>
+    reduce(full_join, by = "team") |>
+    ### Adding columns of variables weighted by season
+    ### adding weighted variables (offense first)
+    mutate(weighted_off_ypp = (off_ypp_PY1 * 0.6) + (off_ypp * 0.35),
+           weighted_off_epa = (off_epa_PY1 * 0.6) + (off_epa * 0.35),
+           weighted_off_success_rt = (off_success_rt_PY1 * 0.6) + (off_success_rt * 0.35),
+           weighted_off_explosiveness = (off_explosiveness_PY1 * 0.6) + (off_explosiveness * 0.35),
+           weighted_off_third_conv_rate = (off_third_conv_rate_PY1 * 0.6) + (off_third_conv_rate * 0.35),
+           weighted_off_fourth_conv_rate = (off_fourth_conv_rate_PY1 * 0.6) + (off_fourth_conv_rate * 0.35),
+           weighted_off_pass_ypa = (off_pass_ypa_PY1 * 0.6) + (off_pass_ypa * 0.35),
+           weighted_off_pass_ypc = (off_pass_ypc_PY1 * 0.6) + (off_pass_ypc * 0.35),
+           weighted_off_rush_ypa = (off_rush_ypa_PY1 * 0.6) + (off_rush_ypa * 0.35),
+           weighted_off_pts_per_opp = (off_pts_per_opp_PY1 * 0.6) + (off_pts_per_opp * 0.35),
+           weighted_off_turnovers = (off_turnovers_PY1 * 0.6) + (off_turnovers * 0.35),
+           weighted_off_plays_pg = (off_plays_pg_PY1 * 0.6) + (off_plays_pg * 0.35),
+           weighted_off_ppg = (off_ppg_PY1 * 0.6) + (off_ppg * 0.35),
+           ### weighted defensive stats now
+           weighted_def_ypp = (def_ypp_PY1 * 0.6) + (def_ypp * 0.35),
+           weighted_def_epa = (def_epa_PY1 * 0.6) + (def_epa * 0.35),
+           weighted_def_success_rt = (def_success_rt_PY1 * 0.6) + (def_success_rt * 0.35),
+           weighted_def_explosiveness = (def_explosiveness_PY1 * 0.6) + (def_explosiveness * 0.35),
+           weighted_def_third_conv_rate = (def_third_conv_rate_PY1 * 0.6) + (def_third_conv_rate * 0.35),
+           weighted_def_fourth_conv_rate = (def_fourth_conv_rate_PY1 * 0.6) + (def_fourth_conv_rate * 0.35),
+           weighted_def_pass_ypa = (def_pass_ypa_PY1 * 0.6) + (def_pass_ypa * 0.35),
+           weighted_def_pass_ypc = (def_pass_ypc_PY1 * 0.6) + (def_pass_ypc * 0.35),
+           weighted_def_rush_ypa = (def_rush_ypa_PY1 * 0.6) + (def_rush_ypa * 0.35),
+           weighted_def_pts_per_opp = (def_pts_per_opp_PY1 * 0.6) + (def_pts_per_opp * 0.35),
+           weighted_def_turnovers = (def_turnovers_PY1 * 0.6) + (def_turnovers * 0.35),
+           weighted_def_plays_pg = (def_plays_pg_PY1 * 0.6) + (def_plays_pg * 0.35),
+           weighted_def_ppg = (def_ppg_PY1 * 0.6) + (def_ppg * 0.35),
+           ### weighted special teams stats now
+           weighted_net_st_epa = (st_net_epa_PY1 * 0.6) + (st_net_epa * 0.35),
+           weighted_net_punt_return_yds = ((st_punt_return_yds_PY1 - st_punt_return_yds_allowed_PY1) * 0.6) + ((st_punt_return_yds - st_punt_return_yds_allowed) * 0.35),
+           weighted_net_kick_return_yds = ((st_kick_return_yds_PY1 - st_kick_return_yds_allowed_PY1) * 0.6) + ((st_kick_return_yds - st_kick_return_yds_allowed) * 0.35),
+           weighted_net_punt_return_TDs = ((st_punt_return_TDs_PY1 - st_punt_return_TDs_allowed_PY1) * 0.6) + ((st_punt_return_TDs - st_punt_return_TDs_allowed) * 0.35),
+           weighted_net_kick_return_TDs = ((st_kick_return_TDs_PY1 - st_kick_return_TDs_allowed_PY1) * 0.6) + ((st_kick_return_TDs - st_kick_return_TDs_allowed) * 0.35),
+           weighted_net_fg_rate = ((fg_rate_PY1 - fg_rate_allowed_PY1) * 0.6) + ((fg_rate - fg_rate_allowed) * 0.35),
+           weighted_net_fg_made_pg = ((fg_made_pg_PY1 - fg_made_pg_allowed_PY1) * 0.6) + ((fg_made_pg - fg_made_pg_allowed) * 0.35),
+           weighted_net_xp_rate = ((xp_rate_PY1 - xp_rate_allowed_PY1) * 0.6) + ((xp_rate - xp_rate_allowed) * 0.35),
+           weighted_net_xp_made_pg = ((xp_made_pg_PY1 - xp_made_pg_allowed_PY1) * 0.6) + ((xp_made_pg - xp_made_pg_allowed) * 0.35),
+           weighted_net_st_ppg = (net_st_ppg_PY1 * 0.6) + (net_st_ppg * 0.35),
+           off_ppg_aboveavg = weighted_off_ppg - mean(weighted_off_ppg),
+           def_ppg_aboveavg = weighted_def_ppg - mean(weighted_def_ppg),
+           off_ppg_adj = case_when(weighted_off_ppg > quantile(weighted_off_ppg, 0.8) ~ weighted_off_ppg + (off_ppg_aboveavg / 2),
+                                   weighted_off_ppg > mean(weighted_off_ppg) ~ weighted_off_ppg + (off_ppg_aboveavg / 5),
+                                   TRUE ~ weighted_off_ppg),
+           def_ppg_adj = case_when(weighted_def_ppg > quantile(weighted_def_ppg, 0.8) ~ weighted_def_ppg + (def_ppg_aboveavg / 2),
+                                   weighted_def_ppg > mean(weighted_def_ppg) ~ weighted_def_ppg + (def_ppg_aboveavg / 5),
+                                   TRUE ~ weighted_def_ppg))
   
-  ### binding PY data to current data
+  
+  ### removing temp objects
+  rm(list = ls(pattern = "^temp_"))
   
 } else{
   ##### Week 6 - End of Season Stat Collection #####
@@ -1591,10 +1706,33 @@ if (as.numeric(week) == 0){
     VoA_Variables$fg_made_pg_allowed[x] = nrow(temp_def_goodFGs) / length(unique(temp_offplays$week))
     VoA_Variables$xp_rate_allowed[x] = nrow(temp_def_good_xps) / nrow(temp_def_xps)
     VoA_Variables$xp_made_pg_allowed[x] = nrow(temp_def_good_xps) / length(unique(temp_offplays$week))
+    VoA_Variables$net_st_ppg[x] = (((nrow(temp_off_goodFGs) * 3) + (nrow(temp_returned_punt_TDs) * 6) + (nrow(temp_returned_kick_TDs) * 6) + nrow(temp_off_good_xps)) - ((nrow(temp_def_goodFGs) * 3) + (nrow(temp_kicked_punt_TDs) * 6) + (nrow(temp_kicked_kick_TDs) * 6) + nrow(temp_def_good_xps))) / length(unique(temp_offplays$week))
   }
   
+  ### binding csv of PY data to VoA Variables, which should only contain current season data at this point
+  VoA_Vars_dfs <- list(VoA_Variables, PY_VoAVars)
+  VoA_Variables <- VoA_Vars_dfs |>
+    reduce(full_join, by = "team") |>
+    ### Adding columns of ppg above avg for both offense and defense and adjusting off_ppg and def_ppg
+    mutate(off_ppg_aboveavg = off_ppg - mean(off_ppg),
+           def_ppg_aboveavg = def_ppg - mean(def_ppg),
+           off_ppg_adj = case_when(off_ppg > quantile(off_ppg, 0.8) ~ off_ppg + (off_ppg_aboveavg / 2),
+                                   off_ppg > mean(off_ppg) ~ off_ppg + (off_ppg_aboveavg / 5),
+                                   TRUE ~ off_ppg),
+           def_ppg_adj = case_when(def_ppg > quantile(def_ppg, 0.8) ~ def_ppg + (def_ppg_aboveavg / 2),
+                                   def_ppg > mean(def_ppg) ~ def_ppg + (def_ppg_aboveavg / 5),
+                                   TRUE ~ def_ppg))
   
   
+  ### removing temp objects
+  rm(list = ls(pattern = "^temp_"))
+}
+
+##### Break point to figure out where Rank columns start #####
+if (as.numeric(week) %in% c(0,1,3,6)){
+  break
+} else{
+  print("no new reason to figure out where rank columns start")
 }
 
 ##### Ranking Variables #####
@@ -1682,10 +1820,10 @@ if (as.numeric(week) <= 5) {
 ### for week 0 (preseason), rank columns start at 168
 if (as.numeric(week) == 0){
   VoA_Variables <- VoA_Variables |>
-    mutate(VoA_Output = (rowMeans(VoA_Variables[,174:ncol(VoA_Variables)])))
+    mutate(VoA_Output = (rowMeans(VoA_Variables[,176:ncol(VoA_Variables)])))
 } else if (as.numeric(week) <= 2){
   VoA_Variables <- VoA_Variables |>
-    mutate(VoA_Output = (rowMeans(VoA_Variables[,174:ncol(VoA_Variables)])))
+    mutate(VoA_Output = (rowMeans(VoA_Variables[,176:ncol(VoA_Variables)])))
 } else if (as.numeric(week) <= 5){
   VoA_Variables <- VoA_Variables |>
     mutate(VoA_Output = (rowMeans(VoA_Variables[,168:ncol(VoA_Variables)])))
@@ -1699,17 +1837,17 @@ if (as.numeric(week) <= 6){
   ##### Week 0-5 Stan Models #####
   ### VoA Offensive Rating Model
   ### making list of data to declare what goes into stan model
-  Off_VoA_datalist <- list(N = nrow(VoA_Variables), off_ppg = VoA_Variables$weighted_off_ppg, off_epa = VoA_Variables$weighted_off_epa, off_ypp = VoA_Variables$weighted_off_ypp, off_success_rt = VoA_Variables$weighted_off_success_rt, off_explosiveness = VoA_Variables$weighted_off_explosiveness, third_conv_rate = VoA_Variables$weighted_off_third_conv_rate, off_pts_per_opp = VoA_Variables$weighted_off_pts_per_opp, off_plays_pg = VoA_Variables$weighted_off_plays_pg, off_ppg_aboveavg = VoA_Variables$off_ppg_aboveavg, VoA_Output = VoA_Variables$VoA_Output)
+  Off_VoA_datalist <- list(N = nrow(VoA_Variables), off_ppg = VoA_Variables$off_ppg_adj, off_epa = VoA_Variables$weighted_off_epa, off_ypp = VoA_Variables$weighted_off_ypp, off_success_rt = VoA_Variables$weighted_off_success_rt, off_explosiveness = VoA_Variables$weighted_off_explosiveness, third_conv_rate = VoA_Variables$weighted_off_third_conv_rate, off_pts_per_opp = VoA_Variables$weighted_off_pts_per_opp, off_plays_pg = VoA_Variables$weighted_off_plays_pg, VoA_Output = (1/VoA_Variables$VoA_Output))
   
   ### fitting stan model
   set.seed(802)
   options(mc.cores = parallel::detectCores())
-  Off_VoA_fit <- stan(file=here("Scripts","Stan", "Off_VoA.stan"),data = Off_VoA_datalist, chains = 3, iter = 50000, warmup = 20000, seed = 802)
+  Off_VoA_fit <- stan(file=here("Scripts","Stan", "Off_VoA.stan"),data = Off_VoA_datalist, chains = 3, iter = 40000, warmup = 15000, seed = 802)
   Off_VoA_fit
   
   
   ### Extracting Parameters
-  Off_VoA_pars <- rstan::extract(Off_VoA_fit, c("b0", "beta_off_epa", "beta_off_ypp", "beta_off_success_rt", "beta_off_explosiveness", "beta_third_conv_rate", "beta_off_pts_per_opp", "beta_off_plays_pg", "beta_off_ppg_aboveavg", "beta_VoA_Output", "sigma"))
+  Off_VoA_pars <- rstan::extract(Off_VoA_fit, c("b0", "beta_off_epa", "beta_off_ypp", "beta_off_success_rt", "beta_off_explosiveness", "beta_third_conv_rate", "beta_off_pts_per_opp", "beta_off_plays_pg", "beta_VoA_Output", "sigma"))
   
   ### creating matrix to hold ratings
   ### adding in process uncertainty
@@ -1719,7 +1857,7 @@ if (as.numeric(week) <= 6){
   set.seed(802)
   for (p in 1:length(Off_VoA_pars$b0)){
     for(t in 1:nrow(VoA_Variables)){
-      Off_VoA_Rating <- rnorm(1, mean = Off_VoA_pars$b0[p] + Off_VoA_pars$beta_off_epa[p] * VoA_Variables$weighted_off_epa[t] + Off_VoA_pars$beta_off_ypp[p] * VoA_Variables$weighted_off_ypp[t] + Off_VoA_pars$beta_off_success_rt[p] * VoA_Variables$weighted_off_success_rt[t] + Off_VoA_pars$beta_off_explosiveness[p] * VoA_Variables$weighted_off_explosiveness[t] + Off_VoA_pars$beta_third_conv_rate[p] * VoA_Variables$weighted_third_conv_rate[t] + Off_VoA_pars$beta_off_pts_per_opp[p] * VoA_Variables$weighted_off_pts_per_opp[t] + Off_VoA_pars$beta_off_plays_pg[p] * VoA_Variables$weighted_off_plays_pg[t] + Off_VoA_pars$beta_off_ppg_aboveavg[p] * VoA_Variables$off_ppg_aboveavg[t] + Off_VoA_pars$beta_VoA_Output[p] * VoA_Variables$VoA_Output[t], sd = Off_VoA_pars$sigma[p])
+      Off_VoA_Rating <- rnorm(1, mean = Off_VoA_pars$b0[p] + Off_VoA_pars$beta_off_epa[p] * VoA_Variables$weighted_off_epa[t] + Off_VoA_pars$beta_off_ypp[p] * VoA_Variables$weighted_off_ypp[t] + Off_VoA_pars$beta_off_success_rt[p] * VoA_Variables$weighted_off_success_rt[t] + Off_VoA_pars$beta_off_explosiveness[p] * VoA_Variables$weighted_off_explosiveness[t] + Off_VoA_pars$beta_third_conv_rate[p] * VoA_Variables$weighted_off_third_conv_rate[t] + Off_VoA_pars$beta_off_pts_per_opp[p] * VoA_Variables$weighted_off_pts_per_opp[t] + Off_VoA_pars$beta_off_plays_pg[p] * VoA_Variables$weighted_off_plays_pg[t] + Off_VoA_pars$beta_VoA_Output[p] * (1/(VoA_Variables$VoA_Output[t])), sd = Off_VoA_pars$sigma[p])
       Off_VoA_Ratings[p,t] <- Off_VoA_Rating
     }
   }
@@ -1739,17 +1877,17 @@ if (as.numeric(week) <= 6){
   
   ### VoA Defensive Rating Model
   ### making list of data to declare what goes into stan model
-  Def_VoA_datalist <- list(N = nrow(VoA_Variables), def_ppg = VoA_Variables$weighted_def_ppg, def_epa = VoA_Variables$weighted_def_epa, def_ypp = VoA_Variables$weighted_def_ypp, def_success_rate = VoA_Variables$weighted_def_success_rate, def_explosiveness = VoA_Variables$weighted_def_explosiveness, def_third_conv_rate = VoA_Variables$weighted_def_third_conv_rate, def_pts_per_opp = VoA_Variables$weighted_def_pts_per_opp, def_plays_pg = VoA_Variables$weighted_def_plays_pg, def_ppg_aboveavg = VoA_Variables$def_ppg_aboveavg, VoA_Output = VoA_Variables$VoA_Output)
+  Def_VoA_datalist <- list(N = nrow(VoA_Variables), def_ppg = VoA_Variables$def_ppg_adj, def_epa = VoA_Variables$weighted_def_epa, def_ypp = VoA_Variables$weighted_def_ypp, def_success_rt = VoA_Variables$weighted_def_success_rt, def_explosiveness = VoA_Variables$weighted_def_explosiveness, def_third_conv_rate = VoA_Variables$weighted_def_third_conv_rate, def_pts_per_opp = VoA_Variables$weighted_def_pts_per_opp, def_plays_pg = VoA_Variables$weighted_def_plays_pg, VoA_Output = VoA_Variables$VoA_Output)
   
   ### fitting stan model
   set.seed(802)
   # options(mc.cores = parallel::detectCores())
-  Def_VoA_fit <- stan(file=here("Scripts","Stan", "Def_VoA.stan"),data = Def_VoA_datalist, chains = 3, iter = 50000, warmup = 20000, seed = 802)
+  Def_VoA_fit <- stan(file=here("Scripts","Stan", "Def_VoA.stan"),data = Def_VoA_datalist, chains = 3, iter = 40000, warmup = 15000, seed = 802)
   Def_VoA_fit
   
   
   ### Extracting Parameters
-  Def_VoA_pars <- rstan::extract(Def_VoA_fit, c("b0", "beta_def_epa", "beta_def_ypp", "beta_def_success_rt", "beta_def_explosiveness", "beta_def_third_conv_rate", "beta_def_pts_per_opp", "beta_def_plays_pg", "beta_def_ppg_aboveavg", "beta_VoA_Output", "sigma"))
+  Def_VoA_pars <- rstan::extract(Def_VoA_fit, c("b0", "beta_def_epa", "beta_def_ypp", "beta_def_success_rt", "beta_def_explosiveness", "beta_def_third_conv_rate", "beta_def_pts_per_opp", "beta_def_plays_pg", "beta_VoA_Output", "sigma"))
   
   ### creating matrix to hold ratings
   ### adding in process uncertainty
@@ -1759,7 +1897,7 @@ if (as.numeric(week) <= 6){
   set.seed(802)
   for (p in 1:length(Def_VoA_pars$b0)){
     for(t in 1:nrow(VoA_Variables)){
-      Def_VoA_Rating <- rnorm(1, mean = Def_VoA_pars$b0[p] + Def_VoA_pars$beta_def_epa[p] * VoA_Variables$weighted_def_epa[t] + Def_VoA_pars$beta_def_ypp[p] * VoA_Variables$weighted_def_ypp[t] + Def_VoA_pars$beta_def_success_rate[p] * VoA_Variables$weighted_def_success_rate[t] + Def_VoA_pars$beta_def_explosiveness[p] * VoA_Variables$weighted_def_explosiveness[t] + Def_VoA_pars$beta_def_third_conv_rate[p] * VoA_Variables$weighted_def_third_conv_rate[t] + Def_VoA_pars$beta_def_pts_per_opp[p] * VoA_Variables$weighted_def_pts_per_opp[t] + Def_VoA_pars$beta_def_plays_pg[p] * VoA_Variables$weighted_def_plays_pg[t] + Def_VoA_pars$beta_def_ppg_aboveavg[p] * VoA_Variables$def_ppg_aboveavg[t] + Def_VoA_pars$beta_VoA_Output[p] * VoA_Variables$VoA_Output[t], sd = Def_VoA_pars$sigma[p])
+      Def_VoA_Rating <- rnorm(1, mean = Def_VoA_pars$b0[p] + Def_VoA_pars$beta_def_epa[p] * VoA_Variables$weighted_def_epa[t] + Def_VoA_pars$beta_def_ypp[p] * VoA_Variables$weighted_def_ypp[t] + Def_VoA_pars$beta_def_success_rt[p] * VoA_Variables$weighted_def_success_rt[t] + Def_VoA_pars$beta_def_explosiveness[p] * VoA_Variables$weighted_def_explosiveness[t] + Def_VoA_pars$beta_def_third_conv_rate[p] * VoA_Variables$weighted_def_third_conv_rate[t] + Def_VoA_pars$beta_def_pts_per_opp[p] * VoA_Variables$weighted_def_pts_per_opp[t] + Def_VoA_pars$beta_def_plays_pg[p] * VoA_Variables$weighted_def_plays_pg[t] + Def_VoA_pars$beta_VoA_Output[p] * VoA_Variables$VoA_Output[t], sd = Def_VoA_pars$sigma[p])
       Def_VoA_Ratings[p,t] <- Def_VoA_Rating
     }
   }
@@ -1779,12 +1917,12 @@ if (as.numeric(week) <= 6){
   
   ### Special Teams VoA
   ### making list of data to declare what goes into Stan model
-  ST_VoA_datalist <- list(N = nrow(VoA_Variables), net_st_ppg = VoA_Variables$weighted_net_st_ppg_mean, net_kick_return_avg = VoA_Variables$weighted_net_kick_return_avg, net_punt_return_avg = VoA_Variables$weighted_net_punt_return_avg, net_kick_return_TDs = VoA_Variables$weighted_net_kick_return_TDs, net_punt_return_TDs = VoA_Variables$weighted_net_punt_return_TDs, net_fg_rate = VoA_Variables$weighted_net_fg_rate, net_fg_made_pg = VoA_Variables$weighted_net_fg_made_pg, net_xp_rate = VoA_Variables$weighted_net_xp_rate, net_xpts_pg = VoA_Variables$weighted_net_xp_made_pg)
+  ST_VoA_datalist <- list(N = nrow(VoA_Variables), net_st_ppg = VoA_Variables$weighted_net_st_ppg, net_kick_return_avg = VoA_Variables$weighted_net_kick_return_yds, net_punt_return_avg = VoA_Variables$weighted_net_punt_return_yds, net_kick_return_TDs = VoA_Variables$weighted_net_kick_return_TDs, net_punt_return_TDs = VoA_Variables$weighted_net_punt_return_TDs, net_fg_rate = VoA_Variables$weighted_net_fg_rate, net_fg_made_pg = VoA_Variables$weighted_net_fg_made_pg, net_xp_rate = VoA_Variables$weighted_net_xp_rate, net_xpts_pg = VoA_Variables$weighted_net_xp_made_pg)
   
   ### fitting special teams Stan model
   set.seed(802)
   options(mc.cores = parallel::detectCores())
-  ST_VoA_fit <- stan(file = here("Scripts", "Stan", "ST_VoA.stan"), data = ST_VoA_datalist, chains = 3, iter = 50000, warmup = 20000, seed = 802)
+  ST_VoA_fit <- stan(file = here("Scripts", "Stan", "ST_VoA.stan"), data = ST_VoA_datalist, chains = 3, iter = 25000, warmup = 10000, seed = 802)
   ST_VoA_fit
   
   ### extracting parameters
@@ -1797,7 +1935,7 @@ if (as.numeric(week) <= 6){
   set.seed(802)
   for (p in 1:length(ST_VoA_pars$b0)){
     for (t in 1:nrow(VoA_Variables)){
-      ST_VoA_Rating <- rnorm(1, mean = ST_VoA_pars$b0[p] + ST_VoA_pars$beta_net_kick_return_avg[p] * VoA_Variables$weighted_net_kick_return_avg[t] + ST_VoA_pars$beta_net_punt_return_avg[p] * VoA_Variables$weighted_net_punt_return_avg[t] + ST_VoA_pars$beta_net_kick_return_TDs[p] * VoA_Variables$weighted_net_kick_return_TDs[t] + ST_VoA_pars$beta_net_punt_return_TDs[p] * VoA_Variables$weighted_net_punt_return_TDs[t] + ST_VoA_pars$beta_net_fg_rate[p] * VoA_Variables$weighted_net_fg_rate[t] + ST_VoA_pars$beta_net_fg_made_pg[p] * VoA_Variables$weighted_net_fg_made_pg[t] + ST_VoA_pars$beta_net_xp_rate[p] * VoA_Variables$weighted_net_xp_rate[t] + ST_VoA_pars$beta_net_xpts_pg[p] * VoA_Variables$weighted_net_xp_made_pg[t], sd = ST_VoA_pars$sigma[p])
+      ST_VoA_Rating <- rnorm(1, mean = ST_VoA_pars$b0[p] + ST_VoA_pars$beta_net_kick_return_avg[p] * VoA_Variables$weighted_net_kick_return_yds[t] + ST_VoA_pars$beta_net_punt_return_avg[p] * VoA_Variables$weighted_net_punt_return_yds[t] + ST_VoA_pars$beta_net_kick_return_TDs[p] * VoA_Variables$weighted_net_kick_return_TDs[t] + ST_VoA_pars$beta_net_punt_return_TDs[p] * VoA_Variables$weighted_net_punt_return_TDs[t] + ST_VoA_pars$beta_net_fg_rate[p] * VoA_Variables$weighted_net_fg_rate[t] + ST_VoA_pars$beta_net_fg_made_pg[p] * VoA_Variables$weighted_net_fg_made_pg[t] + ST_VoA_pars$beta_net_xp_rate[p] * VoA_Variables$weighted_net_xp_rate[t] + ST_VoA_pars$beta_net_xpts_pg[p] * VoA_Variables$weighted_net_xp_made_pg[t], sd = ST_VoA_pars$sigma[p])
       ST_VoA_Ratings[p,t] <- ST_VoA_Rating
     }
   }
@@ -1833,7 +1971,7 @@ FinalTable <- VoA_Variables |>
   select(team, week, VoA_Output, VoA_Rating_Ovr, VoA_Ranking_Ovr, OffVoA_MedRating, OffVoA_Ranking, DefVoA_MedRating, DefVoA_Ranking, STVoA_MedRating, STVoA_Ranking) |>
   arrange(VoA_Ranking_Ovr)
 
-##### Creating Top 25 and Full Tables Arranged by VoA Rating #####
+##### Creating Table Arranged by VoA Rating #####
 if (as.numeric(week) == 0) {
   ### Full table
   ## adding title and subtitle
@@ -1841,7 +1979,7 @@ if (as.numeric(week) == 0) {
     gt() |> # use 'gt' to make an awesome table...
     gt_theme_538() |>
     tab_header(
-      title = paste(year, preseason_text, VoA_text), # ...with this title
+      title = paste(season, preseason_text, nfl_text, VoA_text), # ...with this title
       subtitle = "Supremely Excellent Yet Salaciously Godlike And Infallibly Magnificent NFL Vortex of Accuracy")  |>  # and this subtitle
     ##tab_style(style = cell_fill("bisque"),
     ##        locations = cells_body()) |>  # add fill color to table
@@ -1868,7 +2006,7 @@ if (as.numeric(week) == 0) {
     data_color( # Update cell colors, testing different color palettes
       columns = c(VoA_Rating_Ovr), # ...for dose column
       fn = scales::col_numeric( # <- bc it's numeric
-        palette = brewer.pal(9, "RdYlGn"), # A color scheme (gradient)
+        palette = brewer.pal(11, "RdYlGn"), # A color scheme (gradient)
         domain = c(), # Column scale endpoints
         reverse = FALSE
       )
@@ -1876,7 +2014,7 @@ if (as.numeric(week) == 0) {
     data_color( # Update cell colors, testing different color palettes
       columns = c(OffVoA_MedRating), # ...for dose column
       fn = scales::col_numeric( # <- bc it's numeric
-        palette = brewer.pal(9, "RdYlGn"), # A color scheme (gradient)
+        palette = brewer.pal(11, "RdYlGn"), # A color scheme (gradient)
         domain = c(), # Column scale endpoints
         reverse = FALSE
       )
@@ -1884,7 +2022,7 @@ if (as.numeric(week) == 0) {
     data_color( # Update cell colors, testing different color palettes
       columns = c(DefVoA_MedRating), # ...for dose column
       fn = scales::col_numeric( # <- bc it's numeric
-        palette = brewer.pal(9, "RdYlGn"), # A color scheme (gradient)
+        palette = brewer.pal(11, "RdYlGn"), # A color scheme (gradient)
         domain = c(), # Column scale endpoints
         reverse = TRUE
       )
@@ -1892,14 +2030,15 @@ if (as.numeric(week) == 0) {
     data_color( # Update cell colors, testing different color palettes
       columns = c(STVoA_MedRating), # ...for dose column
       fn = scales::col_numeric( # <- bc it's numeric
-        palette = brewer.pal(9, "RdYlGn"), # A color scheme (gradient)
+        palette = brewer.pal(11, "RdYlGn"), # A color scheme (gradient)
         domain = c(), # Column scale endpoints
         reverse = FALSE
       )
     ) |>
+    gt_nfl_wordmarks(columns = "team") |>
     cols_label(VoA_Rating_Ovr = "Overall VoA Rating", VoA_Ranking_Ovr = "VoA Ranking", OffVoA_MedRating = "Off VoA Rating", OffVoA_Ranking = "Off Ranking", DefVoA_MedRating = "Def VoA Rating", DefVoA_Ranking = "Def Ranking", STVoA_MedRating = "ST VoA Rating", STVoA_Ranking = "ST Ranking") |> # Update labels
     # cols_move_to_end(columns = "VoA_Rating_Ovr") |>
-    cols_hide(c(week, VoA_Output, Conference_Strength)) |>
+    cols_hide(c(week, VoA_Output)) |>
     tab_footnote(
       footnote = "Table by @gshelor, Data from nflfastR"
     )
@@ -1910,7 +2049,7 @@ if (as.numeric(week) == 0) {
     gt() |> # use 'gt' to make an awesome table...
     gt_theme_538() |>
     tab_header(
-      title = paste(year, week_text, week, VoA_text), # ...with this title
+      title = paste(season, week_text, week, VoA_text), # ...with this title
       subtitle = "Supremely Excellent Yet Salaciously Godlike And Infallibly Magnificent Vortex of Accuracy")  |>  # and this subtitle
     ##tab_style(style = cell_fill("bisque"),
     ##        locations = cells_body()) |>  # add fill color to table
@@ -1937,7 +2076,7 @@ if (as.numeric(week) == 0) {
     data_color( # Update cell colors, testing different color palettes
       columns = c(VoA_Rating_Ovr), # ...for dose column
       fn = scales::col_numeric( # <- bc it's numeric
-        palette = brewer.pal(9, "RdYlGn"), # A color scheme (gradient)
+        palette = brewer.pal(11, "RdYlGn"), # A color scheme (gradient)
         domain = c(), # Column scale endpoints
         reverse = FALSE
       )
@@ -1945,7 +2084,7 @@ if (as.numeric(week) == 0) {
     data_color( # Update cell colors, testing different color palettes
       columns = c(OffVoA_MedRating), # ...for dose column
       fn = scales::col_numeric( # <- bc it's numeric
-        palette = brewer.pal(9, "RdYlGn"), # A color scheme (gradient)
+        palette = brewer.pal(11, "RdYlGn"), # A color scheme (gradient)
         domain = c(), # Column scale endpoints
         reverse = FALSE
       )
@@ -1953,7 +2092,7 @@ if (as.numeric(week) == 0) {
     data_color( # Update cell colors, testing different color palettes
       columns = c(DefVoA_MedRating), # ...for dose column
       fn = scales::col_numeric( # <- bc it's numeric
-        palette = brewer.pal(9, "RdYlGn"), # A color scheme (gradient)
+        palette = brewer.pal(11, "RdYlGn"), # A color scheme (gradient)
         domain = c(), # Column scale endpoints
         reverse = TRUE
       )
@@ -1961,11 +2100,12 @@ if (as.numeric(week) == 0) {
     data_color( # Update cell colors, testing different color palettes
       columns = c(STVoA_MedRating), # ...for dose column
       fn = scales::col_numeric( # <- bc it's numeric
-        palette = brewer.pal(9, "RdYlGn"), # A color scheme (gradient)
+        palette = brewer.pal(11, "RdYlGn"), # A color scheme (gradient)
         domain = c(), # Column scale endpoints
         reverse = FALSE
       )
     ) |>
+    gt_nfl_logos(columns = "team") |>
     cols_label(VoA_Rating_Ovr = "Overall VoA Rating", VoA_Ranking_Ovr = "VoA Ranking", OffVoA_MedRating = "Off VoA Rating", OffVoA_Ranking = "Off Ranking", DefVoA_MedRating = "Def VoA Rating", DefVoA_Ranking = "Def Ranking", STVoA_MedRating = "ST VoA Rating", STVoA_Ranking = "ST Ranking") |> # Update labels
     # cols_move_to_end(columns = "VoA_Rating") |>
     cols_hide(c(week, VoA_Output)) |>
@@ -2002,67 +2142,67 @@ if (as.numeric(week) == 3) {
   Ratings_Rks <- rbind(Week0_VoA, rbind(Week1_VoA, rbind(Week2_VoA, FinalTable)))
   write_csv(Ratings_Rks, paste(data_dir, "/TrackingChartCSVs", "/", year, week_text, "0_3Ratings_Rks.csv", sep = ""))
 } else if (as.numeric(week) == 4) {
-  Ratings_Rks <- read_csv(here("Data", paste0("VoA", year), "TrackingChartCSVs", paste(year, week_text, "0_3Ratings_Rks.csv", sep = ""))) |>
+  Ratings_Rks <- read_csv(here("Data", paste0("VoA", year), "TrackingChartCSVs", paste(season, week_text, "0_3Ratings_Rks.csv", sep = ""))) |>
     select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
   Ratings_Rks <- rbind(Ratings_Rks, FinalTable)
   write_csv(Ratings_Rks, paste(data_dir, "/TrackingChartCSVs", "/", year, week_text, "0_4Ratings_Rks.csv", sep = ""))
 } else if (as.numeric(week) == 5) {
-  Ratings_Rks <- read_csv(here("Data", paste0("VoA", year), "TrackingChartCSVs", paste(year, week_text, "0_4Ratings_Rks.csv", sep = ""))) |>
+  Ratings_Rks <- read_csv(here("Data", paste0("VoA", year), "TrackingChartCSVs", paste(season, week_text, "0_4Ratings_Rks.csv", sep = ""))) |>
     select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
   Ratings_Rks <- rbind(Ratings_Rks, FinalTable)
   write_csv(Ratings_Rks, paste(data_dir, "/TrackingChartCSVs", "/", year, week_text, "0_5Ratings_Rks.csv", sep = ""))
 } else if (as.numeric(week) == 6) {
-  Ratings_Rks <- read_csv(here("Data", paste0("VoA", year), "TrackingChartCSVs", paste(year, week_text, "0_5Ratings_Rks.csv", sep = ""))) |>
+  Ratings_Rks <- read_csv(here("Data", paste0("VoA", year), "TrackingChartCSVs", paste(season, week_text, "0_5Ratings_Rks.csv", sep = ""))) |>
     select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
   Ratings_Rks <- rbind(Ratings_Rks, FinalTable)
   write_csv(Ratings_Rks, paste(data_dir, "/TrackingChartCSVs", "/", year, week_text, "0_6Ratings_Rks.csv", sep = ""))
 } else if (as.numeric(week) == 7) {
-  Ratings_Rks <- read_csv(here("Data", paste0("VoA", year), "TrackingChartCSVs", paste(year, week_text, "0_6Ratings_Rks.csv", sep = ""))) |>
+  Ratings_Rks <- read_csv(here("Data", paste0("VoA", year), "TrackingChartCSVs", paste(season, week_text, "0_6Ratings_Rks.csv", sep = ""))) |>
     select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
   Ratings_Rks <- rbind(Ratings_Rks, FinalTable)
   write_csv(Ratings_Rks, paste(data_dir, "/TrackingChartCSVs", "/", year, week_text, "0_7Ratings_Rks.csv", sep = ""))
 } else if (as.numeric(week) == 8) {
-  Ratings_Rks <- read_csv(here("Data", paste0("VoA", year), "TrackingChartCSVs", paste(year, week_text, "0_7Ratings_Rks.csv", sep = ""))) |>
+  Ratings_Rks <- read_csv(here("Data", paste0("VoA", year), "TrackingChartCSVs", paste(season, week_text, "0_7Ratings_Rks.csv", sep = ""))) |>
     select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
   Ratings_Rks <- rbind(Ratings_Rks, FinalTable)
   write_csv(Ratings_Rks, paste(data_dir, "/TrackingChartCSVs", "/", year, week_text, "0_8Ratings_Rks.csv", sep = ""))
 } else if (as.numeric(week) == 9) {
-  Ratings_Rks <- read_csv(here("Data", paste0("VoA", year), "TrackingChartCSVs", paste(year, week_text, "0_8Ratings_Rks.csv", sep = ""))) |>
+  Ratings_Rks <- read_csv(here("Data", paste0("VoA", year), "TrackingChartCSVs", paste(season, week_text, "0_8Ratings_Rks.csv", sep = ""))) |>
     select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
   Ratings_Rks <- rbind(Ratings_Rks, FinalTable)
   write_csv(Ratings_Rks, paste(data_dir, "/TrackingChartCSVs", "/", year, week_text, "0_9Ratings_Rks.csv", sep = ""))
 } else if (as.numeric(week) == 10) {
-  Ratings_Rks <- read_csv(here("Data", paste0("VoA", year), "TrackingChartCSVs", paste(year, week_text, "0_9Ratings_Rks.csv", sep = ""))) |>
+  Ratings_Rks <- read_csv(here("Data", paste0("VoA", year), "TrackingChartCSVs", paste(season, week_text, "0_9Ratings_Rks.csv", sep = ""))) |>
     select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
   Ratings_Rks <- rbind(Ratings_Rks, FinalTable)
   write_csv(Ratings_Rks, paste(data_dir, "/TrackingChartCSVs", "/", year, week_text, "0_10Ratings_Rks.csv", sep = ""))
 } else if (as.numeric(week) == 11) {
-  Ratings_Rks <- read_csv(here("Data", paste0("VoA", year), "TrackingChartCSVs", paste(year, week_text, "0_10Ratings_Rks.csv", sep = ""))) |>
+  Ratings_Rks <- read_csv(here("Data", paste0("VoA", year), "TrackingChartCSVs", paste(season, week_text, "0_10Ratings_Rks.csv", sep = ""))) |>
     select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
   Ratings_Rks <- rbind(Ratings_Rks, FinalTable)
   write_csv(Ratings_Rks, paste(data_dir, "/TrackingChartCSVs", "/", year, week_text, "0_11Ratings_Rks.csv", sep = ""))
 } else if (as.numeric(week) == 12) {
-  Ratings_Rks <- read_csv(here("Data", paste0("VoA", year), "TrackingChartCSVs", paste(year, week_text, "0_11Ratings_Rks.csv", sep = ""))) |>
+  Ratings_Rks <- read_csv(here("Data", paste0("VoA", year), "TrackingChartCSVs", paste(season, week_text, "0_11Ratings_Rks.csv", sep = ""))) |>
     select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
   Ratings_Rks <- rbind(Ratings_Rks, FinalTable)
   write_csv(Ratings_Rks, paste(data_dir, "/TrackingChartCSVs", "/", year, week_text, "0_12Ratings_Rks.csv", sep = ""))
 } else if (as.numeric(week) == 13) {
-  Ratings_Rks <- read_csv(here("Data", paste0("VoA", year), "TrackingChartCSVs", paste(year, week_text, "0_12Ratings_Rks.csv", sep = ""))) |>
+  Ratings_Rks <- read_csv(here("Data", paste0("VoA", year), "TrackingChartCSVs", paste(season, week_text, "0_12Ratings_Rks.csv", sep = ""))) |>
     select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
   Ratings_Rks <- rbind(Ratings_Rks, FinalTable)
   write_csv(Ratings_Rks, paste(data_dir, "/TrackingChartCSVs", "/", year, week_text, "0_13Ratings_Rks.csv", sep = ""))
 } else if (as.numeric(week) == 14) {
-  Ratings_Rks <- read_csv(here("Data", paste0("VoA", year), "TrackingChartCSVs", paste(year, week_text, "0_13Ratings_Rks.csv", sep = ""))) |>
+  Ratings_Rks <- read_csv(here("Data", paste0("VoA", year), "TrackingChartCSVs", paste(season, week_text, "0_13Ratings_Rks.csv", sep = ""))) |>
     select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
   Ratings_Rks <- rbind(Ratings_Rks, FinalTable)
   write_csv(Ratings_Rks, paste(data_dir, "/TrackingChartCSVs", "/", year, week_text, "0_14Ratings_Rks.csv", sep = ""))
 } else if (as.numeric(week) == 15) {
-  Ratings_Rks <- read_csv(here("Data", paste0("VoA", year), "TrackingChartCSVs", paste(year, week_text, "0_14Ratings_Rks.csv", sep = ""))) |>
+  Ratings_Rks <- read_csv(here("Data", paste0("VoA", year), "TrackingChartCSVs", paste(season, week_text, "0_14Ratings_Rks.csv", sep = ""))) |>
     select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
   Ratings_Rks <- rbind(Ratings_Rks, FinalTable)
   write_csv(Ratings_Rks, paste(data_dir, "/TrackingChartCSVs", "/", year, week_text, "0_15Ratings_Rks.csv", sep = ""))
 } else if (as.numeric(week) == 16) {
-  Ratings_Rks <- read_csv(here("Data", paste0("VoA", year), "TrackingChartCSVs", paste(year, week_text, "0_15Ratings_Rks.csv", sep = ""))) |>
+  Ratings_Rks <- read_csv(here("Data", paste0("VoA", year), "TrackingChartCSVs", paste(season, week_text, "0_15Ratings_Rks.csv", sep = ""))) |>
     select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
   Ratings_Rks <- rbind(Ratings_Rks, FinalTable)
   ## no need to write out a new tracking csv since "week 16" is the postseason VoA
@@ -2111,7 +2251,7 @@ if (as.numeric(week) >= 3){
     xlab("Week") +
     ylab("VoA Ranking") +
     labs(caption = "chart by @gshelor, data from nflfastR") +
-    ggtitle("American Conference Vortex of Accuracy Rankings by Week") +
+    ggtitle("Vortex of Accuracy Rankings by Week") +
     expand_limits(y = c(0,32)) +
     scale_y_continuous(breaks = c(0,4,8,12,16,20,24,28,32)) +
     scale_x_continuous(breaks = c(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25)) +
@@ -2120,10 +2260,12 @@ if (as.numeric(week) >= 3){
     theme(plot.title = element_text(size = 35, hjust = 0.5), axis.text.x = element_text(size = 20), axis.text.y = element_text(size = 20), axis.title.x = element_text(size = 22), axis.title.y = element_text(size = 22), legend.text = element_text(size = 20))
   VoA_Ranking_Chart
   ggsave(Ranking_filename, path = output_dir, width = 50, height = 40, units = 'cm')
+} else {
+  print("no charts until week 3!")
 }
 
 ##### creating histogram of VoA Ratings #####
-Rating_histogram <- ggplot(Ratings_Rks, aes(VoA_Rating_Ovr)) +
+Rating_histogram <- ggplot(VoA_Variables, aes(VoA_Rating_Ovr)) +
   geom_histogram(binwidth = 2,
                  col = "black",
                  fill = "orange") +
