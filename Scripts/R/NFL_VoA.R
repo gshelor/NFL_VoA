@@ -1,6 +1,6 @@
-
-##### NFL Vortex of Accuracy Version 0.0 #####
-### This script
+##### NFL Vortex of Accuracy Version 0.1 #####
+### Supremely Excellent Yet Salaciously Godlike And Infallibly Magnificent Vortex of Accuracy
+### This script is for rating NFL teams by unit (offense, defense, special teams) in order to create an overall Vortex of Accuracy rating, which is intended to represent the amount of points a given team would beat the hypothetical average NFL team by on a neutral field
 
 ##### loading packages #####
 StartTime <- Sys.time()
@@ -305,8 +305,8 @@ if (as.numeric(week) == 0){
 } else if (as.numeric(week) <= 2){
   ##### Weeks 1-2 Data Pull #####
   ### reading in PY data saved in week 0
-  PY_VoAVars <- read_csv(here("Data", paste0("VoA", season), "PYData", "PYVoAVariables.csv")) |>
-    select(team, off_ypp_PY1, off_epa_PY1, off_success_rt_PY1, off_explosiveness_PY1, off_third_conv_rate_PY1, off_fourth_conv_rate_PY1, off_pass_ypa_PY1, off_pass_ypc_PY1, off_rush_ypa_PY1, off_pts_per_opp_PY1, off_turnovers_PY1, off_plays_pg_PY1, off_ppg_PY1, off_ppg_aboveavg_PY1, def_ypp_PY1, def_epa_PY1, def_success_rt_PY1, def_explosiveness_PY1, def_third_conv_rate_PY1, def_fourth_conv_rate_PY1, def_pass_ypa_PY1, def_pass_ypc_PY1, def_rush_ypa_PY1, def_pts_per_opp_PY1, def_plays_pg_PY1, def_ppg_PY1, def_ppg_aboveavg_PY1, st_net_epa_PY1, st_punt_return_yds_PY1, st_kick_return_yds_PY1, st_kick_return_TDs_PY1, st_punt_return_TDs_PY1, fg_rate_PY1, fg_made_pg_PY1, xp_rate_PY1, xp_made_pg_PY1, st_punt_return_yds_allowed_PY1, st_kick_return_yds_allowed_PY1, st_kick_return_TDs_allowed_PY1, st_punt_return_TDs_allowed_PY1, fg_rate_allowed_PY1, fg_made_pg_allowed_PY1, xp_rate_allowed_PY1, xp_made_pg_allowed_PY1, net_st_ppg_PY1, off_ypp_PY2, off_epa_PY2, off_success_rt_PY2, off_explosiveness_PY2, off_third_conv_rate_PY2, off_fourth_conv_rate_PY2, off_pass_ypa_PY2, off_pass_ypc_PY2, off_rush_ypa_PY2, off_pts_per_opp_PY2, off_turnovers_PY2, off_plays_pg_PY2, off_ppg_PY2, off_ppg_aboveavg_PY2, def_ypp_PY2, def_epa_PY2, def_success_rt_PY2, def_explosiveness_PY2, def_third_conv_rate_PY2, def_fourth_conv_rate_PY2, def_pass_ypa_PY2, def_pass_ypc_PY2, def_rush_ypa_PY2, def_pts_per_opp_PY2, def_plays_pg_PY2, def_ppg_PY2, def_ppg_aboveavg_PY2, st_net_epa_PY2, st_punt_return_yds_PY2, st_kick_return_yds_PY2, st_kick_return_TDs_PY2, st_punt_return_TDs_PY2, fg_rate_PY2, fg_made_pg_PY2, xp_rate_PY2, xp_made_pg_PY2, st_punt_return_yds_allowed_PY2, st_kick_return_yds_allowed_PY2, st_kick_return_TDs_allowed_PY2, st_punt_return_TDs_allowed_PY2, fg_rate_allowed_PY2, fg_made_pg_allowed_PY2, xp_rate_allowed_PY2, xp_made_pg_allowed_PY2, net_st_ppg_PY2)
+  PY_VoAVars <- read_csv(here("Data", paste0("VoA", season), "PYData", "PYData.csv")) |>
+    select(team, off_ypp_PY1, off_epa_PY1, off_success_rt_PY1, off_explosiveness_PY1, off_third_conv_rate_PY1, off_fourth_conv_rate_PY1, off_pass_ypa_PY1, off_pass_ypc_PY1, off_rush_ypa_PY1, off_pts_per_opp_PY1, off_turnovers_PY1, off_plays_pg_PY1, off_ppg_PY1, def_ypp_PY1, def_epa_PY1, def_success_rt_PY1, def_explosiveness_PY1, def_third_conv_rate_PY1, def_fourth_conv_rate_PY1, def_pass_ypa_PY1, def_pass_ypc_PY1, def_rush_ypa_PY1, def_pts_per_opp_PY1, def_turnovers_PY1, def_plays_pg_PY1, def_ppg_PY1, st_net_epa_PY1, st_punt_return_yds_PY1, st_kick_return_yds_PY1, st_kick_return_TDs_PY1, st_punt_return_TDs_PY1, fg_rate_PY1, fg_made_pg_PY1, xp_rate_PY1, xp_made_pg_PY1, st_punt_return_yds_allowed_PY1, st_kick_return_yds_allowed_PY1, st_kick_return_TDs_allowed_PY1, st_punt_return_TDs_allowed_PY1, fg_rate_allowed_PY1, fg_made_pg_allowed_PY1, xp_rate_allowed_PY1, xp_made_pg_allowed_PY1, net_st_ppg_PY1, off_ypp_PY2, off_epa_PY2, off_success_rt_PY2, off_explosiveness_PY2, off_third_conv_rate_PY2, off_fourth_conv_rate_PY2, off_pass_ypa_PY2, off_pass_ypc_PY2, off_rush_ypa_PY2, off_pts_per_opp_PY2, off_turnovers_PY2, off_plays_pg_PY2, off_ppg_PY2, def_ypp_PY2, def_epa_PY2, def_success_rt_PY2, def_explosiveness_PY2, def_third_conv_rate_PY2, def_fourth_conv_rate_PY2, def_pass_ypa_PY2, def_pass_ypc_PY2, def_rush_ypa_PY2, def_pts_per_opp_PY2, def_turnovers_PY2, def_plays_pg_PY2, def_ppg_PY2, st_net_epa_PY2, st_punt_return_yds_PY2, st_kick_return_yds_PY2, st_kick_return_TDs_PY2, st_punt_return_TDs_PY2, fg_rate_PY2, fg_made_pg_PY2, xp_rate_PY2, xp_made_pg_PY2, st_punt_return_yds_allowed_PY2, st_kick_return_yds_allowed_PY2, st_kick_return_TDs_allowed_PY2, st_punt_return_TDs_allowed_PY2, fg_rate_allowed_PY2, fg_made_pg_allowed_PY2, xp_rate_allowed_PY2, xp_made_pg_allowed_PY2, net_st_ppg_PY2)
   ### reading in PBP data
   PBP <- nflfastR::load_pbp(as.numeric(season)) |>
     filter(play_type_nfl != "GAME_START" & play_type_nfl != "TIMEOUT" & play_type_nfl != "END_QUARTER" & play_type_nfl != "END_GAME")
@@ -398,8 +398,8 @@ if (as.numeric(week) == 0){
 } else if (as.numeric(week) <= 5){
   ##### Weeks 3-5 Data Pull #####
   ### reading in PY data saved in week 0
-  PY_VoAVars <- read_csv(here("Data", paste0("VoA", season), "PYData", "PYVoAVariables.csv")) |>
-    select(team, off_ypp_PY1, off_epa_PY1, off_success_rt_PY1, off_explosiveness_PY1, off_third_conv_rate_PY1, off_fourth_conv_rate_PY1, off_pass_ypa_PY1, off_pass_ypc_PY1, off_rush_ypa_PY1, off_pts_per_opp_PY1, off_turnovers_PY1, off_plays_pg_PY1, off_ppg_PY1, off_ppg_aboveavg_PY1, def_ypp_PY1, def_epa_PY1, def_success_rt_PY1, def_explosiveness_PY1, def_third_conv_rate_PY1, def_fourth_conv_rate_PY1, def_pass_ypa_PY1, def_pass_ypc_PY1, def_rush_ypa_PY1, def_pts_per_opp_PY1, def_plays_pg_PY1, def_ppg_PY1, def_ppg_aboveavg_PY1, st_net_epa_PY1, st_punt_return_yds_PY1, st_kick_return_yds_PY1, st_kick_return_TDs_PY1, st_punt_return_TDs_PY1, fg_rate_PY1, fg_made_pg_PY1, xp_rate_PY1, xp_made_pg_PY1, st_punt_return_yds_allowed_PY1, st_kick_return_yds_allowed_PY1, st_kick_return_TDs_allowed_PY1, st_punt_return_TDs_allowed_PY1, fg_rate_allowed_PY1, fg_made_pg_allowed_PY1, xp_rate_allowed_PY1, xp_made_pg_allowed_PY1, net_st_ppg_PY1)
+  PY_VoAVars <- read_csv(here("Data", paste0("VoA", season), "PYData", "PYData.csv")) |>
+    select(team, off_ypp_PY1, off_epa_PY1, off_success_rt_PY1, off_explosiveness_PY1, off_third_conv_rate_PY1, off_fourth_conv_rate_PY1, off_pass_ypa_PY1, off_pass_ypc_PY1, off_rush_ypa_PY1, off_pts_per_opp_PY1, off_turnovers_PY1, off_plays_pg_PY1, off_ppg_PY1, def_ypp_PY1, def_epa_PY1, def_success_rt_PY1, def_explosiveness_PY1, def_third_conv_rate_PY1, def_fourth_conv_rate_PY1, def_pass_ypa_PY1, def_pass_ypc_PY1, def_rush_ypa_PY1, def_pts_per_opp_PY1, def_turnovers_PY1, def_plays_pg_PY1, def_ppg_PY1, st_net_epa_PY1, st_punt_return_yds_PY1, st_kick_return_yds_PY1, st_kick_return_TDs_PY1, st_punt_return_TDs_PY1, fg_rate_PY1, fg_made_pg_PY1, xp_rate_PY1, xp_made_pg_PY1, st_punt_return_yds_allowed_PY1, st_kick_return_yds_allowed_PY1, st_kick_return_TDs_allowed_PY1, st_punt_return_TDs_allowed_PY1, fg_rate_allowed_PY1, fg_made_pg_allowed_PY1, xp_rate_allowed_PY1, xp_made_pg_allowed_PY1, net_st_ppg_PY1)
   
   ### reading in PBP data
   PBP <- nflfastR::load_pbp(as.numeric(season)) |>
@@ -1147,7 +1147,7 @@ if (as.numeric(week) == 0){
       filter(touchdown == 1)
     temp_off_scorringopp_FGs <- temp_off_scoringoppplays |>
       filter(field_goal_result == "made")
-    temp_off_turnovers <- Turnovers |>
+    temp_off_turnovers <- turnovers |>
       filter(posteam == VoA_Variables$team[x])
     temp_off_TDs <- TDs |>
       filter(posteam == VoA_Variables$team[x])
@@ -1181,7 +1181,7 @@ if (as.numeric(week) == 0){
       filter(touchdown == 1)
     temp_def_scorringopp_FGs <- temp_def_scoringoppplays |>
       filter(field_goal_result == "made")
-    temp_def_turnovers <- Turnovers |>
+    temp_def_turnovers <- turnovers |>
       filter(defteam == VoA_Variables$team[x])
     temp_def_TDs <- TDs |>
       filter(defteam == VoA_Variables$team[x])
@@ -1260,17 +1260,33 @@ if (as.numeric(week) == 0){
     VoA_Variables$st_kick_return_yds[x] = mean(temp_returned_kicks$return_yards)
     VoA_Variables$st_kick_return_TDs[x] = nrow(temp_returned_kick_TDs) / length(unique(temp_offplays$week))
     VoA_Variables$st_punt_return_TDs[x] = nrow(temp_returned_punt_TDs) / length(unique(temp_offplays$week))
-    VoA_Variables$fg_rate[x] = nrow(temp_off_goodFGs) / nrow(temp_off_FGs)
+    if (nrow(temp_off_FGs) == 0 | is.na(nrow(temp_off_FGs))){
+      VoA_Variables$fg_rate[x] = 0
+    } else{
+      VoA_Variables$fg_rate[x] = nrow(temp_off_goodFGs) / nrow(temp_off_FGs)
+    }
     VoA_Variables$fg_made_pg[x] = nrow(temp_off_goodFGs) / length(unique(temp_offplays$week))
-    VoA_Variables$xp_rate[x] = nrow(temp_off_good_xps) / nrow(temp_off_xps)
+    if (nrow(temp_off_xps) == 0 | is.na(nrow(temp_off_xps))){
+      VoA_Variables$xp_rate[x] = 0
+    } else{
+      VoA_Variables$xp_rate[x] = nrow(temp_off_good_xps) / nrow(temp_off_xps)
+    }
     VoA_Variables$xp_made_pg[x] = nrow(temp_off_good_xps) / length(unique(temp_offplays$week))
     VoA_Variables$st_punt_return_yds_allowed[x] = mean(temp_kicked_punts$return_yards)
     VoA_Variables$st_kick_return_yds_allowed[x] = mean(temp_kicked_kicks$return_yards)
     VoA_Variables$st_kick_return_TDs_allowed[x] = nrow(temp_kicked_kick_TDs) / length(unique(temp_offplays$week))
     VoA_Variables$st_punt_return_TDs_allowed[x] = nrow(temp_kicked_punt_TDs) / length(unique(temp_offplays$week))
-    VoA_Variables$fg_rate_allowed[x] = nrow(temp_def_goodFGs) / nrow(temp_def_FGs)
+    if (nrow(temp_def_FGs) == 0 | is.na(nrow(temp_def_FGs))){
+      VoA_Variables$fg_rate_allowed[x] = 0
+    } else{
+      VoA_Variables$fg_rate_allowed[x] = nrow(temp_def_goodFGs) / nrow(temp_def_FGs)
+    }
     VoA_Variables$fg_made_pg_allowed[x] = nrow(temp_def_goodFGs) / length(unique(temp_offplays$week))
-    VoA_Variables$xp_rate_allowed[x] = nrow(temp_def_good_xps) / nrow(temp_def_xps)
+    if (nrow(temp_def_xps) == 0 | is.na(nrow(temp_def_xps))){
+      VoA_Variables$xp_rate_allowed[x] = 0
+    } else{
+      VoA_Variables$xp_rate_allowed[x] = nrow(temp_def_good_xps) / nrow(temp_def_xps)
+    }
     VoA_Variables$xp_made_pg_allowed[x] = nrow(temp_def_good_xps) / length(unique(temp_offplays$week))
     VoA_Variables$net_st_ppg[x] = (((nrow(temp_off_goodFGs) * 3) + (nrow(temp_returned_punt_TDs) * 6) + (nrow(temp_returned_kick_TDs) * 6) + nrow(temp_off_good_xps)) - ((nrow(temp_def_goodFGs) * 3) + (nrow(temp_kicked_punt_TDs) * 6) + (nrow(temp_kicked_kick_TDs) * 6) + nrow(temp_def_good_xps))) / length(unique(temp_offplays$week))
   }
@@ -1365,7 +1381,7 @@ if (as.numeric(week) == 0){
       filter(touchdown == 1)
     temp_off_scorringopp_FGs <- temp_off_scoringoppplays |>
       filter(field_goal_result == "made")
-    temp_off_turnovers <- Turnovers |>
+    temp_off_turnovers <- turnovers |>
       filter(posteam == VoA_Variables$team[x])
     temp_off_TDs <- TDs |>
       filter(posteam == VoA_Variables$team[x])
@@ -1399,7 +1415,7 @@ if (as.numeric(week) == 0){
       filter(touchdown == 1)
     temp_def_scorringopp_FGs <- temp_def_scoringoppplays |>
       filter(field_goal_result == "made")
-    temp_def_turnovers <- Turnovers |>
+    temp_def_turnovers <- turnovers |>
       filter(defteam == VoA_Variables$team[x])
     temp_def_TDs <- TDs |>
       filter(defteam == VoA_Variables$team[x])
@@ -1581,7 +1597,7 @@ if (as.numeric(week) == 0){
       filter(touchdown == 1)
     temp_off_scorringopp_FGs <- temp_off_scoringoppplays |>
       filter(field_goal_result == "made")
-    temp_off_turnovers <- Turnovers |>
+    temp_off_turnovers <- turnovers |>
       filter(posteam == VoA_Variables$team[x])
     temp_off_TDs <- TDs |>
       filter(posteam == VoA_Variables$team[x])
@@ -1615,7 +1631,7 @@ if (as.numeric(week) == 0){
       filter(touchdown == 1)
     temp_def_scorringopp_FGs <- temp_def_scoringoppplays |>
       filter(field_goal_result == "made")
-    temp_def_turnovers <- Turnovers |>
+    temp_def_turnovers <- turnovers |>
       filter(defteam == VoA_Variables$team[x])
     temp_def_TDs <- TDs |>
       filter(defteam == VoA_Variables$team[x])
@@ -1816,6 +1832,7 @@ if (as.numeric(week) <= 5) {
            Rank_net_st_ppg = dense_rank(desc(net_st_ppg)))
 }
 
+
 ##### Calculating VoA Output #####
 ### for week 0 (preseason), rank columns start at 168
 if (as.numeric(week) == 0){
@@ -1826,7 +1843,7 @@ if (as.numeric(week) == 0){
     mutate(VoA_Output = (rowMeans(VoA_Variables[,176:ncol(VoA_Variables)])))
 } else if (as.numeric(week) <= 5){
   VoA_Variables <- VoA_Variables |>
-    mutate(VoA_Output = (rowMeans(VoA_Variables[,168:ncol(VoA_Variables)])))
+    mutate(VoA_Output = (rowMeans(VoA_Variables[,132:ncol(VoA_Variables)])))
 } else{
   VoA_Variables <- VoA_Variables |>
     mutate(VoA_Output = (rowMeans(VoA_Variables[,168:ncol(VoA_Variables)])))
@@ -2049,7 +2066,7 @@ if (as.numeric(week) == 0) {
     gt() |> # use 'gt' to make an awesome table...
     gt_theme_538() |>
     tab_header(
-      title = paste(season, week_text, week, VoA_text), # ...with this title
+      title = paste(season, week_text, week, nfl_text, VoA_text), # ...with this title
       subtitle = "Supremely Excellent Yet Salaciously Godlike And Infallibly Magnificent Vortex of Accuracy")  |>  # and this subtitle
     ##tab_style(style = cell_fill("bisque"),
     ##        locations = cells_body()) |>  # add fill color to table
@@ -2105,7 +2122,7 @@ if (as.numeric(week) == 0) {
         reverse = FALSE
       )
     ) |>
-    gt_nfl_logos(columns = "team") |>
+    gt_nfl_wordmarks(columns = "team") |>
     cols_label(VoA_Rating_Ovr = "Overall VoA Rating", VoA_Ranking_Ovr = "VoA Ranking", OffVoA_MedRating = "Off VoA Rating", OffVoA_Ranking = "Off Ranking", DefVoA_MedRating = "Def VoA Rating", DefVoA_Ranking = "Def Ranking", STVoA_MedRating = "ST VoA Rating", STVoA_Ranking = "ST Ranking") |> # Update labels
     # cols_move_to_end(columns = "VoA_Rating") |>
     cols_hide(c(week, VoA_Output)) |>
@@ -2133,80 +2150,80 @@ write_csv(VoA_Variables, file_pathway)
 FinalTable <- FinalTable |>
   select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
 if (as.numeric(week) == 3) {
-  Week0_VoA <- read_csv(here("Data", paste0("VoA", year), paste0(year, "Week0_VoA.csv"))) |>
+  Week0_VoA <- read_csv(here("Data", paste0("VoA", season), paste0(season, "Week0_VoA.csv"))) |>
     select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
-  Week1_VoA <- read_csv(here("Data", paste0("VoA", year), paste0(year, "Week1_VoA.csv"))) |>
+  Week1_VoA <- read_csv(here("Data", paste0("VoA", season), paste0(season, "Week1_VoA.csv"))) |>
     select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
-  Week2_VoA <- read_csv(here("Data", paste0("VoA", year), paste0(year, "Week2_VoA.csv"))) |>
+  Week2_VoA <- read_csv(here("Data", paste0("VoA", season), paste0(season, "Week2_VoA.csv"))) |>
     select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
   Ratings_Rks <- rbind(Week0_VoA, rbind(Week1_VoA, rbind(Week2_VoA, FinalTable)))
-  write_csv(Ratings_Rks, paste(data_dir, "/TrackingChartCSVs", "/", year, week_text, "0_3Ratings_Rks.csv", sep = ""))
+  write_csv(Ratings_Rks, paste(data_dir, "/TrackingChartCSVs", "/", season, week_text, "0_3Ratings_Rks.csv", sep = ""))
 } else if (as.numeric(week) == 4) {
-  Ratings_Rks <- read_csv(here("Data", paste0("VoA", year), "TrackingChartCSVs", paste(season, week_text, "0_3Ratings_Rks.csv", sep = ""))) |>
+  Ratings_Rks <- read_csv(here("Data", paste0("VoA", season), "TrackingChartCSVs", paste(season, week_text, "0_3Ratings_Rks.csv", sep = ""))) |>
     select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
   Ratings_Rks <- rbind(Ratings_Rks, FinalTable)
-  write_csv(Ratings_Rks, paste(data_dir, "/TrackingChartCSVs", "/", year, week_text, "0_4Ratings_Rks.csv", sep = ""))
+  write_csv(Ratings_Rks, paste(data_dir, "/TrackingChartCSVs", "/", season, week_text, "0_4Ratings_Rks.csv", sep = ""))
 } else if (as.numeric(week) == 5) {
-  Ratings_Rks <- read_csv(here("Data", paste0("VoA", year), "TrackingChartCSVs", paste(season, week_text, "0_4Ratings_Rks.csv", sep = ""))) |>
+  Ratings_Rks <- read_csv(here("Data", paste0("VoA", season), "TrackingChartCSVs", paste(season, week_text, "0_4Ratings_Rks.csv", sep = ""))) |>
     select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
   Ratings_Rks <- rbind(Ratings_Rks, FinalTable)
-  write_csv(Ratings_Rks, paste(data_dir, "/TrackingChartCSVs", "/", year, week_text, "0_5Ratings_Rks.csv", sep = ""))
+  write_csv(Ratings_Rks, paste(data_dir, "/TrackingChartCSVs", "/", season, week_text, "0_5Ratings_Rks.csv", sep = ""))
 } else if (as.numeric(week) == 6) {
-  Ratings_Rks <- read_csv(here("Data", paste0("VoA", year), "TrackingChartCSVs", paste(season, week_text, "0_5Ratings_Rks.csv", sep = ""))) |>
+  Ratings_Rks <- read_csv(here("Data", paste0("VoA", season), "TrackingChartCSVs", paste(season, week_text, "0_5Ratings_Rks.csv", sep = ""))) |>
     select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
   Ratings_Rks <- rbind(Ratings_Rks, FinalTable)
-  write_csv(Ratings_Rks, paste(data_dir, "/TrackingChartCSVs", "/", year, week_text, "0_6Ratings_Rks.csv", sep = ""))
+  write_csv(Ratings_Rks, paste(data_dir, "/TrackingChartCSVs", "/", season, week_text, "0_6Ratings_Rks.csv", sep = ""))
 } else if (as.numeric(week) == 7) {
-  Ratings_Rks <- read_csv(here("Data", paste0("VoA", year), "TrackingChartCSVs", paste(season, week_text, "0_6Ratings_Rks.csv", sep = ""))) |>
+  Ratings_Rks <- read_csv(here("Data", paste0("VoA", season), "TrackingChartCSVs", paste(season, week_text, "0_6Ratings_Rks.csv", sep = ""))) |>
     select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
   Ratings_Rks <- rbind(Ratings_Rks, FinalTable)
-  write_csv(Ratings_Rks, paste(data_dir, "/TrackingChartCSVs", "/", year, week_text, "0_7Ratings_Rks.csv", sep = ""))
+  write_csv(Ratings_Rks, paste(data_dir, "/TrackingChartCSVs", "/", season, week_text, "0_7Ratings_Rks.csv", sep = ""))
 } else if (as.numeric(week) == 8) {
-  Ratings_Rks <- read_csv(here("Data", paste0("VoA", year), "TrackingChartCSVs", paste(season, week_text, "0_7Ratings_Rks.csv", sep = ""))) |>
+  Ratings_Rks <- read_csv(here("Data", paste0("VoA", season), "TrackingChartCSVs", paste(season, week_text, "0_7Ratings_Rks.csv", sep = ""))) |>
     select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
   Ratings_Rks <- rbind(Ratings_Rks, FinalTable)
-  write_csv(Ratings_Rks, paste(data_dir, "/TrackingChartCSVs", "/", year, week_text, "0_8Ratings_Rks.csv", sep = ""))
+  write_csv(Ratings_Rks, paste(data_dir, "/TrackingChartCSVs", "/", season, week_text, "0_8Ratings_Rks.csv", sep = ""))
 } else if (as.numeric(week) == 9) {
-  Ratings_Rks <- read_csv(here("Data", paste0("VoA", year), "TrackingChartCSVs", paste(season, week_text, "0_8Ratings_Rks.csv", sep = ""))) |>
+  Ratings_Rks <- read_csv(here("Data", paste0("VoA", season), "TrackingChartCSVs", paste(season, week_text, "0_8Ratings_Rks.csv", sep = ""))) |>
     select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
   Ratings_Rks <- rbind(Ratings_Rks, FinalTable)
-  write_csv(Ratings_Rks, paste(data_dir, "/TrackingChartCSVs", "/", year, week_text, "0_9Ratings_Rks.csv", sep = ""))
+  write_csv(Ratings_Rks, paste(data_dir, "/TrackingChartCSVs", "/", season, week_text, "0_9Ratings_Rks.csv", sep = ""))
 } else if (as.numeric(week) == 10) {
-  Ratings_Rks <- read_csv(here("Data", paste0("VoA", year), "TrackingChartCSVs", paste(season, week_text, "0_9Ratings_Rks.csv", sep = ""))) |>
+  Ratings_Rks <- read_csv(here("Data", paste0("VoA", season), "TrackingChartCSVs", paste(season, week_text, "0_9Ratings_Rks.csv", sep = ""))) |>
     select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
   Ratings_Rks <- rbind(Ratings_Rks, FinalTable)
-  write_csv(Ratings_Rks, paste(data_dir, "/TrackingChartCSVs", "/", year, week_text, "0_10Ratings_Rks.csv", sep = ""))
+  write_csv(Ratings_Rks, paste(data_dir, "/TrackingChartCSVs", "/", season, week_text, "0_10Ratings_Rks.csv", sep = ""))
 } else if (as.numeric(week) == 11) {
-  Ratings_Rks <- read_csv(here("Data", paste0("VoA", year), "TrackingChartCSVs", paste(season, week_text, "0_10Ratings_Rks.csv", sep = ""))) |>
+  Ratings_Rks <- read_csv(here("Data", paste0("VoA", season), "TrackingChartCSVs", paste(season, week_text, "0_10Ratings_Rks.csv", sep = ""))) |>
     select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
   Ratings_Rks <- rbind(Ratings_Rks, FinalTable)
-  write_csv(Ratings_Rks, paste(data_dir, "/TrackingChartCSVs", "/", year, week_text, "0_11Ratings_Rks.csv", sep = ""))
+  write_csv(Ratings_Rks, paste(data_dir, "/TrackingChartCSVs", "/", season, week_text, "0_11Ratings_Rks.csv", sep = ""))
 } else if (as.numeric(week) == 12) {
-  Ratings_Rks <- read_csv(here("Data", paste0("VoA", year), "TrackingChartCSVs", paste(season, week_text, "0_11Ratings_Rks.csv", sep = ""))) |>
+  Ratings_Rks <- read_csv(here("Data", paste0("VoA", season), "TrackingChartCSVs", paste(season, week_text, "0_11Ratings_Rks.csv", sep = ""))) |>
     select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
   Ratings_Rks <- rbind(Ratings_Rks, FinalTable)
-  write_csv(Ratings_Rks, paste(data_dir, "/TrackingChartCSVs", "/", year, week_text, "0_12Ratings_Rks.csv", sep = ""))
+  write_csv(Ratings_Rks, paste(data_dir, "/TrackingChartCSVs", "/", season, week_text, "0_12Ratings_Rks.csv", sep = ""))
 } else if (as.numeric(week) == 13) {
-  Ratings_Rks <- read_csv(here("Data", paste0("VoA", year), "TrackingChartCSVs", paste(season, week_text, "0_12Ratings_Rks.csv", sep = ""))) |>
+  Ratings_Rks <- read_csv(here("Data", paste0("VoA", season), "TrackingChartCSVs", paste(season, week_text, "0_12Ratings_Rks.csv", sep = ""))) |>
     select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
   Ratings_Rks <- rbind(Ratings_Rks, FinalTable)
-  write_csv(Ratings_Rks, paste(data_dir, "/TrackingChartCSVs", "/", year, week_text, "0_13Ratings_Rks.csv", sep = ""))
+  write_csv(Ratings_Rks, paste(data_dir, "/TrackingChartCSVs", "/", season, week_text, "0_13Ratings_Rks.csv", sep = ""))
 } else if (as.numeric(week) == 14) {
-  Ratings_Rks <- read_csv(here("Data", paste0("VoA", year), "TrackingChartCSVs", paste(season, week_text, "0_13Ratings_Rks.csv", sep = ""))) |>
+  Ratings_Rks <- read_csv(here("Data", paste0("VoA", season), "TrackingChartCSVs", paste(season, week_text, "0_13Ratings_Rks.csv", sep = ""))) |>
     select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
   Ratings_Rks <- rbind(Ratings_Rks, FinalTable)
-  write_csv(Ratings_Rks, paste(data_dir, "/TrackingChartCSVs", "/", year, week_text, "0_14Ratings_Rks.csv", sep = ""))
+  write_csv(Ratings_Rks, paste(data_dir, "/TrackingChartCSVs", "/", season, week_text, "0_14Ratings_Rks.csv", sep = ""))
 } else if (as.numeric(week) == 15) {
-  Ratings_Rks <- read_csv(here("Data", paste0("VoA", year), "TrackingChartCSVs", paste(season, week_text, "0_14Ratings_Rks.csv", sep = ""))) |>
+  Ratings_Rks <- read_csv(here("Data", paste0("VoA", season), "TrackingChartCSVs", paste(season, week_text, "0_14Ratings_Rks.csv", sep = ""))) |>
     select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
   Ratings_Rks <- rbind(Ratings_Rks, FinalTable)
-  write_csv(Ratings_Rks, paste(data_dir, "/TrackingChartCSVs", "/", year, week_text, "0_15Ratings_Rks.csv", sep = ""))
+  write_csv(Ratings_Rks, paste(data_dir, "/TrackingChartCSVs", "/", season, week_text, "0_15Ratings_Rks.csv", sep = ""))
 } else if (as.numeric(week) == 16) {
-  Ratings_Rks <- read_csv(here("Data", paste0("VoA", year), "TrackingChartCSVs", paste(season, week_text, "0_15Ratings_Rks.csv", sep = ""))) |>
+  Ratings_Rks <- read_csv(here("Data", paste0("VoA", season), "TrackingChartCSVs", paste(season, week_text, "0_15Ratings_Rks.csv", sep = ""))) |>
     select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
   Ratings_Rks <- rbind(Ratings_Rks, FinalTable)
   ## no need to write out a new tracking csv since "week 16" is the postseason VoA
-  ## write_csv(Ratings_Rks, paste(data_dir, "/TrackingChartCSVs", "/", year, week_text, "0_16Ratings_Rks.csv", sep = ""))
+  ## write_csv(Ratings_Rks, paste(data_dir, "/TrackingChartCSVs", "/", season, week_text, "0_16Ratings_Rks.csv", sep = ""))
 } else if (as.numeric(week) == 17){
   
 } else if (as.numeric(week) == 18){
@@ -2238,25 +2255,24 @@ if (as.numeric(week) >= 3){
     expand_limits(y = c(floor(floor(min(VoA_Variables$VoA_Rating_Ovr)) / 10) * 10, ceiling((ceiling(max(VoA_Variables$VoA_Rating_Ovr)) / 10)) * 10)) +
     scale_y_continuous(breaks = seq((floor((floor(min(VoA_Variables$VoA_Rating_Ovr)) / 10)) * 10), (ceiling((ceiling(max(VoA_Variables$VoA_Rating_Ovr)) / 10)) * 10), by = 5)) +
     scale_x_continuous(breaks = c(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25)) +
-    geom_nfl_logos(aes(team_abbr = team)) +
+    geom_nfl_logos(aes(team_abbr = team), width = 0.04) +
     # geom_cfb_logos(aes(team = team, width = 0.035)) +
     theme(plot.title = element_text(size = 35, hjust = 0.5), axis.text.x = element_text(size = 20), axis.text.y = element_text(size = 20), axis.title.x = element_text(size = 22), axis.title.y = element_text(size = 22), legend.text = element_text(size = 20))
   VoA_Rating_Chart
   ggsave(Output_filename, path = output_dir, width = 50, height = 40, units = 'cm')
   
-  VoA_Ranking_Chart <- ggplot(VoA_Variables, aes(x = week, y = VoA_Ranking_Ovr, group = team)) +
+  VoA_Ranking_Chart <- ggplot(Ratings_Rks, aes(x = week, y = VoA_Ranking_Ovr, group = team)) +
     theme_bw() +
     geom_line(linewidth = 1.5) +
     geom_point(size = 5) +
     xlab("Week") +
     ylab("VoA Ranking") +
     labs(caption = "chart by @gshelor, data from nflfastR") +
-    ggtitle("Vortex of Accuracy Rankings by Week") +
+    ggtitle("NFL Vortex of Accuracy Rankings by Week") +
     expand_limits(y = c(0,32)) +
     scale_y_continuous(breaks = c(0,4,8,12,16,20,24,28,32)) +
     scale_x_continuous(breaks = c(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25)) +
-    geom_nfl_logos(aes(team_abbr = team)) +
-    # geom_cfb_logos(aes(team = team, width = 0.035)) +
+    geom_nfl_logos(aes(team_abbr = team), width = 0.04) +
     theme(plot.title = element_text(size = 35, hjust = 0.5), axis.text.x = element_text(size = 20), axis.text.y = element_text(size = 20), axis.title.x = element_text(size = 22), axis.title.y = element_text(size = 22), legend.text = element_text(size = 20))
   VoA_Ranking_Chart
   ggsave(Ranking_filename, path = output_dir, width = 50, height = 40, units = 'cm')
@@ -2283,6 +2299,7 @@ ggsave(hist_filename, path = output_dir, width = 50, height = 40, units = 'cm')
 ### Creating Scatterplot of VoA_Output vs VoA_Rating
 VoA_Output_Rating_plot <- ggplot(VoA_Variables, aes(x = VoA_Output, y = VoA_Rating_Ovr)) +
   geom_point(size = 5) +
+  geom_nfl_logos(aes(team_abbr = team), width = 0.05) +
   geom_smooth() +
   scale_x_continuous(breaks = seq(0,32,2)) +
   scale_y_continuous(breaks = seq(-40,40,5)) +
