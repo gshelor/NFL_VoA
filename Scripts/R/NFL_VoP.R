@@ -69,7 +69,7 @@ if (as.numeric(upcoming) == 1){
                                    proj_margin < 0 ~ away_team,
                                    TRUE ~ "TIE"))
 } else{
-  ### Creating Vortex of Projection projected win margin and winner column for upcoming week's games
+  ### Creating Vortex of Accuracy projected win margin and winner column for upcoming week's games
   upcoming_games_df <- upcoming_games_df |>
     mutate(proj_margin = case_when(location == "Home" ~  (home_VoA_Rating + 2.5) - away_VoA_Rating,
                                    TRUE ~ home_VoA_Rating - away_VoA_Rating),
@@ -268,7 +268,7 @@ upcoming_games_gt <- upcoming_games_df |>
   gt() |> # use 'gt' to make an awesome table...
   gt_theme_espn() |>
   tab_header(
-    title = paste(season, nfl_text, week_text, upcoming, "Vortex of Projection Game Projections"), # ...with this title
+    title = paste(season, nfl_text, week_text, upcoming, "Vortex of Accuracy Game Projections"), # ...with this title
     subtitle = "The Unquestionably Puzzling Yet Impeccibly Perceptive Vortex of Projection")  |>  # and this subtitle
   fmt_number( # A column (numeric data)
     columns = c(proj_margin_abs), # What column variable? FinalVoATop25$VoA_Rating
@@ -319,6 +319,64 @@ upcoming_games_gt |>
     gameprojections_filename, expand = 5,
     path = here("Outputs", "RVoA", paste0("VoA", season), "VoP")
   )
+
+##### making game projection table arranged by projected win margin #####
+upcoming_games_projmargin <- upcoming_games_df |>
+  arrange(proj_margin_abs)
+
+upcoming_games_projmargin_gt <- upcoming_games_projmargin |>
+  gt() |> # use 'gt' to make an awesome table...
+  gt_theme_espn() |>
+  tab_header(
+    title = paste(season, nfl_text, week_text, upcoming, "Vortex of Accuracy Game Projections"), # ...with this title
+    subtitle = "The Unquestionably Puzzling Yet Impeccibly Perceptive Vortex of Projection")  |>  # and this subtitle
+  fmt_number( # A column (numeric data)
+    columns = c(proj_margin_abs), # What column variable? FinalVoATop25$VoA_Rating
+    decimals = 3 # With 3 decimal places
+  ) |>
+  fmt_number( # Another column (also numeric data)
+    columns = c(home_VoA_Rating), # What column variable? FinalVoATop25$VoA_Ranking
+    decimals = 3 # I want this column to have 2 decimal places
+  ) |>
+  fmt_number( # Another numeric column
+    columns = c(away_VoA_Rating),
+    decimals = 3
+  ) |>
+  fmt_number( # Another numeric column
+    columns = c(away_VoA_Rating),
+    decimals = 3
+  ) |>
+  fmt_number( # Another numeric column
+    columns = c(win_prob),
+    decimals = 2
+  ) |>
+  data_color( # Update cell colors, testing different color palettes
+    columns = c(proj_margin_abs), # ...for dose column
+    fn = scales::col_numeric( # <- bc it's numeric
+      palette = brewer.pal(11, "RdBu"), # A color scheme (gradient)
+      domain = c(), # Column scale endpoints
+      reverse = FALSE
+    )
+  ) |>
+  data_color( # Update cell colors, testing different color palettes
+    columns = c(win_prob), # ...for dose column
+    fn = scales::col_numeric( # <- bc it's numeric
+      palette = brewer.pal(11, "RdYlGn"), # A color scheme (gradient)
+      domain = c(), # Column scale endpoints
+      reverse = FALSE
+    )
+  ) |>
+  nflplotR::gt_nfl_wordmarks(columns = c("away_team", "home_team", "proj_winner")) |>
+  cols_label(home_team = "Home", away_team = "Away", home_VoA_Rating = "Home VoA Rating", away_VoA_Rating = "Away VoA Rating", proj_winner = "Projected Winner", proj_margin_abs = "Projected Margin", win_prob = "Win Probability") |> # Update labels
+  cols_move_to_end(columns = "win_prob") |>
+  cols_hide(c(game_id, season, week, game_type, gameday, weekday, gametime, location, result, total, overtime, spread_line, total_line, div_game, temp, stadium, wind, home_win_prob, proj_margin)) |>
+  tab_footnote(
+    footnote = "Table by @gshelor, Data from nflfastR"
+  )
+upcoming_games_projmargin_gt
+
+### writing csv of projections
+write_csv(upcoming_games_df, here("Data", paste0("VoA", season), "VoP", paste0(season, nfl_text, week_text, upcoming, "VoP.csv")))
 
 end_time <- Sys.time()
 end_time - start_time

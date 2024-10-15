@@ -1,1 +1,91 @@
 ##### NFL Vortex of Accuracy Model Evaluation #####
+
+##### loading packages, reading in data #####
+library(pacman)
+p_load(tidyverse, gt, nflverse, here, gtExtras, ModelMetrics, ggpubr, webshot2, RColorBrewer, Metrics )
+
+### identifying season and week of season
+season <- readline("What season is it? ")
+nfl_week <- readline("What week just occurred? ")
+
+### strings I want to preserve
+nfl_text <- "NFL"
+week_text <- "Week"
+
+### reading in previous week's data
+PrevWeekVoA_Proj <- read_csv(here("Data", paste0("VoA", season), "VoP", paste0(season, nfl_text, week_text, nfl_week, "VoP.csv"))) |>
+  select(game_id, proj_margin)
+
+LastWeekGames <- load_schedules(as.numeric(season)) |>
+  filter(week == as.numeric(nfl_week)) |>
+  select(game_id, season, week, away_team, away_score, home_team, home_score, result, total, overtime, spread_line)
+
+LastWeekGames <- full_join(LastWeekGames, PrevWeekVoA_Proj, by = "game_id") 
+
+LastWeekGames <- LastWeekGames |>
+  mutate(abs_error = Metrics::ae(result, proj_margin),
+         vegas_abs_error = Metrics::ae(result, spread_line),
+         sqd_error = Metrics::se(result, proj_margin),
+         vegas_sqd_error = Metrics::se(result, spread_line),
+         straight_up_win = case_when(result >= 0 & proj_margin >= 0 ~ 1,
+                                     result <= 0 & proj_margin <= 0 ~ 1,
+                                     TRUE ~ 0),
+         ATS_win = case_when(result > spread_line & proj_margin > spread_line ~ 1,
+                             result < spread_line & proj_margin < spread_line ~ 1,
+                             TRUE ~ 0),
+         AE_ATS_win = case_when(abs_error < vegas_abs_error ~ 1,
+                                TRUE ~ 0))
+
+WeekMeanAccuracyMetrics <- data.frame(week = as.numeric(nfl_week),
+                                  mean_ae = mean(LastWeekGames$abs_error),
+                                  mean_vegas_ae = mean(LastWeekGames$vegas_abs_error),
+                                  mean_se = mean(LastWeekGames$sqd_error),
+                                  mean_vegas_se = mean(LastWeekGames$vegas_sqd_error),
+                                  RMSE = rmse(LastWeekGames$result, LastWeekGames$proj_margin),
+                                  vegas_RMSE = rmse(LastWeekGames$result, LastWeekGames$spread_line),
+                                  straight_up_win_pct = sum(LastWeekGames$straight_up_win) / nrow(LastWeekGames),
+                                  ATS_win_pct = sum(LastWeekGames$ATS_win) / nrow(LastWeekGames),
+                                  AE_ATS_win_pct = sum(LastWeekGames$AE_ATS_win) / nrow(LastWeekGames))
+
+
+if (as.numeric(nfl_week) == 1){
+  ### writing csv with individual games + accuracy metrics
+  write_csv(LastWeekGames, here("Data", paste0("VoA", season), "AccuracyMetrics", "Games", paste0(nfl_text, "VoA", season, week_text, "1", week_text, nfl_week, "GameAccuracyMetrics.csv")))
+  ### writing csv with just weekly average calculated for accuracy metrics
+  write_csv(WeekMeanAccuracyMetrics, here("Data", paste0("VoA", season), "AccuracyMetrics", paste0(nfl_text, "VoA", season, week_text, "1", week_text, nfl_week, "WeekAccuracyMetrics.csv")))
+} else if (as.numeric(nfl_week) >= 2){
+  ### reading in csv of previous games with error calculated, binding current week's games to that 
+  PrevWeekGameAccuracyMetrics <- read_csv(here("Data", paste0("VoA", season), "AccuracyMetrics", "Games", paste0(nfl_text, "VoA", season, week_text, "1", week_text, as.character(as.numeric(nfl_week) - 1), "GameAccuracyMetrics.csv")))
+  CompletedGames <- rbind(PrevWeekGameAccuracyMetrics, LastWeekGames)
+  
+  ### writing csv with individual games + accuracy metrics
+  write_csv(CompletedGames, here("Data", paste0("VoA", season), "AccuracyMetrics", "Games", paste0(nfl_text, "VoA", season, week_text, "1", week_text, nfl_week, "GameAccuracyMetrics.csv")))
+  
+  ### reading in csv of weekly average, binding current week to it
+  PrevWeeklyAvgAccuracyMetrics <- read_csv(here("Data", paste0("VoA", season), "AccuracyMetrics", paste0(nfl_text, "VoA", season, week_text, "1", week_text, as.character(as.numeric(nfl_week) - 1), "WeekAccuracyMetrics.csv")))
+  CompletedWeeks <- rbind(PrevWeeklyAvgAccuracyMetrics, WeekMeanAccuracyMetrics)
+  
+  ### writing csv with just weekly average calculated for accuracy metrics
+  write_csv(CompletedWeeks, here("Data", paste0("VoA", season), "AccuracyMetrics", paste0(nfl_text, "VoA", season, week_text, "1", week_text, nfl_week, "WeekAccuracyMetrics.csv")))
+} else{
+  print("week not properly entered")
+}
+
+
+if (as.numeric(nfl_week) >= 6){
+  SeasonMetrics <- CompletedGames |>
+    group_by(season) |>
+    summarize(mean_ae = mean(abs_error),
+              mean_vegas_ae = mean(vegas_abs_error),
+              mean_se = mean(sqd_error),
+              mean_vegas_se = mean(vegas_sqd_error),
+              RMSE = rmse(result, proj_margin),
+              vegas_RMSE = rmse(result, spread_line),
+              straight_up_win_pct = sum(straight_up_win) / nrow(CompletedGames),
+              ATS_win_pct = sum(ATS_win) / nrow(CompletedGames),
+              AE_ATS_win_pct = sum(AE_ATS_win) / nrow(CompletedGames))
+  
+  write_csv(SeasonMetrics, here("Data", paste0("VoA", season), "AccuracyMetrics", paste0(nfl_text, "VoA", season, "SeasonAccuracyMetrics.csv")))
+} else{
+  print("no season metrics calculated yet")
+}

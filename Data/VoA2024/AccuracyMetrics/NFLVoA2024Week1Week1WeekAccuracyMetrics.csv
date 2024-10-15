@@ -1,0 +1,2 @@
+week,mean_ae,mean_vegas_ae,mean_se,mean_vegas_se,RMSE,vegas_RMSE,straight_up_win_pct,ATS_win_pct,AE_ATS_win_pct
+1,8.362860234639653,9,110.9067276316162,163.90625,10.531226311860182,12.802587629069366,0.8125,0.5625,0.4375

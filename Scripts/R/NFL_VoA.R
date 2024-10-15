@@ -1968,7 +1968,122 @@ if (as.numeric(week) <= 6){
   VoA_Variables$STVoA_95PctRating <- Upper
   VoA_Variables$STVoA_05PctRating <- Lower
 } else{
+  ##### Week 6-End of Season Stan Models #####
+  ### VoA Offensive Rating Model
+  ### making list of data to declare what goes into stan model
+  Off_VoA_datalist <- list(N = nrow(VoA_Variables), off_ppg = VoA_Variables$off_ppg_adj, off_epa = VoA_Variables$off_epa, off_ypp = VoA_Variables$off_ypp, off_success_rt = VoA_Variables$off_success_rt, off_explosiveness = VoA_Variables$off_explosiveness, third_conv_rate = VoA_Variables$off_third_conv_rate, off_pts_per_opp = VoA_Variables$off_pts_per_opp, off_plays_pg = VoA_Variables$off_plays_pg, VoA_Output = (1/VoA_Variables$VoA_Output))
   
+  ### fitting stan model
+  set.seed(802)
+  options(mc.cores = parallel::detectCores())
+  Off_VoA_fit <- stan(file=here("Scripts","Stan", "Off_VoA.stan"),data = Off_VoA_datalist, chains = 3, iter = 40000, warmup = 15000, seed = 802)
+  Off_VoA_fit
+  
+  
+  ### Extracting Parameters
+  Off_VoA_pars <- rstan::extract(Off_VoA_fit, c("b0", "beta_off_epa", "beta_off_ypp", "beta_off_success_rt", "beta_off_explosiveness", "beta_third_conv_rate", "beta_off_pts_per_opp", "beta_off_plays_pg", "beta_VoA_Output", "sigma"))
+  
+  ### creating matrix to hold ratings
+  ### adding in process uncertainty
+  Off_VoA_Ratings <- matrix(NA, length(Off_VoA_pars$b0), nrow(VoA_Variables))
+  
+  ### creating ratings
+  set.seed(802)
+  for (p in 1:length(Off_VoA_pars$b0)){
+    for(t in 1:nrow(VoA_Variables)){
+      Off_VoA_Rating <- rnorm(1, mean = Off_VoA_pars$b0[p] + Off_VoA_pars$beta_off_epa[p] * VoA_Variables$off_epa[t] + Off_VoA_pars$beta_off_ypp[p] * VoA_Variables$off_ypp[t] + Off_VoA_pars$beta_off_success_rt[p] * VoA_Variables$off_success_rt[t] + Off_VoA_pars$beta_off_explosiveness[p] * VoA_Variables$off_explosiveness[t] + Off_VoA_pars$beta_third_conv_rate[p] * VoA_Variables$off_third_conv_rate[t] + Off_VoA_pars$beta_off_pts_per_opp[p] * VoA_Variables$off_pts_per_opp[t] + Off_VoA_pars$beta_off_plays_pg[p] * VoA_Variables$off_plays_pg[t] + Off_VoA_pars$beta_VoA_Output[p] * (1/(VoA_Variables$VoA_Output[t])), sd = Off_VoA_pars$sigma[p])
+      Off_VoA_Ratings[p,t] <- Off_VoA_Rating
+    }
+  }
+  
+  
+  ### generating median and mean and quantile ratings
+  MeanPred <- apply(Off_VoA_Ratings,2,mean)
+  MedianPred <- apply(Off_VoA_Ratings,2,median)
+  Upper <- apply(Off_VoA_Ratings,2,quantile, prob=.95)
+  Lower <- apply(Off_VoA_Ratings,2,quantile, prob=.05)
+  
+  VoA_Variables$OffVoA_MeanRating <- MeanPred
+  VoA_Variables$OffVoA_MedRating <- MedianPred
+  VoA_Variables$OffVoA_95PctRating <- Upper
+  VoA_Variables$OffVoA_05PctRating <- Lower
+  
+  
+  ### VoA Defensive Rating Model
+  ### making list of data to declare what goes into stan model
+  Def_VoA_datalist <- list(N = nrow(VoA_Variables), def_ppg = VoA_Variables$def_ppg_adj, def_epa = VoA_Variables$def_epa, def_ypp = VoA_Variables$def_ypp, def_success_rt = VoA_Variables$def_success_rt, def_explosiveness = VoA_Variables$def_explosiveness, def_third_conv_rate = VoA_Variables$def_third_conv_rate, def_pts_per_opp = VoA_Variables$def_pts_per_opp, def_plays_pg = VoA_Variables$def_plays_pg, VoA_Output = VoA_Variables$VoA_Output)
+  
+  ### fitting stan model
+  set.seed(802)
+  # options(mc.cores = parallel::detectCores())
+  Def_VoA_fit <- stan(file=here("Scripts","Stan", "Def_VoA.stan"),data = Def_VoA_datalist, chains = 3, iter = 40000, warmup = 15000, seed = 802)
+  Def_VoA_fit
+  
+  
+  ### Extracting Parameters
+  Def_VoA_pars <- rstan::extract(Def_VoA_fit, c("b0", "beta_def_epa", "beta_def_ypp", "beta_def_success_rt", "beta_def_explosiveness", "beta_def_third_conv_rate", "beta_def_pts_per_opp", "beta_def_plays_pg", "beta_VoA_Output", "sigma"))
+  
+  ### creating matrix to hold ratings
+  ### adding in process uncertainty
+  Def_VoA_Ratings <- matrix(NA, length(Def_VoA_pars$b0), nrow(VoA_Variables))
+  
+  ### creating ratings
+  set.seed(802)
+  for (p in 1:length(Def_VoA_pars$b0)){
+    for(t in 1:nrow(VoA_Variables)){
+      Def_VoA_Rating <- rnorm(1, mean = Def_VoA_pars$b0[p] + Def_VoA_pars$beta_def_epa[p] * VoA_Variables$def_epa[t] + Def_VoA_pars$beta_def_ypp[p] * VoA_Variables$def_ypp[t] + Def_VoA_pars$beta_def_success_rt[p] * VoA_Variables$def_success_rt[t] + Def_VoA_pars$beta_def_explosiveness[p] * VoA_Variables$def_explosiveness[t] + Def_VoA_pars$beta_def_third_conv_rate[p] * VoA_Variables$def_third_conv_rate[t] + Def_VoA_pars$beta_def_pts_per_opp[p] * VoA_Variables$def_pts_per_opp[t] + Def_VoA_pars$beta_def_plays_pg[p] * VoA_Variables$def_plays_pg[t] + Def_VoA_pars$beta_VoA_Output[p] * VoA_Variables$VoA_Output[t], sd = Def_VoA_pars$sigma[p])
+      Def_VoA_Ratings[p,t] <- Def_VoA_Rating
+    }
+  }
+  
+  
+  ### generating median and mean and quantile ratings
+  MeanPred <- apply(Def_VoA_Ratings,2,mean)
+  MedianPred <- apply(Def_VoA_Ratings,2,median)
+  Upper <- apply(Def_VoA_Ratings,2,quantile, prob=.95)
+  Lower <- apply(Def_VoA_Ratings,2,quantile, prob=.05)
+  
+  VoA_Variables$DefVoA_MeanRating <- MeanPred
+  VoA_Variables$DefVoA_MedRating <- MedianPred
+  VoA_Variables$DefVoA_95PctRating <- Upper
+  VoA_Variables$DefVoA_05PctRating <- Lower
+  
+  
+  ### Special Teams VoA
+  ### making list of data to declare what goes into Stan model
+  ST_VoA_datalist <- list(N = nrow(VoA_Variables), net_st_ppg = VoA_Variables$net_st_ppg, net_kick_return_avg = VoA_Variables$net_kick_return_yds, net_punt_return_avg = VoA_Variables$net_punt_return_yds, net_kick_return_TDs = VoA_Variables$net_kick_return_TDs, net_punt_return_TDs = VoA_Variables$net_punt_return_TDs, net_fg_rate = VoA_Variables$net_fg_rate, net_fg_made_pg = VoA_Variables$net_fg_made_pg, net_xp_rate = VoA_Variables$net_xp_rate, net_xpts_pg = VoA_Variables$net_xp_made_pg)
+  
+  ### fitting special teams Stan model
+  set.seed(802)
+  options(mc.cores = parallel::detectCores())
+  ST_VoA_fit <- stan(file = here("Scripts", "Stan", "ST_VoA.stan"), data = ST_VoA_datalist, chains = 3, iter = 25000, warmup = 10000, seed = 802)
+  ST_VoA_fit
+  
+  ### extracting parameters
+  ST_VoA_pars <- rstan::extract(ST_VoA_fit, c("b0", "beta_net_kick_return_avg", "beta_net_punt_return_avg", "beta_net_kick_return_TDs", "beta_net_punt_return_TDs", "beta_net_fg_rate", "beta_net_fg_made_pg", "beta_net_xp_rate", "beta_net_xpts_pg", "sigma"))
+  
+  ### creating matrix to store special teams VoA_Ratings
+  ST_VoA_Ratings <- matrix(NA, nrow = length(ST_VoA_pars$b0), ncol = nrow(VoA_Variables))
+  
+  ### creating special teams VoA_Ratings
+  set.seed(802)
+  for (p in 1:length(ST_VoA_pars$b0)){
+    for (t in 1:nrow(VoA_Variables)){
+      ST_VoA_Rating <- rnorm(1, mean = ST_VoA_pars$b0[p] + ST_VoA_pars$beta_net_kick_return_avg[p] * VoA_Variables$net_kick_return_yds[t] + ST_VoA_pars$beta_net_punt_return_avg[p] * VoA_Variables$net_punt_return_yds[t] + ST_VoA_pars$beta_net_kick_return_TDs[p] * VoA_Variables$net_kick_return_TDs[t] + ST_VoA_pars$beta_net_punt_return_TDs[p] * VoA_Variables$net_punt_return_TDs[t] + ST_VoA_pars$beta_net_fg_rate[p] * VoA_Variables$net_fg_rate[t] + ST_VoA_pars$beta_net_fg_made_pg[p] * VoA_Variables$net_fg_made_pg[t] + ST_VoA_pars$beta_net_xp_rate[p] * VoA_Variables$net_xp_rate[t] + ST_VoA_pars$beta_net_xpts_pg[p] * VoA_Variables$net_xp_made_pg[t], sd = ST_VoA_pars$sigma[p])
+      ST_VoA_Ratings[p,t] <- ST_VoA_Rating
+    }
+  }
+  
+  ### generating median and mean and quantile ratings
+  MeanPred <- apply(ST_VoA_Ratings,2,mean)
+  MedianPred <- apply(ST_VoA_Ratings,2,median)
+  Upper <- apply(ST_VoA_Ratings,2,quantile, prob=.95)
+  Lower <- apply(ST_VoA_Ratings,2,quantile, prob=.05)
+  
+  VoA_Variables$STVoA_MeanRating <- MeanPred
+  VoA_Variables$STVoA_MedRating <- MedianPred
+  VoA_Variables$STVoA_95PctRating <- Upper
+  VoA_Variables$STVoA_05PctRating <- Lower
 }
 
 
