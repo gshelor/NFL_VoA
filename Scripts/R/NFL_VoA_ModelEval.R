@@ -30,6 +30,9 @@ LastWeekGames <- LastWeekGames |>
          straight_up_win = case_when(result >= 0 & proj_margin >= 0 ~ 1,
                                      result <= 0 & proj_margin <= 0 ~ 1,
                                      TRUE ~ 0),
+         vegas_straight_up_win = case_when(result >= 0 & spread_line >= 0 ~ 1,
+                                     result <= 0 & spread_line <= 0 ~ 1,
+                                     TRUE ~ 0),
          ATS_win = case_when(result > spread_line & proj_margin > spread_line ~ 1,
                              result < spread_line & proj_margin < spread_line ~ 1,
                              TRUE ~ 0),
@@ -44,6 +47,7 @@ WeekMeanAccuracyMetrics <- data.frame(week = as.numeric(nfl_week),
                                   RMSE = rmse(LastWeekGames$result, LastWeekGames$proj_margin),
                                   vegas_RMSE = rmse(LastWeekGames$result, LastWeekGames$spread_line),
                                   straight_up_win_pct = sum(LastWeekGames$straight_up_win) / nrow(LastWeekGames),
+                                  vegas_straight_up_win_pct = sum(LastWeekGames$vegas_straight_up_win) / nrow(LastWeekGames),
                                   ATS_win_pct = sum(LastWeekGames$ATS_win) / nrow(LastWeekGames),
                                   AE_ATS_win_pct = sum(LastWeekGames$AE_ATS_win) / nrow(LastWeekGames))
 
@@ -82,6 +86,7 @@ if (as.numeric(nfl_week) >= 6){
               RMSE = rmse(result, proj_margin),
               vegas_RMSE = rmse(result, spread_line),
               straight_up_win_pct = sum(straight_up_win) / nrow(CompletedGames),
+              vegas_straight_up_win_pct = sum(vegas_straight_up_win) / nrow(CompletedGames),
               ATS_win_pct = sum(ATS_win) / nrow(CompletedGames),
               AE_ATS_win_pct = sum(AE_ATS_win) / nrow(CompletedGames))
   
