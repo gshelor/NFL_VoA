@@ -9,7 +9,7 @@ p_load(tidyverse, gt, nflfastR, nflverse, here, gtExtras, rstan, ggpubr, webshot
 
 ### Creating week and season strings
 season <- readline(prompt = "What season is it? ")
-week <- readline(prompt = "What week is it? ")
+week <- readline(prompt = "What week just occurred? ")
 
 
 ##### setting strings for table titles, file pathways, unintelligible charts #####
@@ -395,8 +395,8 @@ if (as.numeric(week) == 0){
                               xp_rate_allowed = -999,
                               xp_made_pg_allowed = -999,
                               net_st_ppg = -999)
-} else if (as.numeric(week) <= 7){
-  ##### Weeks 3-7 Data Pull #####
+} else if (as.numeric(week) <= 10){
+  ##### Weeks 3-10 Data Pull #####
   ### reading in PY data saved in week 0
   PY_VoAVars <- read_csv(here("Data", paste0("VoA", season), "PYData", "PYData.csv")) |>
     select(team, off_ypp_PY1, off_epa_PY1, off_success_rt_PY1, off_explosiveness_PY1, off_third_conv_rate_PY1, off_fourth_conv_rate_PY1, off_pass_ypa_PY1, off_pass_ypc_PY1, off_rush_ypa_PY1, off_pts_per_opp_PY1, off_turnovers_PY1, off_plays_pg_PY1, off_ppg_PY1, def_ypp_PY1, def_epa_PY1, def_success_rt_PY1, def_explosiveness_PY1, def_third_conv_rate_PY1, def_fourth_conv_rate_PY1, def_pass_ypa_PY1, def_pass_ypc_PY1, def_rush_ypa_PY1, def_pts_per_opp_PY1, def_turnovers_PY1, def_plays_pg_PY1, def_ppg_PY1, st_net_epa_PY1, st_punt_return_yds_PY1, st_kick_return_yds_PY1, st_kick_return_TDs_PY1, st_punt_return_TDs_PY1, fg_rate_PY1, fg_made_pg_PY1, xp_rate_PY1, xp_made_pg_PY1, st_punt_return_yds_allowed_PY1, st_kick_return_yds_allowed_PY1, st_kick_return_TDs_allowed_PY1, st_punt_return_TDs_allowed_PY1, fg_rate_allowed_PY1, fg_made_pg_allowed_PY1, xp_rate_allowed_PY1, xp_made_pg_allowed_PY1, net_st_ppg_PY1)
@@ -489,7 +489,7 @@ if (as.numeric(week) == 0){
                               xp_made_pg_allowed = -999,
                               net_st_ppg = -999)
 } else{
-  ##### Week 8 - End of Season Data Pull #####
+  ##### Week 11 - End of Season Data Pull #####
   ### reading in PBP data
   PBP <- nflfastR::load_pbp(as.numeric(season)) |>
     filter(play_type_nfl != "GAME_START" & play_type_nfl != "TIMEOUT" & play_type_nfl != "END_QUARTER" & play_type_nfl != "END_GAME")
@@ -2393,16 +2393,16 @@ if (as.numeric(week) == 0){
   rm(list = ls(pattern = "^temp_"))
 }
 
-##### Break point to figure out where Rank columns start (commented out right now) #####
-# if (as.numeric(week) %in% c(0,1,3,6)){
-#   break
-# } else{
-#   print("no new reason to figure out where rank columns start")
-# }
+##### Break point to figure out where Rank columns start #####
+if (as.numeric(week) %in% c(0,1,3,11)){
+  break
+} else{
+  print("no new reason to figure out where rank columns start")
+}
 
 ##### Ranking Variables #####
-if (as.numeric(week) <= 7) {
-  ##### Weeks 0-7 Variable Ranks #####
+if (as.numeric(week) <= 10) {
+  ##### Weeks 0-10 Variable Ranks #####
   VoA_Variables <- VoA_Variables |>
     mutate(Rank_weighted_off_ypp = dense_rank(desc(weighted_off_ypp)),
            Rank_weighted_off_epa = dense_rank(desc(weighted_off_epa)),
@@ -2441,7 +2441,7 @@ if (as.numeric(week) <= 7) {
            Rank_weighted_net_xp_made_pg = dense_rank(desc(weighted_net_xp_made_pg)),
            Rank_weighted_net_st_ppg = dense_rank(desc(weighted_net_st_ppg)))
 } else {
-  ##### Week 8-End of Season Variable Ranks #####
+  ##### Week 11-End of Season Variable Ranks #####
   ### Ranking variables when only current season data is being used
   VoA_Variables <- VoA_Variables |>
     mutate(Rank_off_ypp = dense_rank(desc(off_ypp)),
@@ -2491,7 +2491,7 @@ if (as.numeric(week) == 0){
 } else if (as.numeric(week) <= 2){
   VoA_Variables <- VoA_Variables |>
     mutate(VoA_Output = (rowMeans(VoA_Variables[,176:ncol(VoA_Variables)])))
-} else if (as.numeric(week) <= 5){
+} else if (as.numeric(week) <= 10){
   VoA_Variables <- VoA_Variables |>
     mutate(VoA_Output = (rowMeans(VoA_Variables[,132:ncol(VoA_Variables)])))
 } else{
@@ -2500,8 +2500,8 @@ if (as.numeric(week) == 0){
 }
 
 ##### Using Stan Model to create unit/team strength ratings #####
-if (as.numeric(week) <= 7){
-  ##### Week 0-7 Stan Models #####
+if (as.numeric(week) <= 10){
+  ##### Week 0-10 Stan Models #####
   ### VoA Offensive Rating Model
   ### making list of data to declare what goes into stan model
   Off_VoA_datalist <- list(N = nrow(VoA_Variables), off_ppg = VoA_Variables$off_ppg_adj, off_epa = VoA_Variables$weighted_off_epa, off_ypp = VoA_Variables$weighted_off_ypp, off_success_rt = VoA_Variables$weighted_off_success_rt, off_explosiveness = VoA_Variables$weighted_off_explosiveness, third_conv_rate = VoA_Variables$weighted_off_third_conv_rate, off_pts_per_opp = VoA_Variables$weighted_off_pts_per_opp, off_plays_pg = VoA_Variables$weighted_off_plays_pg, VoA_Output = (1/VoA_Variables$VoA_Output))
@@ -2618,7 +2618,7 @@ if (as.numeric(week) <= 7){
   VoA_Variables$STVoA_95PctRating <- Upper
   VoA_Variables$STVoA_05PctRating <- Lower
 } else{
-  ##### Week 8-End of Season Stan Models #####
+  ##### Week 11-End of Season Stan Models #####
   ### VoA Offensive Rating Model
   ### making list of data to declare what goes into stan model
   Off_VoA_datalist <- list(N = nrow(VoA_Variables), off_ppg = VoA_Variables$off_ppg_adj, off_epa = VoA_Variables$off_epa, off_ypp = VoA_Variables$off_ypp, off_success_rt = VoA_Variables$off_success_rt, off_explosiveness = VoA_Variables$off_explosiveness, third_conv_rate = VoA_Variables$off_third_conv_rate, off_pts_per_opp = VoA_Variables$off_pts_per_opp, off_plays_pg = VoA_Variables$off_plays_pg, VoA_Output = (1/VoA_Variables$VoA_Output))
