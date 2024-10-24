@@ -209,7 +209,7 @@ if (as.numeric(upcoming) == 1){
   ## adding title and subtitle
   NFL_ProjWins_gt <- NFL_ProjWins |>
     gt() |> # use 'gt' to make an awesome table...
-    gt_theme_espn() |>
+    gt_theme_538() |>
     tab_header(
       title = paste(season, "NFL Median Win Total Projections"), # ...with this title
       subtitle = "The Unquestionably Puzzling Yet Impeccibly Perceptive Vortex of Projection")  |>  # and this subtitle
@@ -266,7 +266,7 @@ upcoming_games_df <- upcoming_games_df |>
 
 upcoming_games_gt <- upcoming_games_df |>
   gt() |> # use 'gt' to make an awesome table...
-  gt_theme_espn() |>
+  gt_theme_538() |>
   tab_header(
     title = paste(season, nfl_text, week_text, upcoming, "Vortex of Accuracy Game Projections"), # ...with this title
     subtitle = "The Unquestionably Puzzling Yet Impeccibly Perceptive Vortex of Projection")  |>  # and this subtitle
@@ -326,7 +326,7 @@ upcoming_games_projmargin <- upcoming_games_df |>
 
 upcoming_games_projmargin_gt <- upcoming_games_projmargin |>
   gt() |> # use 'gt' to make an awesome table...
-  gt_theme_espn() |>
+  gt_theme_538() |>
   tab_header(
     title = paste(season, nfl_text, week_text, upcoming, "Vortex of Accuracy Game Projections"), # ...with this title
     subtitle = "The Unquestionably Puzzling Yet Impeccibly Perceptive Vortex of Projection")  |>  # and this subtitle
