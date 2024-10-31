@@ -288,7 +288,7 @@ upcoming_games_gt <- upcoming_games_df |>
   ) |>
   fmt_number( # Another numeric column
     columns = c(win_prob),
-    decimals = 2
+    decimals = 3
   ) |>
   data_color( # Update cell colors, testing different color palettes
     columns = c(proj_margin_abs), # ...for dose column
@@ -348,7 +348,7 @@ upcoming_games_projmargin_gt <- upcoming_games_projmargin |>
   ) |>
   fmt_number( # Another numeric column
     columns = c(win_prob),
-    decimals = 2
+    decimals = 3
   ) |>
   data_color( # Update cell colors, testing different color palettes
     columns = c(proj_margin_abs), # ...for dose column

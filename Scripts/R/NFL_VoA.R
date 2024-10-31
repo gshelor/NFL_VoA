@@ -2589,7 +2589,7 @@ if (as.numeric(week) <= 10){
   ### fitting special teams Stan model
   set.seed(802)
   options(mc.cores = parallel::detectCores())
-  ST_VoA_fit <- stan(file = here("Scripts", "Stan", "ST_VoA.stan"), data = ST_VoA_datalist, chains = 3, iter = 25000, warmup = 10000, seed = 802)
+  ST_VoA_fit <- stan(file = here("Scripts", "Stan", "ST_VoA.stan"), data = ST_VoA_datalist, chains = 3, iter = 30000, warmup = 10000, seed = 802)
   ST_VoA_fit
   
   ### extracting parameters
@@ -2987,20 +2987,37 @@ if (as.numeric(week) == 3) {
   Ratings_Rks <- read_csv(here("Data", paste0("VoA", season), "TrackingChartCSVs", paste(season, week_text, "0_15Ratings_Rks.csv", sep = ""))) |>
     select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
   Ratings_Rks <- rbind(Ratings_Rks, FinalTable)
-  ## no need to write out a new tracking csv since "week 16" is the postseason VoA
-  ## write_csv(Ratings_Rks, paste(data_dir, "/TrackingChartCSVs", "/", season, week_text, "0_16Ratings_Rks.csv", sep = ""))
+  write_csv(Ratings_Rks, paste(data_dir, "/TrackingChartCSVs", "/", season, week_text, "0_16Ratings_Rks.csv", sep = ""))
 } else if (as.numeric(week) == 17){
-  
+  Ratings_Rks <- read_csv(here("Data", paste0("VoA", season), "TrackingChartCSVs", paste(season, week_text, "0_16Ratings_Rks.csv", sep = ""))) |>
+    select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
+  Ratings_Rks <- rbind(Ratings_Rks, FinalTable)
+  write_csv(Ratings_Rks, paste(data_dir, "/TrackingChartCSVs", "/", season, week_text, "0_17Ratings_Rks.csv", sep = ""))
 } else if (as.numeric(week) == 18){
-  
+  Ratings_Rks <- read_csv(here("Data", paste0("VoA", season), "TrackingChartCSVs", paste(season, week_text, "0_17Ratings_Rks.csv", sep = ""))) |>
+    select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
+  Ratings_Rks <- rbind(Ratings_Rks, FinalTable)
+  write_csv(Ratings_Rks, paste(data_dir, "/TrackingChartCSVs", "/", season, week_text, "0_18Ratings_Rks.csv", sep = ""))
 } else if (as.numeric(week) == 19){
-  
+  Ratings_Rks <- read_csv(here("Data", paste0("VoA", season), "TrackingChartCSVs", paste(season, week_text, "0_18Ratings_Rks.csv", sep = ""))) |>
+    select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
+  Ratings_Rks <- rbind(Ratings_Rks, FinalTable)
+  write_csv(Ratings_Rks, paste(data_dir, "/TrackingChartCSVs", "/", season, week_text, "0_19Ratings_Rks.csv", sep = ""))
 } else if (as.numeric(week) == 20){
-  
+  Ratings_Rks <- read_csv(here("Data", paste0("VoA", season), "TrackingChartCSVs", paste(season, week_text, "0_19Ratings_Rks.csv", sep = ""))) |>
+    select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
+  Ratings_Rks <- rbind(Ratings_Rks, FinalTable)
+  write_csv(Ratings_Rks, paste(data_dir, "/TrackingChartCSVs", "/", season, week_text, "0_20Ratings_Rks.csv", sep = ""))
 } else if (as.numeric(week) == 21){
-  
+  Ratings_Rks <- read_csv(here("Data", paste0("VoA", season), "TrackingChartCSVs", paste(season, week_text, "0_20Ratings_Rks.csv", sep = ""))) |>
+    select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
+  Ratings_Rks <- rbind(Ratings_Rks, FinalTable)
+  write_csv(Ratings_Rks, paste(data_dir, "/TrackingChartCSVs", "/", season, week_text, "0_21Ratings_Rks.csv", sep = ""))
 } else if (as.numeric(week) == 22){
-  
+  Ratings_Rks <- read_csv(here("Data", paste0("VoA", season), "TrackingChartCSVs", paste(season, week_text, "0_21Ratings_Rks.csv", sep = ""))) |>
+    select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
+  Ratings_Rks <- rbind(Ratings_Rks, FinalTable)
+  write_csv(Ratings_Rks, paste(data_dir, "/TrackingChartCSVs", "/", season, week_text, "0_22Ratings_Rks.csv", sep = ""))
 } else {
   print("No charts until Week 3! or maybe there's another week before the super bowl")
 }
