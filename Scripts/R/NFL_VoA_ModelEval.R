@@ -40,6 +40,7 @@ LastWeekGames <- LastWeekGames |>
                                 TRUE ~ 0))
 
 WeekMeanAccuracyMetrics <- data.frame(week = as.numeric(nfl_week),
+                                      games = nrow(LastWeekGames),
                                   mean_ae = mean(LastWeekGames$abs_error),
                                   mean_vegas_ae = mean(LastWeekGames$vegas_abs_error),
                                   mean_se = mean(LastWeekGames$sqd_error),
@@ -79,7 +80,8 @@ if (as.numeric(nfl_week) == 1){
 if (as.numeric(nfl_week) >= 6){
   SeasonMetrics <- CompletedGames |>
     group_by(season) |>
-    summarize(mean_ae = mean(abs_error),
+    summarize(games = nrow(CompletedGames),
+              mean_ae = mean(abs_error),
               mean_vegas_ae = mean(vegas_abs_error),
               mean_se = mean(sqd_error),
               mean_vegas_se = mean(vegas_sqd_error),

@@ -15,6 +15,19 @@ week_text <- "Week"
 gameprojections_png <- "GameProjections.png"
 gameprojections_filename <- paste(season, week_text, upcoming, gameprojections_png, sep = "")
 
+### setting gt title based on whether it's a playoff week or not
+if (as.numeric(upcoming) == 19){
+  gt_title <- paste(season, nfl_text, "Vortex of Accuracy Wildcard Round Game Projections")
+} else if (as.numeric(upcoming) == 20){
+  gt_title <- paste(season, nfl_text, "Vortex of Accuracy Divisional Round Game Projections")
+} else if (as.numeric(upcoming) == 21){
+  gt_title <- paste(season, nfl_text, "Vortex of Accuracy Conference Championship Game Projections")
+} else if (as.numeric(upcoming) == 22){
+  gt_title <- paste(season, nfl_text, "Vortex of Accuracy Super Bowl Projection")
+} else{
+  gt_title <- paste(season, nfl_text, week_text, upcoming, "Vortex of Accuracy Game Projections")
+}
+
 ##### reading in most recent VoA overall ratings #####
 PrevWeek_VoA <- read_csv(here("Data", paste0("VoA", season), paste0(season, week_text, as.character(as.numeric(upcoming) - 1), "_VoA.csv"))) |>
   select(team, VoA_Rating_Ovr)
@@ -268,7 +281,7 @@ upcoming_games_gt <- upcoming_games_df |>
   gt() |> # use 'gt' to make an awesome table...
   gt_theme_538() |>
   tab_header(
-    title = paste(season, nfl_text, week_text, upcoming, "Vortex of Accuracy Game Projections"), # ...with this title
+    title = gt_title, # ...with this title
     subtitle = "The Unquestionably Puzzling Yet Impeccibly Perceptive Vortex of Projection")  |>  # and this subtitle
   fmt_number( # A column (numeric data)
     columns = c(proj_margin_abs), # What column variable? FinalVoATop25$VoA_Rating
@@ -328,7 +341,7 @@ upcoming_games_projmargin_gt <- upcoming_games_projmargin |>
   gt() |> # use 'gt' to make an awesome table...
   gt_theme_538() |>
   tab_header(
-    title = paste(season, nfl_text, week_text, upcoming, "Vortex of Accuracy Game Projections"), # ...with this title
+    title = gt_title, # ...with this title
     subtitle = "The Unquestionably Puzzling Yet Impeccibly Perceptive Vortex of Projection")  |>  # and this subtitle
   fmt_number( # A column (numeric data)
     columns = c(proj_margin_abs), # What column variable? FinalVoATop25$VoA_Rating

@@ -36,6 +36,20 @@ Output_filename <- paste(season, week_text, week, nfl_text, Rating_text, sep = "
 Ranking_filename <- paste(season, week_text, week, nfl_text, Ranking_text, sep = "")
 hist_filename <- paste(season, week_text, week, "_", nfl_text, Histogram_text, sep = "")
 Output_Rating_Plot_filename <- paste(season, week_text, week, "_", Output_Rating_Plot_png, sep = "")
+### setting gt title based on whether it's after a playoff week or not
+if (as.numeric(week) == 19){
+  gt_title <- paste(season, nfl_text, "Wildcard Round", VoA_text)
+} else if (as.numeric(week) == 20){
+  gt_title <- paste(season, nfl_text, "Divisional Round", VoA_text)
+} else if (as.numeric(week) == 21){
+  gt_title <- paste(season, nfl_text, "Conference Championship", VoA_text)
+} else if (as.numeric(week) == 22){
+  gt_title <- paste(season, nfl_text, "Super Bowl", VoA_text)
+} else if (as.numeric(week) == 0){
+  gt_title <- paste(season, preseason_text, nfl_text, VoA_text)
+} else{
+  gt_title <- paste(season, week_text, week, nfl_text, VoA_text)
+}
 ### creating string for csv spreadsheet pathway
 file_pathway <- paste(data_dir, "/", season, week_text, week,"_", VoAString, sep = "")
 
@@ -2394,11 +2408,11 @@ if (as.numeric(week) == 0){
 }
 
 ##### Break point to figure out where Rank columns start #####
-if (as.numeric(week) %in% c(0,1,3,11)){
-  break
-} else{
-  print("no new reason to figure out where rank columns start")
-}
+# if (as.numeric(week) %in% c(0,1,3,11)){
+#   break
+# } else{
+#   print("no new reason to figure out where rank columns start")
+# }
 
 ##### Ranking Variables #####
 if (as.numeric(week) <= 10) {
@@ -2496,7 +2510,7 @@ if (as.numeric(week) == 0){
     mutate(VoA_Output = (rowMeans(VoA_Variables[,132:ncol(VoA_Variables)])))
 } else{
   VoA_Variables <- VoA_Variables |>
-    mutate(VoA_Output = (rowMeans(VoA_Variables[,52:ncol(VoA_Variables)])))
+    mutate(VoA_Output = (rowMeans(VoA_Variables[,60:ncol(VoA_Variables)])))
 }
 
 ##### Using Stan Model to create unit/team strength ratings #####
@@ -2761,7 +2775,7 @@ if (as.numeric(week) == 0) {
     gt() |> # use 'gt' to make an awesome table...
     gt_theme_538() |>
     tab_header(
-      title = paste(season, preseason_text, nfl_text, VoA_text), # ...with this title
+      title = gt_title, # ...with this title
       subtitle = "Supremely Excellent Yet Salaciously Godlike And Infallibly Magnificent NFL Vortex of Accuracy")  |>  # and this subtitle
     ##tab_style(style = cell_fill("bisque"),
     ##        locations = cells_body()) |>  # add fill color to table
@@ -2831,7 +2845,7 @@ if (as.numeric(week) == 0) {
     gt() |> # use 'gt' to make an awesome table...
     gt_theme_538() |>
     tab_header(
-      title = paste(season, week_text, week, nfl_text, VoA_text), # ...with this title
+      title = gt_title, # ...with this title
       subtitle = "Supremely Excellent Yet Salaciously Godlike And Infallibly Magnificent Vortex of Accuracy")  |>  # and this subtitle
     ##tab_style(style = cell_fill("bisque"),
     ##        locations = cells_body()) |>  # add fill color to table
