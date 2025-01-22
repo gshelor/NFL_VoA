@@ -2398,8 +2398,8 @@ if (as.numeric(week) == 0){
            off_ppg_adj = case_when(off_ppg > quantile(off_ppg, 0.8) ~ off_ppg + (off_ppg_aboveavg / 2),
                                    off_ppg > mean(off_ppg) ~ off_ppg + (off_ppg_aboveavg / 5),
                                    TRUE ~ off_ppg),
-           def_ppg_adj = case_when(def_ppg > quantile(def_ppg, 0.8) ~ def_ppg + (def_ppg_aboveavg / 2),
-                                   def_ppg > mean(def_ppg) ~ def_ppg + (def_ppg_aboveavg / 5),
+           def_ppg_adj = case_when(def_ppg > quantile(def_epa, 0.8) ~ def_ppg + (def_ppg_aboveavg / 2),
+                                   def_ppg > mean(def_epa) ~ def_ppg + (def_ppg_aboveavg / 5),
                                    TRUE ~ def_ppg))
   
   
