@@ -96,3 +96,14 @@ if (as.numeric(nfl_week) >= 6){
 } else{
   print("no season metrics calculated yet")
 }
+
+
+
+ggplot(CompletedWeeks, mapping = aes(x = week)) +
+  theme_bw() +
+  geom_line(mapping = aes(y = RMSE)) +
+  geom_line(mapping = aes(y = vegas_RMSE), colour = 'blue') +
+  ggtitle(label = "RMSE and Vegas's RMSE (in blue) by Week")
+
+plot(CompletedWeeks$week, CompletedWeeks$RMSE, type = "l")
+plot(CompletedWeeks$vegas_RMSE, type = "l", add = T)
