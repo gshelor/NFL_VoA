@@ -5,7 +5,7 @@
 ##### loading packages #####
 StartTime <- Sys.time()
 library(pacman)
-p_load(tidyverse, gt, nflfastR, nflverse, here, gtExtras, rstan, ggpubr, webshot2, parallel, RColorBrewer)
+p_load(tidyverse, gt, nflfastR, nflverse, here, gtExtras, rstan, ggpubr, webshot2, parallel, RColorBrewer, fastDummies, glmnet)
 
 ### Creating week and season strings
 season <- readline(prompt = "What season is it? ")
@@ -592,6 +592,11 @@ if (as.numeric(week) == 0){
                               xp_rate_allowed = -999,
                               xp_made_pg_allowed = -999,
                               net_st_ppg = -999)
+  
+  ### reading in completed games for error calculation
+  CompletedGames <- load_schedules(as.numeric(season)) |>
+    select(game_id, season, game_type, week, gameday, weekday, gametime, away_team, away_score, home_team, home_score, location, result, total, overtime, spread_line, total_line, div_game, temp, wind, stadium) |>
+    filter(week <= as.numeric(week))
 }
 
 
@@ -1268,7 +1273,7 @@ if (as.numeric(week) == 0){
     VoA_Variables$def_turnovers[x] = nrow(temp_def_turnovers) / length(unique(temp_defplays$week))
     VoA_Variables$def_plays_pg[x] = nrow(temp_defplays) / length(unique(temp_defplays$week))
     VoA_Variables$def_ppg[x] = ((nrow(temp_def_TDs) * 6) + (nrow(temp_def_2pts) * 2)) / length(unique(temp_def_rushplays$week))
-    ## PY1 Special teams stats now
+    ## Current Special teams stats now
     VoA_Variables$st_net_epa[x] = mean(temp_off_st_plays$epa) - mean(temp_def_st_plays$epa)
     VoA_Variables$st_punt_return_yds[x] = mean(temp_returned_punts$return_yards)
     VoA_Variables$st_kick_return_yds[x] = mean(temp_returned_kicks$return_yards)
@@ -1502,7 +1507,7 @@ if (as.numeric(week) == 0){
     VoA_Variables$def_turnovers[x] = nrow(temp_def_turnovers) / length(unique(temp_defplays$week))
     VoA_Variables$def_plays_pg[x] = nrow(temp_defplays) / length(unique(temp_defplays$week))
     VoA_Variables$def_ppg[x] = ((nrow(temp_def_TDs) * 6) + (nrow(temp_def_2pts) * 2)) / length(unique(temp_def_rushplays$week))
-    ## PY1 Special teams stats now
+    ## Current Special teams stats now
     VoA_Variables$st_net_epa[x] = mean(temp_off_st_plays$epa) - mean(temp_def_st_plays$epa)
     VoA_Variables$st_punt_return_yds[x] = mean(temp_returned_punts$return_yards)
     VoA_Variables$st_kick_return_yds[x] = mean(temp_returned_kicks$return_yards)
@@ -1718,7 +1723,7 @@ if (as.numeric(week) == 0){
     VoA_Variables$def_turnovers[x] = nrow(temp_def_turnovers) / length(unique(temp_defplays$week))
     VoA_Variables$def_plays_pg[x] = nrow(temp_defplays) / length(unique(temp_defplays$week))
     VoA_Variables$def_ppg[x] = ((nrow(temp_def_TDs) * 6) + (nrow(temp_def_2pts) * 2)) / length(unique(temp_def_rushplays$week))
-    ## PY1 Special teams stats now
+    ## Current Special teams stats now
     VoA_Variables$st_net_epa[x] = mean(temp_off_st_plays$epa) - mean(temp_def_st_plays$epa)
     VoA_Variables$st_punt_return_yds[x] = mean(temp_returned_punts$return_yards)
     VoA_Variables$st_kick_return_yds[x] = mean(temp_returned_kicks$return_yards)
@@ -1933,7 +1938,7 @@ if (as.numeric(week) == 0){
     VoA_Variables$def_turnovers[x] = nrow(temp_def_turnovers) / length(unique(temp_defplays$week))
     VoA_Variables$def_plays_pg[x] = nrow(temp_defplays) / length(unique(temp_defplays$week))
     VoA_Variables$def_ppg[x] = ((nrow(temp_def_TDs) * 6) + (nrow(temp_def_2pts) * 2)) / length(unique(temp_def_rushplays$week))
-    ## PY1 Special teams stats now
+    ## Current Special teams stats now
     VoA_Variables$st_net_epa[x] = mean(temp_off_st_plays$epa) - mean(temp_def_st_plays$epa)
     VoA_Variables$st_punt_return_yds[x] = mean(temp_returned_punts$return_yards)
     VoA_Variables$st_kick_return_yds[x] = mean(temp_returned_kicks$return_yards)
@@ -2148,7 +2153,7 @@ if (as.numeric(week) == 0){
     VoA_Variables$def_turnovers[x] = nrow(temp_def_turnovers) / length(unique(temp_defplays$week))
     VoA_Variables$def_plays_pg[x] = nrow(temp_defplays) / length(unique(temp_defplays$week))
     VoA_Variables$def_ppg[x] = ((nrow(temp_def_TDs) * 6) + (nrow(temp_def_2pts) * 2)) / length(unique(temp_def_rushplays$week))
-    ## PY1 Special teams stats now
+    ## Current Special teams stats now
     VoA_Variables$st_net_epa[x] = mean(temp_off_st_plays$epa) - mean(temp_def_st_plays$epa)
     VoA_Variables$st_punt_return_yds[x] = mean(temp_returned_punts$return_yards)
     VoA_Variables$st_kick_return_yds[x] = mean(temp_returned_kicks$return_yards)
@@ -2363,7 +2368,7 @@ if (as.numeric(week) == 0){
     VoA_Variables$def_turnovers[x] = nrow(temp_def_turnovers) / length(unique(temp_defplays))
     VoA_Variables$def_plays_pg[x] = nrow(temp_defplays) / length(unique(temp_defplays$week))
     VoA_Variables$def_ppg[x] = ((nrow(temp_def_TDs) * 6) + (nrow(temp_def_2pts) * 2)) / length(unique(temp_def_rushplays$week))
-    ## PY1 Special teams stats now
+    ## Current Special teams stats now
     VoA_Variables$st_net_epa[x] = mean(temp_off_st_plays$epa) - mean(temp_def_st_plays$epa)
     VoA_Variables$st_punt_return_yds[x] = mean(temp_returned_punts$return_yards)
     VoA_Variables$st_kick_return_yds[x] = mean(temp_returned_kicks$return_yards)
@@ -2402,17 +2407,323 @@ if (as.numeric(week) == 0){
                                    def_ppg > mean(def_epa) ~ def_ppg + (def_ppg_aboveavg / 5),
                                    TRUE ~ def_ppg))
   
+  ### Creating opponent-adjusted stats
+  ### EPA/play
+  ### subsetting columns for epa/play adjustment
+  PBP_EPAAdjustment <- rushpass_plays |>
+    select(game_id, home_team, posteam, defteam, epa, location) |>
+    mutate(hfa = as.factor(case_when(location == "Neutral" ~ 0,
+                                     ### home team on offense
+                                     posteam == home_team ~ 1,
+                                     ### home team on defense
+                                     TRUE ~ -1))) |>
+    drop_na()
+  
+  ### creating dummy columns to use in ridge regression
+  EPAAdj_dummycols <- dummy_cols(PBP_EPAAdjustment[,c("posteam", "defteam", "hfa")], remove_selected_columns = TRUE)
+  
+  ### identifying best lambda using cross validation
+  EPAAdj_cvglmnet <- cv.glmnet(x = as.matrix(EPAAdj_dummycols), y = PBP_EPAAdjustment$epa, alpha = 0)
+  best_lambda <- EPAAdj_cvglmnet$lambda.min
+  ### performing ridge regression using optimal lambda identified above
+  EPAAdj_glmnet <- glmnet(x = as.matrix(EPAAdj_dummycols), y = PBP_EPAAdjustment$epa, alpha = 0, lambda = best_lambda)
+  
+  ### extracting coefficients to adjust EPA with
+  EPAAdj_glmnetcoef <- coef(EPAAdj_glmnet)
+  EPAAdj_glmnetcoef_vals <- EPAAdj_glmnetcoef@x
+  EPAAdj_adjcoefs <- data.frame(coef_name = colnames(EPAAdj_dummycols),
+                                ridge_reg_coef = EPAAdj_glmnetcoef_vals[2:length(EPAAdj_glmnetcoef_vals)])
+  
+  ### calculating adjusted coefficient
+  EPAAdj_adjcoefs <- EPAAdj_adjcoefs |>
+    mutate(adj_coef = ridge_reg_coef + EPAAdj_glmnetcoef_vals[1])
+  
+  ### strings used to help match up adjusted value with proper team below
+  offstr = "posteam"
+  hfastr = "hfa"
+  defstr = "defteam"
+  stat = "epa"
+  
+  ### calculating adjusted offensive EPA/play values, I think
+  ## honestly I adapted all of this from Bud Davis's python code on the CFBD blog, I don't know what this does and I had to ask gemini to translate his python code to R and this is what it came up with and it seems to work, so I leave it as it is and pray to whichever deity is supposed to be running things around here that it doesn't break
+  ## why does it create an index column only to immediately get rid of it, I don't know
+  ## I've never seen colons before equal signs before, what the fuck is that
+  EPAAdj_dfAdjOff <- EPAAdj_adjcoefs |>
+    filter(str_sub(coef_name, 1, nchar(offstr)) == offstr) |>
+    rename(!!stat := adj_coef) |>
+    mutate(index = 1:n()) |>
+    select(-index) |>
+    mutate(coef_name = str_replace(coef_name, paste0("^", offstr, "_"), "")) |>
+    select(-ridge_reg_coef)
+  
+  ### calculating adjusted defensive EPA/play values, I think
+  EPAAdj_dfAdjdef <- EPAAdj_adjcoefs |>
+    filter(str_sub(coef_name, 1, nchar(defstr)) == defstr) |>
+    rename(!!stat := adj_coef) |>
+    mutate(index = 1:n()) |>
+    select(-index) |>
+    mutate(coef_name = str_replace(coef_name, paste0("^", defstr, "_"), "")) |>
+    select(-ridge_reg_coef)
+  
+  ### binding adjusted EPA values to main VoA_Variables df
+  VoA_Variables <- VoA_Variables |>
+    left_join(EPAAdj_dfAdjOff |> rename(team = coef_name), by = "team") |>
+    rename(adj_off_epa = epa) |>
+    left_join(EPAAdj_dfAdjdef |> rename(team = coef_name), by = "team") |>
+    rename(adj_def_epa = epa)
+  
+  ### Explosiveness
+  ### subsetting columns for epa/play (explosiveness, so only EPA/play on successful plays) adjustment
+  PBP_ExpAdjustment <- success_plays |>
+    select(game_id, home_team, posteam, defteam, epa, location) |>
+    mutate(hfa = as.factor(case_when(location == "Neutral" ~ 0,
+                                     ### home team on offense
+                                     posteam == home_team ~ 1,
+                                     ### home team on defense
+                                     TRUE ~ -1))) |>
+    drop_na()
+  
+  ### creating dummy columns to use in ridge regression
+  ExpAdj_dummycols <- dummy_cols(PBP_ExpAdjustment[,c("posteam", "defteam", "hfa")], remove_selected_columns = TRUE)
+  
+  ### identifying best lambda using cross validation
+  ExpAdj_cvglmnet <- cv.glmnet(x = as.matrix(ExpAdj_dummycols), y = PBP_ExpAdjustment$epa, alpha = 0)
+  best_lambda <- ExpAdj_cvglmnet$lambda.min
+  ### performing ridge regression using optimal lambda identified above
+  ExpAdj_glmnet <- glmnet(x = as.matrix(ExpAdj_dummycols), y = PBP_ExpAdjustment$epa, alpha = 0, lambda = best_lambda)
+  
+  ### extracting coefficients to adjust EPA with
+  ExpAdj_glmnetcoef <- coef(ExpAdj_glmnet)
+  ExpAdj_glmnetcoef_vals <- ExpAdj_glmnetcoef@x
+  ExpAdj_adjcoefs <- data.frame(coef_name = colnames(ExpAdj_dummycols),
+                                ridge_reg_coef = ExpAdj_glmnetcoef_vals[2:length(ExpAdj_glmnetcoef_vals)])
+  
+  ### calculating adjusted coefficient
+  ExpAdj_adjcoefs <- ExpAdj_adjcoefs |>
+    mutate(adj_coef = ridge_reg_coef + ExpAdj_glmnetcoef_vals[1])
+  
+  ### strings used to help match up adjusted value with proper team below
+  offstr = "posteam"
+  hfastr = "hfa"
+  defstr = "defteam"
+  stat = "epa"
+  
+  ### calculating adjusted offensive explosiveness values, I think
+  ExpAdj_dfAdjOff <- ExpAdj_adjcoefs |>
+    filter(str_sub(coef_name, 1, nchar(offstr)) == offstr) |>
+    rename(!!stat := adj_coef) |>
+    mutate(index = 1:n()) |>
+    select(-index) |>
+    mutate(coef_name = str_replace(coef_name, paste0("^", offstr, "_"), "")) |>
+    select(-ridge_reg_coef)
+  
+  ### calculating adjusted defensive explosiveness values, I think
+  ExpAdj_dfAdjdef <- ExpAdj_adjcoefs |>
+    filter(str_sub(coef_name, 1, nchar(defstr)) == defstr) |>
+    rename(!!stat := adj_coef) |>
+    mutate(index = 1:n()) |>
+    select(-index) |>
+    mutate(coef_name = str_replace(coef_name, paste0("^", defstr, "_"), "")) |>
+    select(-ridge_reg_coef)
+  
+  ### binding adjusted EPA values to main VoA_Variables df
+  VoA_Variables <- VoA_Variables |>
+    left_join(ExpAdj_dfAdjOff |> rename(team = coef_name), by = "team") |>
+    rename(adj_off_explosiveness = epa) |>
+    left_join(ExpAdj_dfAdjdef |> rename(team = coef_name), by = "team") |>
+    rename(adj_def_explosiveness = epa)
+  
+  
+  ### ppg
+  ## this will give me pts/play, then I will multiply it by off/def plays per game when binding to VoA_Variables
+  ### subsetting columns for epa/play adjustment
+  PBP_PPGAdjustment <- rushpass_plays |>
+    select(game_id, home_team, posteam, defteam, two_point_conv_result, pass_touchdown, rush_touchdown, location) |>
+    mutate(hfa = as.factor(case_when(location == "Neutral" ~ 0,
+                                     ### home team on offense
+                                     posteam == home_team ~ 1,
+                                     ### home team on defense
+                                     TRUE ~ -1)),
+           play_pts_scored = case_when(two_point_conv_result == "success" ~ 2,
+                                       pass_touchdown == 1 ~ 6,
+                                       rush_touchdown == 1 ~ 6,
+                                       TRUE ~ 0)) |>
+    drop_na(game_id, home_team, posteam, defteam, hfa, location)
+  
+  ### creating dummy columns to use in ridge regression
+  PPGAdj_dummycols <- dummy_cols(PBP_PPGAdjustment[,c("posteam", "defteam", "hfa")], remove_selected_columns = TRUE)
+  
+  ### identifying best lambda using cross validation
+  PPGAdj_cvglmnet <- cv.glmnet(x = as.matrix(PPGAdj_dummycols), y = PBP_PPGAdjustment$play_pts_scored, alpha = 0)
+  best_lambda <- PPGAdj_cvglmnet$lambda.min
+  ### performing ridge regression using optimal lambda identified above
+  PPGAdj_glmnet <- glmnet(x = as.matrix(PPGAdj_dummycols), y = PBP_PPGAdjustment$play_pts_scored, alpha = 0, lambda = best_lambda)
+  
+  ### extracting coefficients to adjust EPA with
+  PPGAdj_glmnetcoef <- coef(PPGAdj_glmnet)
+  PPGAdj_glmnetcoef_vals <- PPGAdj_glmnetcoef@x
+  PPGAdj_adjcoefs <- data.frame(coef_name = colnames(PPGAdj_dummycols),
+                                ridge_reg_coef = PPGAdj_glmnetcoef_vals[2:length(PPGAdj_glmnetcoef_vals)])
+  
+  ### calculating adjusted coefficient
+  PPGAdj_adjcoefs <- PPGAdj_adjcoefs |>
+    mutate(adj_coef = ridge_reg_coef + PPGAdj_glmnetcoef_vals[1])
+  
+  ### strings used to help match up adjusted value with proper team below
+  offstr = "posteam"
+  hfastr = "hfa"
+  defstr = "defteam"
+  stat = "play_pts_scored"
+  
+  ### calculating adjusted offensive pts/play values, I think
+  PPGAdj_dfAdjOff <- PPGAdj_adjcoefs |>
+    filter(str_sub(coef_name, 1, nchar(offstr)) == offstr) |>
+    rename(!!stat := adj_coef) |>
+    mutate(index = 1:n()) |>
+    select(-index) |>
+    mutate(coef_name = str_replace(coef_name, paste0("^", offstr, "_"), "")) |>
+    select(-ridge_reg_coef)
+  
+  ### calculating adjusted defensive pts/play values, I think
+  PPGAdj_dfAdjdef <- PPGAdj_adjcoefs |>
+    filter(str_sub(coef_name, 1, nchar(defstr)) == defstr) |>
+    rename(!!stat := adj_coef) |>
+    mutate(index = 1:n()) |>
+    select(-index) |>
+    mutate(coef_name = str_replace(coef_name, paste0("^", defstr, "_"), "")) |>
+    select(-ridge_reg_coef)
+  
+  ### binding adjusted EPA values to main VoA_Variables df
+  VoA_Variables <- VoA_Variables |>
+    left_join(PPGAdj_dfAdjOff |> rename(team = coef_name), by = "team") |>
+    rename(adj_off_pts_per_play = play_pts_scored) |>
+    left_join(PPGAdj_dfAdjdef |> rename(team = coef_name), by = "team") |>
+    rename(adj_def_pts_per_play = play_pts_scored) |>
+    mutate(adj_off_ppg = adj_off_pts_per_play * off_plays_pg,
+           adj_def_ppg = adj_def_pts_per_play * def_plays_pg)
+  
+  
+  ### yards/play
+  ### subsetting columns for epa/play adjustment
+  PBP_YPPAdjustment <- rushpass_plays |>
+    select(game_id, home_team, posteam, defteam, yards_gained, location) |>
+    mutate(hfa = as.factor(case_when(location == "Neutral" ~ 0,
+                                     ### home team on offense
+                                     posteam == home_team ~ 1,
+                                     ### home team on defense
+                                     TRUE ~ -1))) |>
+    drop_na()
+  
+  ### creating dummy columns to use in ridge regression
+  YPPAdj_dummycols <- dummy_cols(PBP_YPPAdjustment[,c("posteam", "defteam", "hfa")], remove_selected_columns = TRUE)
+  
+  ### identifying best lambda using cross validation
+  YPPAdj_cvglmnet <- cv.glmnet(x = as.matrix(YPPAdj_dummycols), y = PBP_YPPAdjustment$yards_gained, alpha = 0)
+  best_lambda <- YPPAdj_cvglmnet$lambda.min
+  ### performing ridge regression using optimal lambda identified above
+  YPPAdj_glmnet <- glmnet(x = as.matrix(YPPAdj_dummycols), y = PBP_YPPAdjustment$yards_gained, alpha = 0, lambda = best_lambda)
+  
+  ### extracting coefficients to adjust EPA with
+  YPPAdj_glmnetcoef <- coef(YPPAdj_glmnet)
+  YPPAdj_glmnetcoef_vals <- YPPAdj_glmnetcoef@x
+  YPPAdj_adjcoefs <- data.frame(coef_name = colnames(YPPAdj_dummycols),
+                                ridge_reg_coef = YPPAdj_glmnetcoef_vals[2:length(YPPAdj_glmnetcoef_vals)])
+  
+  ### calculating adjusted coefficient
+  YPPAdj_adjcoefs <- YPPAdj_adjcoefs |>
+    mutate(adj_coef = ridge_reg_coef + YPPAdj_glmnetcoef_vals[1])
+  
+  ### strings used to help match up adjusted value with proper team below
+  offstr = "posteam"
+  hfastr = "hfa"
+  defstr = "defteam"
+  stat = "yards_gained"
+  
+  ### calculating adjusted offensive EPA/play values, I think
+  ## honestly I adapted all of this from Bud Davis's python code on the CFBD blog, I don't know what this does and I had to ask gemini to translate his python code to R and this is what it came up with and it seems to work, so I leave it as it is and pray to whichever deity is supposed to be running things around here that it doesn't break
+  ## why does it create an index column only to immediately get rid of it, I don't know
+  ## I've never seen colons before equal signs before, what the fuck is that
+  YPPAdj_dfAdjOff <- YPPAdj_adjcoefs |>
+    filter(str_sub(coef_name, 1, nchar(offstr)) == offstr) |>
+    rename(!!stat := adj_coef) |>
+    mutate(index = 1:n()) |>
+    select(-index) |>
+    mutate(coef_name = str_replace(coef_name, paste0("^", offstr, "_"), "")) |>
+    select(-ridge_reg_coef)
+  
+  ### calculating adjusted defensive EPA/play values, I think
+  YPPAdj_dfAdjdef <- YPPAdj_adjcoefs |>
+    filter(str_sub(coef_name, 1, nchar(defstr)) == defstr) |>
+    rename(!!stat := adj_coef) |>
+    mutate(index = 1:n()) |>
+    select(-index) |>
+    mutate(coef_name = str_replace(coef_name, paste0("^", defstr, "_"), "")) |>
+    select(-ridge_reg_coef)
+  
+  ### binding adjusted EPA values to main VoA_Variables df
+  VoA_Variables <- VoA_Variables |>
+    left_join(YPPAdj_dfAdjOff |> rename(team = coef_name), by = "team") |>
+    rename(adj_off_ypp = yards_gained) |>
+    left_join(YPPAdj_dfAdjdef |> rename(team = coef_name), by = "team") |>
+    rename(adj_def_ypp = yards_gained)
+    
   
   ### removing temp objects
   rm(list = ls(pattern = "^temp_"))
 }
 
-##### Break point to figure out where Rank columns start #####
-# if (as.numeric(week) %in% c(0,1,3,11)){
-#   break
-# } else{
-#   print("no new reason to figure out where rank columns start")
-# }
+##### Calculating Mean Error of Offensive and Defensive Ratings in Completed games based on previous week's VoA #####
+if (as.numeric(week) == 0){
+  
+} else if (as.numeric(week) <= 10){
+  
+} else{
+  ##### Week 10 - End of Season Error Calculations #####
+  VoA_Variables <- VoA_Variables |>
+    mutate(off_error = -999,
+           def_error = -999)
+  
+  PrevWeek_VoA <- read_csv(here("Data", paste0("VoA", season), paste0(season, week_text, week, "_", VoAString)))
+  CompletedGames <- CompletedGames |>
+    mutate(home_off_VoA_rating = -999,
+           home_def_VoA_rating = -999,
+           away_off_VoA_rating = -999,
+           away_def_VoA_rating = -999)
+  for (i in 1:nrow(CompletedGames)){
+    CompletedGames$home_off_VoA_rating[i] = PrevWeek_VoA$OffVoA_MedRating[PrevWeek_VoA$team == CompletedGames$home_team[i]]
+    CompletedGames$home_def_VoA_rating[i] = PrevWeek_VoA$DefVoA_MedRating[PrevWeek_VoA$team == CompletedGames$home_team[i]]
+    CompletedGames$away_off_VoA_rating[i] = PrevWeek_VoA$OffVoA_MedRating[PrevWeek_VoA$team == CompletedGames$away_team[i]]
+    CompletedGames$away_def_VoA_rating[i] = PrevWeek_VoA$DefVoA_MedRating[PrevWeek_VoA$team == CompletedGames$away_team[i]]
+  }
+  
+  for (i in 1:nrow(VoA_Variables)){
+    temp_games <- CompletedGames |>
+      filter(home_team == VoA_Variables$team[i] | away_team == VoA_Variables$team[i]) |>
+      mutate(team = VoA_Variables$team[i],
+             off_error = case_when(home_team == team ~ home_score - home_off_VoA_rating,
+                                   TRUE ~ away_score - away_off_VoA_rating),
+             def_error = case_when(home_team == team ~ away_score - home_def_VoA_rating,
+                                   TRUE ~ home_score - away_def_VoA_rating))
+    
+    VoA_Variables$off_error[i] = mean(temp_games$off_error)
+    VoA_Variables$def_error[i] = mean(temp_games$def_error)
+  }
+  
+  ### adjusting adjusted off and def ppg to account for error
+  for (i in 1:nrow(VoA_Variables)){
+    set.seed(802)
+    temp_off_ppg <- VoA_Variables$adj_off_ppg[i]
+    VoA_Variables$adj_off_ppg[i] = temp_off_ppg + rnorm(1, mean = VoA_Variables$off_error[i], sd = sd(VoA_Variables$off_error) / 3)
+    temp_def_ppg <- VoA_Variables$adj_def_ppg[i]
+    VoA_Variables$adj_def_ppg[i] = temp_def_ppg + rnorm(1, mean = VoA_Variables$def_error[i] , sd = sd(VoA_Variables$def_error) / 3)
+  }
+}
+### might put this back in there above
+# - (sd(VoA_Variables$off_error) / 2))
+# - (sd(VoA_Variables$def_error) / 2))
+
+##### Setting number of Columns to start averaging Rank values At #####
+VoA_RankColNum <- ncol(VoA_Variables) + 1
 
 ##### Ranking Variables #####
 if (as.numeric(week) <= 10) {
@@ -2470,6 +2781,9 @@ if (as.numeric(week) <= 10) {
            Rank_off_pts_per_opp = dense_rank(desc(off_pts_per_opp)),
            Rank_off_turnovers = dense_rank(off_turnovers),
            Rank_off_ppg = dense_rank(desc(off_ppg)),
+           Rank_adj_off_epa = dense_rank(desc(adj_off_epa)),
+           Rank_adj_off_explosiveness = dense_rank(desc(adj_off_explosiveness)),
+           Rank_adj_off_ypp = dense_rank(desc(adj_off_ypp)),
            ### ranking defensive variables now
            Rank_def_ypp = dense_rank(def_ypp),
            Rank_def_epa = dense_rank(def_epa),
@@ -2483,6 +2797,9 @@ if (as.numeric(week) <= 10) {
            Rank_def_pts_per_opp = dense_rank(def_pts_per_opp),
            Rank_def_turnovers = dense_rank(desc(def_turnovers)),
            Rank_def_ppg = dense_rank(def_ppg),
+           Rank_adj_def_epa = dense_rank(adj_def_epa),
+           Rank_adj_def_explosiveness = dense_rank(adj_def_explosiveness),
+           Rank_adj_def_ypp = dense_rank(adj_def_ypp),
            ### ranking ST variables now
            Rank_net_st_epa = dense_rank(desc(st_net_epa)),
            Rank_net_punt_return_yds = dense_rank(desc(net_punt_return_yds)),
@@ -2493,7 +2810,7 @@ if (as.numeric(week) <= 10) {
            Rank_net_xp_made_pg = dense_rank(desc(net_xp_made_pg)),
            Rank_net_xp_rate = dense_rank(desc(net_xp_rate)),
            Rank_net_xp_made_pg = dense_rank(desc(net_xp_made_pg)),
-           Rank_net_st_ppg = dense_rank(desc(net_st_ppg)))
+           Rank_net_st_ppg = dense_rank(desc(net_st_ppg)),)
 }
 
 
@@ -2501,16 +2818,16 @@ if (as.numeric(week) <= 10) {
 ### for week 0 (preseason), rank columns start at 168
 if (as.numeric(week) == 0){
   VoA_Variables <- VoA_Variables |>
-    mutate(VoA_Output = (rowMeans(VoA_Variables[,176:ncol(VoA_Variables)])))
+    mutate(VoA_Output = (rowMeans(VoA_Variables[,VoA_RankColNum:ncol(VoA_Variables)])))
 } else if (as.numeric(week) <= 2){
   VoA_Variables <- VoA_Variables |>
-    mutate(VoA_Output = (rowMeans(VoA_Variables[,176:ncol(VoA_Variables)])))
+    mutate(VoA_Output = (rowMeans(VoA_Variables[,VoA_RankColNum:ncol(VoA_Variables)])))
 } else if (as.numeric(week) <= 10){
   VoA_Variables <- VoA_Variables |>
-    mutate(VoA_Output = (rowMeans(VoA_Variables[,132:ncol(VoA_Variables)])))
+    mutate(VoA_Output = (rowMeans(VoA_Variables[,VoA_RankColNum:ncol(VoA_Variables)])))
 } else{
   VoA_Variables <- VoA_Variables |>
-    mutate(VoA_Output = (rowMeans(VoA_Variables[,60:ncol(VoA_Variables)])))
+    mutate(VoA_Output = (rowMeans(VoA_Variables[,VoA_RankColNum:ncol(VoA_Variables)])))
 }
 
 ##### Using Stan Model to create unit/team strength ratings #####
@@ -2635,17 +2952,17 @@ if (as.numeric(week) <= 10){
   ##### Week 11-End of Season Stan Models #####
   ### VoA Offensive Rating Model
   ### making list of data to declare what goes into stan model
-  Off_VoA_datalist <- list(N = nrow(VoA_Variables), off_ppg = VoA_Variables$off_ppg_adj, off_epa = VoA_Variables$off_epa, off_ypp = VoA_Variables$off_ypp, off_success_rt = VoA_Variables$off_success_rt, off_explosiveness = VoA_Variables$off_explosiveness, third_conv_rate = VoA_Variables$off_third_conv_rate, off_pts_per_opp = VoA_Variables$off_pts_per_opp, off_plays_pg = VoA_Variables$off_plays_pg, VoA_Output = (1/VoA_Variables$VoA_Output))
+  Off_VoA_datalist <- list(N = nrow(VoA_Variables), off_ppg = VoA_Variables$adj_off_ppg, off_epa = VoA_Variables$adj_off_epa, off_ypp = VoA_Variables$adj_off_ypp, off_success_rt = VoA_Variables$off_success_rt, off_explosiveness = VoA_Variables$adj_off_explosiveness, third_conv_rate = VoA_Variables$off_third_conv_rate, off_pts_per_opp = VoA_Variables$off_pts_per_opp, off_plays_pg = VoA_Variables$off_plays_pg, off_error = VoA_Variables$off_error, VoA_Output = (1/VoA_Variables$VoA_Output))
   
   ### fitting stan model
   set.seed(802)
   options(mc.cores = parallel::detectCores())
-  Off_VoA_fit <- stan(file=here("Scripts","Stan", "Off_VoA.stan"),data = Off_VoA_datalist, chains = 3, iter = 50000, warmup = 25000, seed = 802)
+  Off_VoA_fit <- stan(file=here("Scripts","Stan", "Off_VoA.stan"),data = Off_VoA_datalist, chains = 3, iter = 20000, warmup = 5000, seed = 802)
   Off_VoA_fit
   
   
   ### Extracting Parameters
-  Off_VoA_pars <- rstan::extract(Off_VoA_fit, c("b0", "beta_off_epa", "beta_off_ypp", "beta_off_success_rt", "beta_off_explosiveness", "beta_third_conv_rate", "beta_off_pts_per_opp", "beta_off_plays_pg", "beta_VoA_Output", "sigma"))
+  Off_VoA_pars <- rstan::extract(Off_VoA_fit, c("b0", "beta_off_epa", "beta_off_ypp", "beta_off_success_rt", "beta_off_explosiveness", "beta_third_conv_rate", "beta_off_pts_per_opp", "beta_off_plays_pg", "beta_off_error", "beta_VoA_Output", "sigma"))
   
   ### creating matrix to hold ratings
   ### adding in process uncertainty
@@ -2655,7 +2972,7 @@ if (as.numeric(week) <= 10){
   set.seed(802)
   for (p in 1:length(Off_VoA_pars$b0)){
     for(t in 1:nrow(VoA_Variables)){
-      Off_VoA_Rating <- rnorm(1, mean = Off_VoA_pars$b0[p] + Off_VoA_pars$beta_off_epa[p] * VoA_Variables$off_epa[t] + Off_VoA_pars$beta_off_ypp[p] * VoA_Variables$off_ypp[t] + Off_VoA_pars$beta_off_success_rt[p] * VoA_Variables$off_success_rt[t] + Off_VoA_pars$beta_off_explosiveness[p] * VoA_Variables$off_explosiveness[t] + Off_VoA_pars$beta_third_conv_rate[p] * VoA_Variables$off_third_conv_rate[t] + Off_VoA_pars$beta_off_pts_per_opp[p] * VoA_Variables$off_pts_per_opp[t] + Off_VoA_pars$beta_off_plays_pg[p] * VoA_Variables$off_plays_pg[t] + Off_VoA_pars$beta_VoA_Output[p] * (1/(VoA_Variables$VoA_Output[t])), sd = Off_VoA_pars$sigma[p])
+      Off_VoA_Rating <- rnorm(1, mean = Off_VoA_pars$b0[p] + Off_VoA_pars$beta_off_epa[p] * VoA_Variables$adj_off_epa[t] + Off_VoA_pars$beta_off_ypp[p] * VoA_Variables$adj_off_ypp[t] + Off_VoA_pars$beta_off_success_rt[p] * VoA_Variables$off_success_rt[t] + Off_VoA_pars$beta_off_explosiveness[p] * VoA_Variables$adj_off_explosiveness[t] + Off_VoA_pars$beta_third_conv_rate[p] * VoA_Variables$off_third_conv_rate[t] + Off_VoA_pars$beta_off_pts_per_opp[p] * VoA_Variables$off_pts_per_opp[t] + Off_VoA_pars$beta_off_plays_pg[p] * VoA_Variables$off_plays_pg[t] + Off_VoA_pars$beta_off_error[p] * VoA_Variables$off_error[t] + Off_VoA_pars$beta_VoA_Output[p] * (1/(VoA_Variables$VoA_Output[t])), sd = Off_VoA_pars$sigma[p])
       Off_VoA_Ratings[p,t] <- Off_VoA_Rating
     }
   }
@@ -2675,17 +2992,17 @@ if (as.numeric(week) <= 10){
   
   ### VoA Defensive Rating Model
   ### making list of data to declare what goes into stan model
-  Def_VoA_datalist <- list(N = nrow(VoA_Variables), def_ppg = VoA_Variables$def_ppg_adj, def_epa = VoA_Variables$def_epa, def_ypp = VoA_Variables$def_ypp, def_success_rt = VoA_Variables$def_success_rt, def_explosiveness = VoA_Variables$def_explosiveness, def_third_conv_rate = VoA_Variables$def_third_conv_rate, def_pts_per_opp = VoA_Variables$def_pts_per_opp, def_plays_pg = VoA_Variables$def_plays_pg, VoA_Output = VoA_Variables$VoA_Output)
+  Def_VoA_datalist <- list(N = nrow(VoA_Variables), def_ppg = VoA_Variables$adj_def_ppg, def_epa = VoA_Variables$adj_def_epa, def_ypp = VoA_Variables$adj_def_ypp, def_success_rt = VoA_Variables$def_success_rt, def_explosiveness = VoA_Variables$adj_def_explosiveness, def_third_conv_rate = VoA_Variables$def_third_conv_rate, def_pts_per_opp = VoA_Variables$def_pts_per_opp, def_plays_pg = VoA_Variables$def_plays_pg, def_error = VoA_Variables$def_error, VoA_Output = VoA_Variables$VoA_Output)
   
   ### fitting stan model
   set.seed(802)
   # options(mc.cores = parallel::detectCores())
-  Def_VoA_fit <- stan(file=here("Scripts","Stan", "Def_VoA.stan"),data = Def_VoA_datalist, chains = 3, iter = 50000, warmup = 25000, seed = 802)
+  Def_VoA_fit <- stan(file=here("Scripts","Stan", "Def_VoA.stan"),data = Def_VoA_datalist, chains = 3, iter = 20000, warmup = 5000, seed = 802)
   Def_VoA_fit
   
   
   ### Extracting Parameters
-  Def_VoA_pars <- rstan::extract(Def_VoA_fit, c("b0", "beta_def_epa", "beta_def_ypp", "beta_def_success_rt", "beta_def_explosiveness", "beta_def_third_conv_rate", "beta_def_pts_per_opp", "beta_def_plays_pg", "beta_VoA_Output", "sigma"))
+  Def_VoA_pars <- rstan::extract(Def_VoA_fit, c("b0", "beta_def_epa", "beta_def_ypp", "beta_def_success_rt", "beta_def_explosiveness", "beta_def_third_conv_rate", "beta_def_pts_per_opp", "beta_def_plays_pg", "beta_def_error", "beta_VoA_Output", "sigma"))
   
   ### creating matrix to hold ratings
   ### adding in process uncertainty
@@ -2695,7 +3012,7 @@ if (as.numeric(week) <= 10){
   set.seed(802)
   for (p in 1:length(Def_VoA_pars$b0)){
     for(t in 1:nrow(VoA_Variables)){
-      Def_VoA_Rating <- rnorm(1, mean = Def_VoA_pars$b0[p] + Def_VoA_pars$beta_def_epa[p] * VoA_Variables$def_epa[t] + Def_VoA_pars$beta_def_ypp[p] * VoA_Variables$def_ypp[t] + Def_VoA_pars$beta_def_success_rt[p] * VoA_Variables$def_success_rt[t] + Def_VoA_pars$beta_def_explosiveness[p] * VoA_Variables$def_explosiveness[t] + Def_VoA_pars$beta_def_third_conv_rate[p] * VoA_Variables$def_third_conv_rate[t] + Def_VoA_pars$beta_def_pts_per_opp[p] * VoA_Variables$def_pts_per_opp[t] + Def_VoA_pars$beta_def_plays_pg[p] * VoA_Variables$def_plays_pg[t] + Def_VoA_pars$beta_VoA_Output[p] * VoA_Variables$VoA_Output[t], sd = Def_VoA_pars$sigma[p])
+      Def_VoA_Rating <- rnorm(1, mean = Def_VoA_pars$b0[p] + Def_VoA_pars$beta_def_epa[p] * VoA_Variables$adj_def_epa[t] + Def_VoA_pars$beta_def_ypp[p] * VoA_Variables$adj_def_ypp[t] + Def_VoA_pars$beta_def_success_rt[p] * VoA_Variables$def_success_rt[t] + Def_VoA_pars$beta_def_explosiveness[p] * VoA_Variables$adj_def_explosiveness[t] + Def_VoA_pars$beta_def_third_conv_rate[p] * VoA_Variables$def_third_conv_rate[t] + Def_VoA_pars$beta_def_pts_per_opp[p] * VoA_Variables$def_pts_per_opp[t] + Def_VoA_pars$beta_def_plays_pg[p] * VoA_Variables$def_plays_pg[t] + Def_VoA_pars$beta_def_error[p] * VoA_Variables$def_error[t] + Def_VoA_pars$beta_VoA_Output[p] * VoA_Variables$VoA_Output[t], sd = Def_VoA_pars$sigma[p])
       Def_VoA_Ratings[p,t] <- Def_VoA_Rating
     }
   }
@@ -2715,16 +3032,16 @@ if (as.numeric(week) <= 10){
   
   ### Special Teams VoA
   ### making list of data to declare what goes into Stan model
-  ST_VoA_datalist <- list(N = nrow(VoA_Variables), net_st_ppg = VoA_Variables$net_st_ppg, net_kick_return_avg = VoA_Variables$net_kick_return_yds, net_punt_return_avg = VoA_Variables$net_punt_return_yds, net_kick_return_TDs = VoA_Variables$net_kick_return_TDs, net_punt_return_TDs = VoA_Variables$net_punt_return_TDs, net_fg_rate = VoA_Variables$net_fg_rate, net_fg_made_pg = VoA_Variables$net_fg_made_pg, net_xp_rate = VoA_Variables$net_xp_rate, net_xpts_pg = VoA_Variables$net_xp_made_pg)
+  ST_VoA_datalist <- list(N = nrow(VoA_Variables), net_st_ppg = VoA_Variables$net_st_ppg, net_st_epa = VoA_Variables$st_net_epa, net_kick_return_avg = VoA_Variables$net_kick_return_yds, net_punt_return_avg = VoA_Variables$net_punt_return_yds, net_fg_rate = VoA_Variables$net_fg_rate, net_xp_rate = VoA_Variables$net_xp_rate)
   
   ### fitting special teams Stan model
   set.seed(802)
   options(mc.cores = parallel::detectCores())
-  ST_VoA_fit <- stan(file = here("Scripts", "Stan", "ST_VoA.stan"), data = ST_VoA_datalist, chains = 3, iter = 25000, warmup = 10000, seed = 802)
+  ST_VoA_fit <- stan(file = here("Scripts", "Stan", "ST_VoA.stan"), data = ST_VoA_datalist, chains = 3, iter = 10000, warmup = 3000, seed = 802)
   ST_VoA_fit
   
   ### extracting parameters
-  ST_VoA_pars <- rstan::extract(ST_VoA_fit, c("b0", "beta_net_kick_return_avg", "beta_net_punt_return_avg", "beta_net_kick_return_TDs", "beta_net_punt_return_TDs", "beta_net_fg_rate", "beta_net_fg_made_pg", "beta_net_xp_rate", "beta_net_xpts_pg", "sigma"))
+  ST_VoA_pars <- rstan::extract(ST_VoA_fit, c("b0", "beta_net_st_epa", "beta_net_kick_return_avg", "beta_net_punt_return_avg", "beta_net_fg_rate", "beta_net_xp_rate", "sigma"))
   
   ### creating matrix to store special teams VoA_Ratings
   ST_VoA_Ratings <- matrix(NA, nrow = length(ST_VoA_pars$b0), ncol = nrow(VoA_Variables))
@@ -2733,7 +3050,7 @@ if (as.numeric(week) <= 10){
   set.seed(802)
   for (p in 1:length(ST_VoA_pars$b0)){
     for (t in 1:nrow(VoA_Variables)){
-      ST_VoA_Rating <- rnorm(1, mean = ST_VoA_pars$b0[p] + ST_VoA_pars$beta_net_kick_return_avg[p] * VoA_Variables$net_kick_return_yds[t] + ST_VoA_pars$beta_net_punt_return_avg[p] * VoA_Variables$net_punt_return_yds[t] + ST_VoA_pars$beta_net_kick_return_TDs[p] * VoA_Variables$net_kick_return_TDs[t] + ST_VoA_pars$beta_net_punt_return_TDs[p] * VoA_Variables$net_punt_return_TDs[t] + ST_VoA_pars$beta_net_fg_rate[p] * VoA_Variables$net_fg_rate[t] + ST_VoA_pars$beta_net_fg_made_pg[p] * VoA_Variables$net_fg_made_pg[t] + ST_VoA_pars$beta_net_xp_rate[p] * VoA_Variables$net_xp_rate[t] + ST_VoA_pars$beta_net_xpts_pg[p] * VoA_Variables$net_xp_made_pg[t], sd = ST_VoA_pars$sigma[p])
+      ST_VoA_Rating <- rnorm(1, mean = ST_VoA_pars$b0[p] + ST_VoA_pars$beta_net_st_epa[p] * VoA_Variables$st_net_epa[t] + ST_VoA_pars$beta_net_kick_return_avg[p] * VoA_Variables$net_kick_return_yds[t] + ST_VoA_pars$beta_net_punt_return_avg[p] * VoA_Variables$net_punt_return_yds[t] + ST_VoA_pars$beta_net_fg_rate[p] * VoA_Variables$net_fg_rate[t] + ST_VoA_pars$beta_net_xp_rate[p] * VoA_Variables$net_xp_rate[t], sd = ST_VoA_pars$sigma[p])
       ST_VoA_Ratings[p,t] <- ST_VoA_Rating
     }
   }
