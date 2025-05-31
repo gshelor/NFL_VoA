@@ -2642,7 +2642,7 @@ if (as.numeric(week) == 0){
   ### calculating adjusted offensive EPA/play values, I think
   ## honestly I adapted all of this from Bud Davis's python code on the CFBD blog, I don't know what this does and I had to ask gemini to translate his python code to R and this is what it came up with and it seems to work, so I leave it as it is and pray to whichever deity is supposed to be running things around here that it doesn't break
   ## why does it create an index column only to immediately get rid of it, I don't know
-  ## I've never seen colons before equal signs before, what the fuck is that
+  ## I've also never seen colons before equal signs before, what the fuck is that
   YPPAdj_dfAdjOff <- YPPAdj_adjcoefs |>
     filter(str_sub(coef_name, 1, nchar(offstr)) == offstr) |>
     rename(!!stat := adj_coef) |>
@@ -2713,9 +2713,9 @@ if (as.numeric(week) == 0){
   for (i in 1:nrow(VoA_Variables)){
     set.seed(802)
     temp_off_ppg <- VoA_Variables$adj_off_ppg[i]
-    VoA_Variables$adj_off_ppg[i] = temp_off_ppg + rnorm(1, mean = VoA_Variables$off_error[i], sd = sd(VoA_Variables$off_error) / 3)
+    VoA_Variables$adj_off_ppg[i] = temp_off_ppg + rnorm(1, mean = VoA_Variables$off_error[i], sd = sd(VoA_Variables$off_error))
     temp_def_ppg <- VoA_Variables$adj_def_ppg[i]
-    VoA_Variables$adj_def_ppg[i] = temp_def_ppg + rnorm(1, mean = VoA_Variables$def_error[i] , sd = sd(VoA_Variables$def_error) / 3)
+    VoA_Variables$adj_def_ppg[i] = temp_def_ppg + rnorm(1, mean = VoA_Variables$def_error[i] , sd = sd(VoA_Variables$def_error))
   }
 }
 ### might put this back in there above
@@ -2957,7 +2957,7 @@ if (as.numeric(week) <= 10){
   ### fitting stan model
   set.seed(802)
   options(mc.cores = parallel::detectCores())
-  Off_VoA_fit <- stan(file=here("Scripts","Stan", "Off_VoA.stan"),data = Off_VoA_datalist, chains = 3, iter = 20000, warmup = 5000, seed = 802)
+  Off_VoA_fit <- stan(file=here("Scripts","Stan", "Off_VoA.stan"),data = Off_VoA_datalist, chains = 3, iter = 15000, warmup = 5000, seed = 802)
   Off_VoA_fit
   
   
