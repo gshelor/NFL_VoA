@@ -15,7 +15,7 @@ data {
   vector[N] third_conv_rate; // weighted third down conversion rate
   vector[N] off_pts_per_opp; // weighted points per scoring opportunity
   vector[N] off_plays_pg; // weighted number of offensive plays per game
-  vector[N] off_error; // average offensive error per game
+  // vector[N] off_error; // average offensive error per game
   //vector[N] off_ppg_aboveavg; // weighted ppg scored by the offense above average offensive ppg
   vector[N] VoA_Output; // weighted VoA output created by averaging rankings in a variety of stats
 }
@@ -30,7 +30,7 @@ parameters {
   real beta_third_conv_rate; // coefficient for third down conversion rate
   real beta_off_pts_per_opp; // coefficient for offensive points per scoring opportunity
   real beta_off_plays_pg; // coefficient for number of plays run by the offense
-  real beta_off_error; // coefficient for average offensive error per game
+  // real beta_off_error; // coefficient for average offensive error per game
   //real beta_off_ppg_aboveavg; // coefficient for offensive pts above avg
   real beta_VoA_Output; // coefficient for VoA Output
   real sigma; // Standard deviation of the normal distribution
@@ -51,7 +51,7 @@ parameters {
 // with mean 'mu' equal to a linear deterministic function and SD 'sigma'.
 model {
   // Define linear predictor directly in the model block
-  off_ppg ~ normal(b0 + beta_off_epa * off_epa + beta_off_ypp * off_ypp + beta_off_success_rt * off_success_rt + beta_off_explosiveness * off_explosiveness + beta_third_conv_rate * third_conv_rate + beta_off_pts_per_opp * off_pts_per_opp + beta_off_plays_pg * off_plays_pg + beta_off_error * off_error + beta_VoA_Output * VoA_Output, sigma);
+  off_ppg ~ normal(b0 + beta_off_epa * off_epa + beta_off_ypp * off_ypp + beta_off_success_rt * off_success_rt + beta_off_explosiveness * off_explosiveness + beta_third_conv_rate * third_conv_rate + beta_off_pts_per_opp * off_pts_per_opp + beta_off_plays_pg * off_plays_pg + beta_VoA_Output * VoA_Output, sigma);
 }
 
 

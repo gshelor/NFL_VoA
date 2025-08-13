@@ -3,7 +3,7 @@ start_time <- Sys.time()
 ##### loading packages #####
 ### loading packages
 library(pacman)
-p_load(tidyverse, gt, nflverse, here, gtExtras, RColorBrewer, webshot2, rstan, betareg)
+p_load(tidyverse, gt, nflverse, here, gtExtras, RColorBrewer, webshot2, cmdstanr, betareg)
 ### Inputting season
 season <- readline(prompt = "What season is it? ")
 ### Inputting upcoming week number
@@ -117,7 +117,7 @@ SP_WPdata <- read_csv(here("Data", "SPPlusData", "All_SP.csv")) |>
 
 ### I wanted to fit a stan model but that didn't work so I'm trying a beta regression model with betareg to do something different, see how it goes
 set.seed(802)
-options(mc.cores = parallel::detectCores())
+options(mc.cores = parallel::detectCores() / 2)
 WP_betareg <- betareg(home_WP_pct ~ proj_margin, data = SP_WPdata)
 
 summary(WP_betareg)

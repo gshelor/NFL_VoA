@@ -2,7 +2,7 @@
 
 ##### loading packages, reading in data #####
 library(pacman)
-p_load(tidyverse, gt, nflverse, here, gtExtras, ModelMetrics, ggpubr, webshot2, RColorBrewer, Metrics )
+p_load(tidyverse, gt, nflverse, here, gtExtras, ModelMetrics, ggpubr, webshot2, RColorBrewer, Metrics)
 
 ### identifying season and week of season
 season <- readline("What season is it? ")
@@ -103,7 +103,8 @@ ggplot(CompletedWeeks, mapping = aes(x = week)) +
   theme_bw() +
   geom_line(mapping = aes(y = RMSE)) +
   geom_line(mapping = aes(y = vegas_RMSE), colour = 'blue') +
-  ggtitle(label = "RMSE and Vegas's RMSE (in blue) by Week")
+  ggtitle(label = "RMSE and Vegas's RMSE (in blue) by Week") +
+  theme(plot.title = element_text(hjust = 0.5))
 
-plot(CompletedWeeks$week, CompletedWeeks$RMSE, type = "l")
-plot(CompletedWeeks$vegas_RMSE, type = "l", add = T)
+# plot(CompletedWeeks$week, CompletedWeeks$RMSE, type = "l")
+# plot(CompletedWeeks$vegas_RMSE, type = "l", add = T)
