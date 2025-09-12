@@ -105,21 +105,22 @@ margin_projection <- function(away, home, neutral) {
 ### coefficients for calculating win probability aren't just random long decimal numbers, I fit a model using lm() to Bill Connelly's projected win probs and just took them out and wrote them into this script instead of just fitting that model over and over every week
 ### it's a lazy way of "calculating" win prob but it works well enough for my purposes
 ### now I fit a beta regression model using betareg instead of that lm thing above
-SP_WPdata <- read_csv(here("Data", "SPPlusData", "All_SP.csv")) |>
-  separate(col = "Game", into = c("away_team", "home_team"), sep = " at ") |>
-  drop_na(away_team, home_team) |>
-  filter(home_team == Proj_winner | away_team == Proj_winner) |>
-  mutate(home_WP_pct = case_when(Proj_winner == home_team ~ WP_pct,
-                                 TRUE ~ 1 - WP_pct),
-         proj_margin = case_when(Proj_winner == home_team ~ Proj_margin,
-                                      TRUE ~ -1 * Proj_margin))
+# SP_WPdata <- read_csv(here("Data", "SPPlusData", "All_SP.csv")) |>
+#   separate(col = "Game", into = c("away_team", "home_team"), sep = " at ") |>
+#   drop_na(away_team, home_team) |>
+#   filter(home_team == Proj_winner | away_team == Proj_winner) |>
+#   mutate(home_WP_pct = case_when(Proj_winner == home_team ~ WP_pct,
+#                                  TRUE ~ 1 - WP_pct),
+#          proj_margin = case_when(Proj_winner == home_team ~ Proj_margin,
+#                                       TRUE ~ -1 * Proj_margin))
 
 
 ### I wanted to fit a stan model but that didn't work so I'm trying a beta regression model with betareg to do something different, see how it goes
-set.seed(802)
-options(mc.cores = parallel::detectCores() / 2)
-WP_betareg <- betareg(home_WP_pct ~ proj_margin, data = SP_WPdata)
-
+# set.seed(802)
+# options(mc.cores = parallel::detectCores() / 2)
+# WP_betareg <- betareg(home_WP_pct ~ proj_margin, data = SP_WPdata)
+### reading in saved model copied from CFB_VoA since it's the same data used to fit it
+WP_betareg <- read_rds(here("Data", "SPPlusData", "WP_betareg.rds"))
 summary(WP_betareg)
 
 # SP_WPdata$predicted_home_winprob <- predict(WP_betareg)

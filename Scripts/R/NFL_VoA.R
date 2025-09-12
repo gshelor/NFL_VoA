@@ -4938,10 +4938,19 @@ if (as.numeric(nfl_week) == 0){
   ### adjusting adjusted off and def ppg to account for error
   for (i in 1:nrow(VoA_Variables)){
     set.seed(802)
-    temp_off_ppg <- VoA_Variables$adj_off_ppg[i]
-    VoA_Variables$adj_off_ppg[i] = temp_off_ppg + rnorm(1, mean = VoA_Variables$off_error[i] / 5, sd = sd(VoA_Variables$off_error) * 1.25)
-    temp_def_ppg <- VoA_Variables$adj_def_ppg[i]
-    VoA_Variables$adj_def_ppg[i] = temp_def_ppg + rnorm(1, mean = VoA_Variables$def_error[i] / 5 , sd = sd(VoA_Variables$def_error) * 1.25)
+    temp_off_ppg <- VoA_Variables$weighted_off_ppg[i]
+    VoA_Variables$weighted_off_ppg[i] = temp_off_ppg + rnorm(1, mean = VoA_Variables$off_error[i] / 10, sd = sd(VoA_Variables$off_error) * 1.25)
+    temp_def_ppg <- VoA_Variables$weighted_def_ppg[i]
+    VoA_Variables$weighted_def_ppg[i] = temp_def_ppg + rnorm(1, mean = VoA_Variables$def_error[i] / 10, sd = sd(VoA_Variables$def_error) * 1.25)
+    
+    ### making sure all values are > 0
+    set.seed(802)
+    if (VoA_Variables$weighted_off_ppg[i] <= 0){
+      VoA_Variables$weighted_off_ppg[i] = abs(VoA_Variables$weighted_off_ppg[i]) + abs(rnorm(1, 5, 1))
+    }
+    if (VoA_Variables$weighted_def_ppg[i] <= 0){
+      VoA_Variables$weighted_def_ppg[i] = abs(VoA_Variables$weighted_def_ppg[i]) + abs(rnorm(1, 5, 1))
+    }
   }
 } else if (as.numeric(nfl_week) <= 5){
   ##### Week 3 - 5 Error Calculations #####
@@ -4979,9 +4988,18 @@ if (as.numeric(nfl_week) == 0){
   for (i in 1:nrow(VoA_Variables)){
     set.seed(802)
     temp_off_ppg <- VoA_Variables$adj_off_ppg[i]
-    VoA_Variables$adj_off_ppg[i] = temp_off_ppg + rnorm(1, mean = VoA_Variables$off_error[i] / 3, sd = sd(VoA_Variables$off_error) * 1.05)
+    VoA_Variables$adj_off_ppg[i] = temp_off_ppg + rnorm(1, mean = VoA_Variables$off_error[i] / 5, sd = sd(VoA_Variables$off_error) * 1.05)
     temp_def_ppg <- VoA_Variables$adj_def_ppg[i]
-    VoA_Variables$adj_def_ppg[i] = temp_def_ppg + rnorm(1, mean = VoA_Variables$def_error[i] / 3, sd = sd(VoA_Variables$def_error) * 1.05)
+    VoA_Variables$adj_def_ppg[i] = temp_def_ppg + rnorm(1, mean = VoA_Variables$def_error[i] / 5, sd = sd(VoA_Variables$def_error) * 1.05)
+    
+    ### making sure all values are > 0
+    set.seed(802)
+    if (VoA_Variables$weighted_off_ppg[i] <= 0){
+      VoA_Variables$weighted_off_ppg[i] = abs(VoA_Variables$weighted_off_ppg[i]) + abs(rnorm(1, 5, 1))
+    }
+    if (VoA_Variables$weighted_def_ppg[i] <= 0){
+      VoA_Variables$weighted_def_ppg[i] = abs(VoA_Variables$weighted_def_ppg[i]) + abs(rnorm(1, 5, 1))
+    }
   }
 } else if (as.numeric(nfl_week) <= 10){
   ##### Week 6 - 10 Error Calculations #####
@@ -5019,9 +5037,18 @@ if (as.numeric(nfl_week) == 0){
   for (i in 1:nrow(VoA_Variables)){
     set.seed(802)
     temp_off_ppg <- VoA_Variables$adj_off_ppg[i]
-    VoA_Variables$adj_off_ppg[i] = temp_off_ppg + rnorm(1, mean = VoA_Variables$off_error[i] / 2, sd = sd(VoA_Variables$off_error))
+    VoA_Variables$adj_off_ppg[i] = temp_off_ppg + rnorm(1, mean = VoA_Variables$off_error[i] / 2.5, sd = sd(VoA_Variables$off_error))
     temp_def_ppg <- VoA_Variables$adj_def_ppg[i]
-    VoA_Variables$adj_def_ppg[i] = temp_def_ppg + rnorm(1, mean = VoA_Variables$def_error[i] / 2, sd = sd(VoA_Variables$def_error))
+    VoA_Variables$adj_def_ppg[i] = temp_def_ppg + rnorm(1, mean = VoA_Variables$def_error[i] / 2.5, sd = sd(VoA_Variables$def_error))
+    
+    ### making sure all values are > 0
+    set.seed(802)
+    if (VoA_Variables$weighted_off_ppg[i] <= 0){
+      VoA_Variables$weighted_off_ppg[i] = abs(VoA_Variables$weighted_off_ppg[i]) + abs(rnorm(1, 5, 1))
+    }
+    if (VoA_Variables$weighted_def_ppg[i] <= 0){
+      VoA_Variables$weighted_def_ppg[i] = abs(VoA_Variables$weighted_def_ppg[i]) + abs(rnorm(1, 5, 1))
+    }
   }
 } else{
   ##### Week 11 - End of Season Error Calculations #####
@@ -5062,6 +5089,15 @@ if (as.numeric(nfl_week) == 0){
     VoA_Variables$adj_off_ppg[i] = temp_off_ppg + rnorm(1, mean = VoA_Variables$off_error[i], sd = sd(VoA_Variables$off_error))
     temp_def_ppg <- VoA_Variables$adj_def_ppg[i]
     VoA_Variables$adj_def_ppg[i] = temp_def_ppg + rnorm(1, mean = VoA_Variables$def_error[i] , sd = sd(VoA_Variables$def_error))
+    
+    ### making sure all values are > 0
+    set.seed(802)
+    if (VoA_Variables$adj_off_ppg[i] <= 0){
+      VoA_Variables$adj_off_ppg[i] = abs(VoA_Variables$adj_off_ppg[i]) + abs(rnorm(1, 5, 1))
+    }
+    if (VoA_Variables$adj_def_ppg[i] <= 0){
+      VoA_Variables$adj_def_ppg[i] = abs(VoA_Variables$adj_def_ppg[i]) + abs(rnorm(1, 5, 1))
+    }
   }
 }
 ### might put this back in there above
@@ -5433,6 +5469,17 @@ if (as.numeric(nfl_week) <= 10){
   VoA_Variables$STVoA_05PctRating <- Lower
 }
 
+### making sure all values are > 0
+for (i in 1:nrow(VoA_Variables)){
+  set.seed(802)
+  if (VoA_Variables$OffVoA_MedRating[i] <= 0){
+    VoA_Variables$OffVoA_MedRating[i] = abs(VoA_Variables$OffVoA_MedRating[i]) + abs(rnorm(1, 1, 1))
+  }
+  if (VoA_Variables$DefVoA_MedRating[i] <= 0){
+    VoA_Variables$DefVoA_MedRating[i] = abs(VoA_Variables$DefVoA_MedRating[i]) + abs(rnorm(1, 1, 1))
+  }
+}
+
 
 ##### Ranking VoA Rating columns #####
 VoA_Variables <- VoA_Variables |>
@@ -5795,14 +5842,3 @@ ggsave(Output_Rating_Plot_filename, path = output_dir, width = 50, height = 40, 
 EndTime <- Sys.time()
 EndTime - StartTime
 ##### End of Script #####
-
-### testing for NAs, I copied this from my CFB VoA, that's why it says recruit in there
-# nas_why <- data.frame(apply(VoA_Variables, 2, anyNA))
-# colnames(nas_why) <- c("containsNAs")
-# nas_why <- nas_why |>
-#   filter(containsNAs == TRUE)
-# recruit_nas_why <- VoA_Variables |>
-#   filter(is.na(st_punt_return_yds_allowed))
-# # recruit_nas_teams <- anti_join(VoA_Variables, recruit, by = "team")
-# 
-# colnames(VoA_Variables)[apply(VoA_Variables, 2, anyNA)]
