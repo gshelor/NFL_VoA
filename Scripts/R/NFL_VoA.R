@@ -4985,12 +4985,12 @@ if (as.numeric(nfl_week) == 0){
   }
   
   ### adjusting adjusted off and def ppg to account for error
+  set.seed(802)
   for (i in 1:nrow(VoA_Variables)){
-    set.seed(802)
-    temp_off_ppg <- VoA_Variables$adj_off_ppg[i]
-    VoA_Variables$adj_off_ppg[i] = temp_off_ppg + rnorm(1, mean = VoA_Variables$off_error[i] / 5, sd = sd(VoA_Variables$off_error))
-    temp_def_ppg <- VoA_Variables$adj_def_ppg[i]
-    VoA_Variables$adj_def_ppg[i] = temp_def_ppg + rnorm(1, mean = VoA_Variables$def_error[i] / 5, sd = sd(VoA_Variables$def_error))
+    temp_off_ppg <- VoA_Variables$weighted_off_ppg[i]
+    VoA_Variables$weighted_off_ppg[i] = temp_off_ppg + rnorm(1, mean = VoA_Variables$off_error[i] / 5, sd = sd(VoA_Variables$off_error))
+    temp_def_ppg <- VoA_Variables$weighted_def_ppg[i]
+    VoA_Variables$weighted_def_ppg[i] = temp_def_ppg + rnorm(1, mean = VoA_Variables$def_error[i] / 5, sd = sd(VoA_Variables$def_error))
     
     ### making sure all values are > 0
     set.seed(802)
@@ -5034,12 +5034,12 @@ if (as.numeric(nfl_week) == 0){
   }
   
   ### adjusting adjusted off and def ppg to account for error
+  set.seed(802)
   for (i in 1:nrow(VoA_Variables)){
-    set.seed(802)
-    temp_off_ppg <- VoA_Variables$adj_off_ppg[i]
-    VoA_Variables$adj_off_ppg[i] = temp_off_ppg + rnorm(1, mean = VoA_Variables$off_error[i] / 2.5, sd = sd(VoA_Variables$off_error))
-    temp_def_ppg <- VoA_Variables$adj_def_ppg[i]
-    VoA_Variables$adj_def_ppg[i] = temp_def_ppg + rnorm(1, mean = VoA_Variables$def_error[i] / 2.5, sd = sd(VoA_Variables$def_error))
+    temp_off_ppg <- VoA_Variables$weighted_off_ppg[i]
+    VoA_Variables$weighted_off_ppg[i] = temp_off_ppg + rnorm(1, mean = VoA_Variables$off_error[i] / 2.5, sd = sd(VoA_Variables$off_error))
+    temp_def_ppg <- VoA_Variables$weighted_def_ppg[i]
+    VoA_Variables$weighted_def_ppg[i] = temp_def_ppg + rnorm(1, mean = VoA_Variables$def_error[i] / 2.5, sd = sd(VoA_Variables$def_error))
     
     ### making sure all values are > 0
     set.seed(802)
@@ -5088,7 +5088,7 @@ if (as.numeric(nfl_week) == 0){
     temp_off_ppg <- VoA_Variables$adj_off_ppg[i]
     VoA_Variables$adj_off_ppg[i] = temp_off_ppg + rnorm(1, mean = VoA_Variables$off_error[i], sd = sd(VoA_Variables$off_error))
     temp_def_ppg <- VoA_Variables$adj_def_ppg[i]
-    VoA_Variables$adj_def_ppg[i] = temp_def_ppg + rnorm(1, mean = VoA_Variables$def_error[i] , sd = sd(VoA_Variables$def_error))
+    VoA_Variables$adj_def_ppg[i] = temp_def_ppg + rnorm(1, mean = VoA_Variables$def_error[i], sd = sd(VoA_Variables$def_error))
     
     ### making sure all values are > 0
     set.seed(802)
