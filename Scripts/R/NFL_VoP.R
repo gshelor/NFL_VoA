@@ -75,20 +75,20 @@ if (as.numeric(upcoming) == 1){
 if (as.numeric(upcoming) == 1){
   ### Projecting win 
   FullSeason_Games <- FullSeason_Games |>
-    mutate(proj_margin = case_when(location == "Home" ~  (home_VoA_Rating + 2.5) - away_VoA_Rating,
+    mutate(Proj_Margin = case_when(location == "Home" ~  (home_VoA_Rating + 2.5) - away_VoA_Rating,
                                  TRUE ~ home_VoA_Rating - away_VoA_Rating),
-           proj_margin_abs = abs(proj_margin),
-           proj_winner = case_when(proj_margin > 0 ~ home_team,
-                                   proj_margin < 0 ~ away_team,
+           proj_margin_abs = abs(Proj_Margin),
+           proj_winner = case_when(Proj_Margin > 0 ~ home_team,
+                                   Proj_Margin < 0 ~ away_team,
                                    TRUE ~ "TIE"))
 } else{
   ### Creating Vortex of Accuracy projected win margin and winner column for upcoming week's games
   upcoming_games_df <- upcoming_games_df |>
-    mutate(proj_margin = case_when(location == "Home" ~  (home_VoA_Rating + 2.5) - away_VoA_Rating,
+    mutate(Proj_Margin = case_when(location == "Home" ~  (home_VoA_Rating + 2.5) - away_VoA_Rating,
                                    TRUE ~ home_VoA_Rating - away_VoA_Rating),
-           proj_margin_abs = abs(proj_margin),
-           proj_winner = case_when(proj_margin > 0 ~ home_team,
-                                   proj_margin < 0 ~ away_team,
+           proj_margin_abs = abs(Proj_Margin),
+           proj_winner = case_when(Proj_Margin > 0 ~ home_team,
+                                   Proj_Margin < 0 ~ away_team,
                                    TRUE ~ "TIE"))
 }
 
@@ -276,7 +276,7 @@ if (as.numeric(upcoming) == 1){
 # adding title and subtitle
 ### sorting column order
 upcoming_games_df <- upcoming_games_df |>
-  select(game_id, season, game_type, week, gameday, weekday, gametime, away_team, away_VoA_Rating, home_team, home_VoA_Rating, location, result, total, overtime, spread_line, total_line, div_game, temp, wind, stadium, proj_margin, proj_margin_abs, proj_winner, home_win_prob, win_prob)
+  select(game_id, season, game_type, week, gameday, weekday, gametime, away_team, away_VoA_Rating, home_team, home_VoA_Rating, location, result, total, overtime, spread_line, total_line, div_game, temp, wind, stadium, Proj_Margin, proj_margin_abs, proj_winner, home_win_prob, win_prob)
 
 upcoming_games_gt <- upcoming_games_df |>
   gt() |> # use 'gt' to make an awesome table...
@@ -323,7 +323,7 @@ upcoming_games_gt <- upcoming_games_df |>
   nflplotR::gt_nfl_wordmarks(columns = c("away_team", "home_team", "proj_winner")) |>
   cols_label(home_team = "Home", away_team = "Away", home_VoA_Rating = "Home VoA Rating", away_VoA_Rating = "Away VoA Rating", proj_winner = "Projected Winner", proj_margin_abs = "Projected Margin", win_prob = "Win Probability") |> # Update labels
   cols_move_to_end(columns = "win_prob") |>
-  cols_hide(c(game_id, season, week, game_type, gameday, weekday, gametime, location, result, total, overtime, spread_line, total_line, div_game, temp, stadium, wind, home_win_prob, proj_margin)) |>
+  cols_hide(c(game_id, season, week, game_type, gameday, weekday, gametime, location, result, total, overtime, spread_line, total_line, div_game, temp, stadium, wind, home_win_prob, Proj_Margin)) |>
   tab_footnote(
     footnote = "Table by @gshelor, Data from nflfastR"
   )
@@ -383,7 +383,7 @@ upcoming_games_projmargin_gt <- upcoming_games_projmargin |>
   nflplotR::gt_nfl_wordmarks(columns = c("away_team", "home_team", "proj_winner")) |>
   cols_label(home_team = "Home", away_team = "Away", home_VoA_Rating = "Home VoA Rating", away_VoA_Rating = "Away VoA Rating", proj_winner = "Projected Winner", proj_margin_abs = "Projected Margin", win_prob = "Win Probability") |> # Update labels
   cols_move_to_end(columns = "win_prob") |>
-  cols_hide(c(game_id, season, week, game_type, gameday, weekday, gametime, location, result, total, overtime, spread_line, total_line, div_game, temp, stadium, wind, home_win_prob, proj_margin)) |>
+  cols_hide(c(game_id, season, week, game_type, gameday, weekday, gametime, location, result, total, overtime, spread_line, total_line, div_game, temp, stadium, wind, home_win_prob, Proj_Margin)) |>
   tab_footnote(
     footnote = "Table by @gshelor, Data from nflfastR"
   )

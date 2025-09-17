@@ -4922,29 +4922,29 @@ if (as.numeric(nfl_week) == 0){
     CompletedGames$away_def_VoA_rating[i] = PrevWeek_VoA$DefVoA_MedRating[PrevWeek_VoA$team == CompletedGames$away_team[i]]
   }
   
+  ### Calculating error for offense and defense based on average performance during season
   for (i in 1:nrow(VoA_Variables)){
     temp_games <- CompletedGames |>
       filter(home_team == VoA_Variables$team[i] | away_team == VoA_Variables$team[i]) |>
       mutate(team = VoA_Variables$team[i],
-             off_error = case_when(home_team == team ~ home_score - home_off_VoA_rating,
-                                   TRUE ~ away_score - away_off_VoA_rating),
-             def_error = case_when(home_team == team ~ away_score - home_def_VoA_rating,
-                                   TRUE ~ home_score - away_def_VoA_rating))
+             off_error = case_when(home_team == team ~ home_score - ((home_off_VoA_rating + away_def_VoA_rating) / 2),
+                                   TRUE ~ away_score - ((away_off_VoA_rating + home_def_VoA_rating) / 2)),
+             def_error = case_when(home_team == team ~ away_score - ((home_def_VoA_rating + away_off_VoA_rating) / 2),
+                                   TRUE ~ home_score - ((away_def_VoA_rating + home_off_VoA_rating) / 2)))
     
     VoA_Variables$off_error[i] = mean(temp_games$off_error)
     VoA_Variables$def_error[i] = mean(temp_games$def_error)
   }
   
   ### adjusting adjusted off and def ppg to account for error
+  set.seed(802)
   for (i in 1:nrow(VoA_Variables)){
-    set.seed(802)
     temp_off_ppg <- VoA_Variables$weighted_off_ppg[i]
-    VoA_Variables$weighted_off_ppg[i] = temp_off_ppg + rnorm(1, mean = VoA_Variables$off_error[i] / 10, sd = sd(VoA_Variables$off_error) * 1.25)
+    VoA_Variables$weighted_off_ppg[i] = temp_off_ppg + rnorm(1, mean = VoA_Variables$off_error[i] / 10, sd = sd(VoA_Variables$off_error))
     temp_def_ppg <- VoA_Variables$weighted_def_ppg[i]
-    VoA_Variables$weighted_def_ppg[i] = temp_def_ppg + rnorm(1, mean = VoA_Variables$def_error[i] / 10, sd = sd(VoA_Variables$def_error) * 1.25)
+    VoA_Variables$weighted_def_ppg[i] = temp_def_ppg + rnorm(1, mean = VoA_Variables$def_error[i] / 10, sd = sd(VoA_Variables$def_error))
     
     ### making sure all values are > 0
-    set.seed(802)
     if (VoA_Variables$weighted_off_ppg[i] <= 0){
       VoA_Variables$weighted_off_ppg[i] = abs(VoA_Variables$weighted_off_ppg[i]) + abs(rnorm(1, 5, 1))
     }
@@ -4975,10 +4975,10 @@ if (as.numeric(nfl_week) == 0){
     temp_games <- CompletedGames |>
       filter(home_team == VoA_Variables$team[i] | away_team == VoA_Variables$team[i]) |>
       mutate(team = VoA_Variables$team[i],
-             off_error = case_when(home_team == team ~ home_score - home_off_VoA_rating,
-                                   TRUE ~ away_score - away_off_VoA_rating),
-             def_error = case_when(home_team == team ~ away_score - home_def_VoA_rating,
-                                   TRUE ~ home_score - away_def_VoA_rating))
+             off_error = case_when(home_team == team ~ home_score - mean(home_off_VoA_rating, away_def_VoA_rating),
+                                   TRUE ~ away_score - mean(away_off_VoA_rating, home_def_VoA_rating)),
+             def_error = case_when(home_team == team ~ away_score - mean(home_def_VoA_rating, away_off_VoA_rating),
+                                   TRUE ~ home_score - mean(away_def_VoA_rating, home_off_VoA_rating)))
     
     VoA_Variables$off_error[i] = mean(temp_games$off_error)
     VoA_Variables$def_error[i] = mean(temp_games$def_error)
@@ -4988,9 +4988,9 @@ if (as.numeric(nfl_week) == 0){
   for (i in 1:nrow(VoA_Variables)){
     set.seed(802)
     temp_off_ppg <- VoA_Variables$adj_off_ppg[i]
-    VoA_Variables$adj_off_ppg[i] = temp_off_ppg + rnorm(1, mean = VoA_Variables$off_error[i] / 5, sd = sd(VoA_Variables$off_error) * 1.05)
+    VoA_Variables$adj_off_ppg[i] = temp_off_ppg + rnorm(1, mean = VoA_Variables$off_error[i] / 5, sd = sd(VoA_Variables$off_error))
     temp_def_ppg <- VoA_Variables$adj_def_ppg[i]
-    VoA_Variables$adj_def_ppg[i] = temp_def_ppg + rnorm(1, mean = VoA_Variables$def_error[i] / 5, sd = sd(VoA_Variables$def_error) * 1.05)
+    VoA_Variables$adj_def_ppg[i] = temp_def_ppg + rnorm(1, mean = VoA_Variables$def_error[i] / 5, sd = sd(VoA_Variables$def_error))
     
     ### making sure all values are > 0
     set.seed(802)
@@ -5024,10 +5024,10 @@ if (as.numeric(nfl_week) == 0){
     temp_games <- CompletedGames |>
       filter(home_team == VoA_Variables$team[i] | away_team == VoA_Variables$team[i]) |>
       mutate(team = VoA_Variables$team[i],
-             off_error = case_when(home_team == team ~ home_score - home_off_VoA_rating,
-                                   TRUE ~ away_score - away_off_VoA_rating),
-             def_error = case_when(home_team == team ~ away_score - home_def_VoA_rating,
-                                   TRUE ~ home_score - away_def_VoA_rating))
+             off_error = case_when(home_team == team ~ home_score - mean(home_off_VoA_rating, away_def_VoA_rating),
+                                   TRUE ~ away_score - mean(away_off_VoA_rating, home_def_VoA_rating)),
+             def_error = case_when(home_team == team ~ away_score - mean(home_def_VoA_rating, away_off_VoA_rating),
+                                   TRUE ~ home_score - mean(away_def_VoA_rating, home_off_VoA_rating)))
     
     VoA_Variables$off_error[i] = mean(temp_games$off_error)
     VoA_Variables$def_error[i] = mean(temp_games$def_error)
@@ -5073,10 +5073,10 @@ if (as.numeric(nfl_week) == 0){
     temp_games <- CompletedGames |>
       filter(home_team == VoA_Variables$team[i] | away_team == VoA_Variables$team[i]) |>
       mutate(team = VoA_Variables$team[i],
-             off_error = case_when(home_team == team ~ home_score - home_off_VoA_rating,
-                                   TRUE ~ away_score - away_off_VoA_rating),
-             def_error = case_when(home_team == team ~ away_score - home_def_VoA_rating,
-                                   TRUE ~ home_score - away_def_VoA_rating))
+             off_error = case_when(home_team == team ~ home_score - mean(home_off_VoA_rating, away_def_VoA_rating),
+                                   TRUE ~ away_score - mean(away_off_VoA_rating, home_def_VoA_rating)),
+             def_error = case_when(home_team == team ~ away_score - mean(home_def_VoA_rating, away_off_VoA_rating),
+                                   TRUE ~ home_score - mean(away_def_VoA_rating, home_off_VoA_rating)))
     
     VoA_Variables$off_error[i] = mean(temp_games$off_error)
     VoA_Variables$def_error[i] = mean(temp_games$def_error)
