@@ -4975,10 +4975,10 @@ if (as.numeric(nfl_week) == 0){
     temp_games <- CompletedGames |>
       filter(home_team == VoA_Variables$team[i] | away_team == VoA_Variables$team[i]) |>
       mutate(team = VoA_Variables$team[i],
-             off_error = case_when(home_team == team ~ home_score - mean(home_off_VoA_rating, away_def_VoA_rating),
-                                   TRUE ~ away_score - mean(away_off_VoA_rating, home_def_VoA_rating)),
-             def_error = case_when(home_team == team ~ away_score - mean(home_def_VoA_rating, away_off_VoA_rating),
-                                   TRUE ~ home_score - mean(away_def_VoA_rating, home_off_VoA_rating)))
+             off_error = case_when(home_team == team ~ home_score - ((home_off_VoA_rating + away_def_VoA_rating) / 2),
+                                   TRUE ~ away_score - ((away_off_VoA_rating + home_def_VoA_rating) / 2)),
+             def_error = case_when(home_team == team ~ away_score - ((home_def_VoA_rating + away_off_VoA_rating) / 2),
+                                   TRUE ~ home_score - ((away_def_VoA_rating + home_off_VoA_rating) / 2)))
     
     VoA_Variables$off_error[i] = mean(temp_games$off_error)
     VoA_Variables$def_error[i] = mean(temp_games$def_error)
@@ -5024,10 +5024,10 @@ if (as.numeric(nfl_week) == 0){
     temp_games <- CompletedGames |>
       filter(home_team == VoA_Variables$team[i] | away_team == VoA_Variables$team[i]) |>
       mutate(team = VoA_Variables$team[i],
-             off_error = case_when(home_team == team ~ home_score - mean(home_off_VoA_rating, away_def_VoA_rating),
-                                   TRUE ~ away_score - mean(away_off_VoA_rating, home_def_VoA_rating)),
-             def_error = case_when(home_team == team ~ away_score - mean(home_def_VoA_rating, away_off_VoA_rating),
-                                   TRUE ~ home_score - mean(away_def_VoA_rating, home_off_VoA_rating)))
+             off_error = case_when(home_team == team ~ home_score - ((home_off_VoA_rating + away_def_VoA_rating) / 2),
+                                   TRUE ~ away_score - ((away_off_VoA_rating + home_def_VoA_rating) / 2)),
+             def_error = case_when(home_team == team ~ away_score - ((home_def_VoA_rating + away_off_VoA_rating) / 2),
+                                   TRUE ~ home_score - ((away_def_VoA_rating + home_off_VoA_rating) / 2)))
     
     VoA_Variables$off_error[i] = mean(temp_games$off_error)
     VoA_Variables$def_error[i] = mean(temp_games$def_error)
@@ -5073,10 +5073,10 @@ if (as.numeric(nfl_week) == 0){
     temp_games <- CompletedGames |>
       filter(home_team == VoA_Variables$team[i] | away_team == VoA_Variables$team[i]) |>
       mutate(team = VoA_Variables$team[i],
-             off_error = case_when(home_team == team ~ home_score - mean(home_off_VoA_rating, away_def_VoA_rating),
-                                   TRUE ~ away_score - mean(away_off_VoA_rating, home_def_VoA_rating)),
-             def_error = case_when(home_team == team ~ away_score - mean(home_def_VoA_rating, away_off_VoA_rating),
-                                   TRUE ~ home_score - mean(away_def_VoA_rating, home_off_VoA_rating)))
+             off_error = case_when(home_team == team ~ home_score - ((home_off_VoA_rating + away_def_VoA_rating) / 2),
+                                   TRUE ~ away_score - ((away_off_VoA_rating + home_def_VoA_rating) / 2)),
+             def_error = case_when(home_team == team ~ away_score - ((home_def_VoA_rating + away_off_VoA_rating) / 2),
+                                   TRUE ~ home_score - ((away_def_VoA_rating + home_off_VoA_rating) / 2)))
     
     VoA_Variables$off_error[i] = mean(temp_games$off_error)
     VoA_Variables$def_error[i] = mean(temp_games$def_error)
@@ -5770,7 +5770,7 @@ if (as.numeric(nfl_week) == 3) {
 ### charting VoA_Rating and VoA_Ranking for each week from week 3 on
 if (as.numeric(nfl_week) >= 3){
   ### creating rating chart
-  VoA_Rating_Chart <- ggplot(Ratings_Rks, aes(x = nfl_week, y = VoA_Rating_Ovr, group = team)) +
+  VoA_Rating_Chart <- ggplot(Ratings_Rks, aes(x = week, y = VoA_Rating_Ovr, group = team)) +
     theme_bw() +
     geom_line(linewidth = 1.5) +
     geom_point(size = 5) +
@@ -5787,7 +5787,7 @@ if (as.numeric(nfl_week) >= 3){
   VoA_Rating_Chart
   ggsave(Output_filename, path = output_dir, width = 50, height = 40, units = 'cm')
   
-  VoA_Ranking_Chart <- ggplot(Ratings_Rks, aes(x = nfl_week, y = VoA_Ranking_Ovr, group = team)) +
+  VoA_Ranking_Chart <- ggplot(Ratings_Rks, aes(x = week, y = VoA_Ranking_Ovr, group = team)) +
     theme_bw() +
     geom_line(linewidth = 1.5) +
     geom_point(size = 5) +
