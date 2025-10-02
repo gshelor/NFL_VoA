@@ -61,11 +61,11 @@ if (as.numeric(nfl_week) == 1){
 } else if (as.numeric(nfl_week) >= 2){
   ### reading in csv of previous games with error calculated, binding current week's games to that 
   PrevWeekGameAccuracyMetrics <- read_csv(here("Data", paste0("VoA", season), "AccuracyMetrics", "Games", paste0(nfl_text, "VoA", season, week_text, "1", week_text, as.character(as.numeric(nfl_week) - 1), "GameAccuracyMetrics.csv")))
-  if(is.na(colnames(PrevWeekGameAccuracyMetrics)[which(colnames(PrevWeekGameAccuracyMetrics) == "proj_margin")])){
-    print("colnames all good")
-  } else{
-    colnames(PrevWeekGameAccuracyMetrics)[which(colnames(PrevWeekGameAccuracyMetrics) == "proj_margin")] = "Proj_Margin"
-  }
+  # if (is.na(colnames(PrevWeekGameAccuracyMetrics)[which(colnames(PrevWeekGameAccuracyMetrics) == "proj_margin")])){
+  #   print("colnames all good")
+  # } else{
+  #   colnames(PrevWeekGameAccuracyMetrics)[which(colnames(PrevWeekGameAccuracyMetrics) == "proj_margin")] = "Proj_Margin"
+  # }
   CompletedGames <- rbind(PrevWeekGameAccuracyMetrics, LastWeekGames)
   
   ### writing csv with individual games + accuracy metrics
