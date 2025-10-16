@@ -5227,7 +5227,7 @@ if (as.numeric(nfl_week) <= 10){
   Off_VoA_fit
   
   ### Print the diagnostics
-  print(Off_VoA_fit$cmdstan_diagnose())
+  # print(Off_VoA_fit$cmdstan_diagnose())
   
   ### Extracting Parameters
   Off_VoA_pars <- Off_VoA_fit$draws(variables = c("b0", "beta_off_epa", "beta_off_ypp", "beta_off_success_rt", "beta_off_explosiveness", "beta_third_conv_rate", "beta_off_pts_per_opp", "beta_off_plays_pg", "beta_VoA_Output", "sigma"), format = "draws_df")
@@ -5270,7 +5270,7 @@ if (as.numeric(nfl_week) <= 10){
   Def_VoA_fit
   
   ### Print the diagnostics
-  print(Def_VoA_fit$cmdstan_diagnose())
+  # print(Def_VoA_fit$cmdstan_diagnose())
   
   
   ### Extracting Parameters
@@ -5314,7 +5314,7 @@ if (as.numeric(nfl_week) <= 10){
   ST_VoA_fit
   
   ### Print the diagnostics
-  print(ST_VoA_fit$cmdstan_diagnose())
+  # print(ST_VoA_fit$cmdstan_diagnose())
   
   ### extracting parameters
   ST_VoA_pars <- ST_VoA_fit$draws(variables = c("b0", "beta_net_st_epa", "beta_net_kick_return_avg", "beta_net_punt_return_avg", "beta_net_fg_rate", "beta_net_xp_rate", "sigma"), format = "draws_df")
@@ -5355,7 +5355,7 @@ if (as.numeric(nfl_week) <= 10){
   Off_VoA_fit
   
   ### Print the diagnostics
-  print(Off_VoA_fit$cmdstan_diagnose())
+  # print(Off_VoA_fit$cmdstan_diagnose())
   
   ### Extracting Parameters
   Off_VoA_pars <- Off_VoA_fit$draws(variables = c("b0", "beta_off_epa", "beta_off_ypp", "beta_off_success_rt", "beta_off_explosiveness", "beta_third_conv_rate", "beta_off_pts_per_opp", "beta_off_plays_pg", "beta_VoA_Output", "sigma"), format = "draws_df")
@@ -5397,7 +5397,7 @@ if (as.numeric(nfl_week) <= 10){
   Def_VoA_fit
   
   ### Print the diagnostics
-  print(Def_VoA_fit$cmdstan_diagnose())
+  # print(Def_VoA_fit$cmdstan_diagnose())
   
   
   ### Extracting Parameters
@@ -5440,7 +5440,7 @@ if (as.numeric(nfl_week) <= 10){
   ST_VoA_fit
   
   ### Print the diagnostics
-  print(ST_VoA_fit$cmdstan_diagnose())
+  # print(ST_VoA_fit$cmdstan_diagnose())
   
   ### extracting parameters
   ST_VoA_pars <- ST_VoA_fit$draws(variables = c("b0", "beta_net_st_epa", "beta_net_kick_return_avg", "beta_net_punt_return_avg", "beta_net_fg_rate", "beta_net_xp_rate", "sigma"), format = "draws_df")
@@ -5824,6 +5824,7 @@ ggsave(hist_filename, path = output_dir, width = 50, height = 40, units = 'cm')
 
 ### Creating Scatterplot of VoA_Output vs VoA_Rating
 VoA_Output_Rating_plot <- ggplot(VoA_Variables, aes(x = VoA_Output, y = VoA_Rating_Ovr)) +
+  theme_bw() +
   geom_point(size = 5) +
   geom_nfl_logos(aes(team_abbr = team), width = 0.05) +
   geom_smooth() +
