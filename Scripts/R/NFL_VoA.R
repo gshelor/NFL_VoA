@@ -4534,7 +4534,13 @@ if (as.numeric(nfl_week) == 0){
            weighted_net_xp_made_pg = ((xp_made_pg_PY1 - xp_made_pg_allowed_PY1) * 0.7) + ((xp_made_pg_PY2 - xp_made_pg_allowed_PY2) * 0.25) + ((xp_made_pg_PY3 - xp_made_pg_allowed_PY3) * 0.05),
            weighted_net_st_ppg = (net_st_ppg_PY1 * 0.7) + (net_st_ppg_PY2 * 0.25) + (net_st_ppg_PY3 * 0.05),
            off_ppg_aboveavg = weighted_off_ppg - mean(weighted_off_ppg),
-           def_ppg_aboveavg = weighted_def_ppg - mean(weighted_def_ppg))
+           def_ppg_aboveavg = weighted_def_ppg - mean(weighted_def_ppg))#,
+           # off_ppg_adj = case_when(weighted_off_ppg > quantile(weighted_off_ppg, 0.8) ~ weighted_off_ppg + (off_ppg_aboveavg / 2),
+           #                         weighted_off_ppg > mean(weighted_off_ppg) ~ weighted_off_ppg + (off_ppg_aboveavg / 5),
+           #                         TRUE ~ weighted_off_ppg),
+           # def_ppg_adj = case_when(weighted_def_ppg > quantile(weighted_def_ppg, 0.8) ~ weighted_def_ppg + (def_ppg_aboveavg / 2),
+           #                         weighted_def_ppg > mean(weighted_def_ppg) ~ weighted_def_ppg + (def_ppg_aboveavg / 5),
+           #                         TRUE ~ weighted_def_ppg)))
 } else if (as.numeric(nfl_week) <= 2){
   ##### Weeks 1-2 weighted variable calculation #####
   ### Adding columns of variables weighted by season
@@ -4579,7 +4585,13 @@ if (as.numeric(nfl_week) == 0){
            weighted_net_xp_made_pg = ((xp_made_pg_PY1 - xp_made_pg_allowed_PY1) * 0.6) + ((xp_made_pg_PY2 - xp_made_pg_allowed_PY2) * 0.05) + ((xp_made_pg - xp_made_pg_allowed) * 0.35),
            weighted_net_st_ppg = (net_st_ppg_PY1 * 0.6) + (net_st_ppg_PY2 * 0.05) + (net_st_ppg * 0.35),
            off_ppg_aboveavg = weighted_off_ppg - mean(weighted_off_ppg),
-           def_ppg_aboveavg = weighted_def_ppg - mean(weighted_def_ppg))
+           def_ppg_aboveavg = weighted_def_ppg - mean(weighted_def_ppg))#,
+           # off_ppg_adj = case_when(weighted_off_ppg > quantile(weighted_off_ppg, 0.8) ~ weighted_off_ppg + (off_ppg_aboveavg / 2),
+           #                         weighted_off_ppg > mean(weighted_off_ppg) ~ weighted_off_ppg + (off_ppg_aboveavg / 5),
+           #                         TRUE ~ weighted_off_ppg),
+           # def_ppg_adj = case_when(weighted_def_ppg > quantile(weighted_def_ppg, 0.8) ~ weighted_def_ppg + (def_ppg_aboveavg / 2),
+           #                         weighted_def_ppg > mean(weighted_def_ppg) ~ weighted_def_ppg + (def_ppg_aboveavg / 5),
+           #                         TRUE ~ weighted_def_ppg)))
 } else if (as.numeric(nfl_week) <= 4){
   ##### Weeks 3-4 weighted variable calculation #####
   ### Adding columns of variables weighted by season
@@ -4624,7 +4636,13 @@ if (as.numeric(nfl_week) == 0){
            weighted_net_xp_made_pg = ((xp_made_pg_PY1 - xp_made_pg_allowed_PY1) * 0.6) + ((xp_made_pg - xp_made_pg_allowed) * 0.4),
            weighted_net_st_ppg = (net_st_ppg_PY1 * 0.6) + (net_st_ppg * 0.4),
            off_ppg_aboveavg = weighted_off_ppg - mean(weighted_off_ppg),
-           def_ppg_aboveavg = weighted_def_ppg - mean(weighted_def_ppg))
+           def_ppg_aboveavg = weighted_def_ppg - mean(weighted_def_ppg))#,
+           # off_ppg_adj = case_when(weighted_off_ppg > quantile(weighted_off_ppg, 0.8) ~ weighted_off_ppg + (off_ppg_aboveavg / 2),
+           #                         weighted_off_ppg > mean(weighted_off_ppg) ~ weighted_off_ppg + (off_ppg_aboveavg / 5),
+           #                         TRUE ~ weighted_off_ppg),
+           # def_ppg_adj = case_when(weighted_def_ppg > quantile(weighted_def_ppg, 0.8) ~ weighted_def_ppg + (def_ppg_aboveavg / 2),
+           #                         weighted_def_ppg > mean(weighted_def_ppg) ~ weighted_def_ppg + (def_ppg_aboveavg / 5),
+           #                         TRUE ~ weighted_def_ppg)))
 } else if (as.numeric(nfl_week) == 5){
   ##### Week 5 weighted Variable calculation #####
   ### Adding columns of variables weighted by season
@@ -4669,7 +4687,13 @@ if (as.numeric(nfl_week) == 0){
            weighted_net_xp_made_pg = ((xp_made_pg_PY1 - xp_made_pg_allowed_PY1) * 0.5) + ((xp_made_pg - xp_made_pg_allowed) * 0.5),
            weighted_net_st_ppg = (net_st_ppg_PY1 * 0.5) + (net_st_ppg * 0.5),
            off_ppg_aboveavg = weighted_off_ppg - mean(weighted_off_ppg),
-           def_ppg_aboveavg = weighted_def_ppg - mean(weighted_def_ppg))
+           def_ppg_aboveavg = weighted_def_ppg - mean(weighted_def_ppg))#,
+           # off_ppg_adj = case_when(weighted_off_ppg > quantile(weighted_off_ppg, 0.8) ~ weighted_off_ppg + (off_ppg_aboveavg / 2),
+           #                         weighted_off_ppg > mean(weighted_off_ppg) ~ weighted_off_ppg + (off_ppg_aboveavg / 5),
+           #                         TRUE ~ weighted_off_ppg),
+           # def_ppg_adj = case_when(weighted_def_ppg > quantile(weighted_def_ppg, 0.8) ~ weighted_def_ppg + (def_ppg_aboveavg / 2),
+           #                         weighted_def_ppg > mean(weighted_def_ppg) ~ weighted_def_ppg + (def_ppg_aboveavg / 5),
+           #                         TRUE ~ weighted_def_ppg)))
 } else if (as.numeric(nfl_week) == 6){
   ##### Week 6 weighted variable calculation #####
   ### Adding columns of variables weighted by season
@@ -4714,7 +4738,13 @@ if (as.numeric(nfl_week) == 0){
            weighted_net_xp_made_pg = ((xp_made_pg_PY1 - xp_made_pg_allowed_PY1) * 0.4) + ((xp_made_pg - xp_made_pg_allowed) * 0.6),
            weighted_net_st_ppg = (net_st_ppg_PY1 * 0.4) + (net_st_ppg * 0.6),
            off_ppg_aboveavg = weighted_off_ppg - mean(weighted_off_ppg),
-           def_ppg_aboveavg = weighted_def_ppg - mean(weighted_def_ppg))
+           def_ppg_aboveavg = weighted_def_ppg - mean(weighted_def_ppg))#,
+           # off_ppg_adj = case_when(weighted_off_ppg > quantile(weighted_off_ppg, 0.8) ~ weighted_off_ppg + (off_ppg_aboveavg / 2),
+           #                         weighted_off_ppg > mean(weighted_off_ppg) ~ weighted_off_ppg + (off_ppg_aboveavg / 5),
+           #                         TRUE ~ weighted_off_ppg),
+           # def_ppg_adj = case_when(weighted_def_ppg > quantile(weighted_def_ppg, 0.8) ~ weighted_def_ppg + (def_ppg_aboveavg / 2),
+           #                         weighted_def_ppg > mean(weighted_def_ppg) ~ weighted_def_ppg + (def_ppg_aboveavg / 5),
+           #                         TRUE ~ weighted_def_ppg)))
 } else if (as.numeric(nfl_week) == 7){
   ##### Week 7 weighted variable calculation #####
   ### Adding columns of variables weighted by season
@@ -4759,7 +4789,13 @@ if (as.numeric(nfl_week) == 0){
            weighted_net_xp_made_pg = ((xp_made_pg_PY1 - xp_made_pg_allowed_PY1) * 0.35) + ((xp_made_pg - xp_made_pg_allowed) * 0.65),
            weighted_net_st_ppg = (net_st_ppg_PY1 * 0.35) + (net_st_ppg * 0.65),
            off_ppg_aboveavg = weighted_off_ppg - mean(weighted_off_ppg),
-           def_ppg_aboveavg = weighted_def_ppg - mean(weighted_def_ppg))
+           def_ppg_aboveavg = weighted_def_ppg - mean(weighted_def_ppg))#,
+           # off_ppg_adj = case_when(weighted_off_ppg > quantile(weighted_off_ppg, 0.8) ~ weighted_off_ppg + (off_ppg_aboveavg / 2),
+           #                         weighted_off_ppg > mean(weighted_off_ppg) ~ weighted_off_ppg + (off_ppg_aboveavg / 5),
+           #                         TRUE ~ weighted_off_ppg),
+           # def_ppg_adj = case_when(weighted_def_ppg > quantile(weighted_def_ppg, 0.8) ~ weighted_def_ppg + (def_ppg_aboveavg / 2),
+           #                         weighted_def_ppg > mean(weighted_def_ppg) ~ weighted_def_ppg + (def_ppg_aboveavg / 5),
+           #                         TRUE ~ weighted_def_ppg)))
 } else if (as.numeric(nfl_week) == 8){
   ##### Week 8 weighted variable calculation #####
   ### Adding columns of variables weighted by season
@@ -4804,7 +4840,13 @@ if (as.numeric(nfl_week) == 0){
            weighted_net_xp_made_pg = ((xp_made_pg_PY1 - xp_made_pg_allowed_PY1) * 0.3) + ((xp_made_pg - xp_made_pg_allowed) * 0.7),
            weighted_net_st_ppg = (net_st_ppg_PY1 * 0.3) + (net_st_ppg * 0.7),
            off_ppg_aboveavg = weighted_off_ppg - mean(weighted_off_ppg),
-           def_ppg_aboveavg = weighted_def_ppg - mean(weighted_def_ppg))
+           def_ppg_aboveavg = weighted_def_ppg - mean(weighted_def_ppg))#,
+           # off_ppg_adj = case_when(weighted_off_ppg > quantile(weighted_off_ppg, 0.8) ~ weighted_off_ppg + (off_ppg_aboveavg / 2),
+           #                         weighted_off_ppg > mean(weighted_off_ppg) ~ weighted_off_ppg + (off_ppg_aboveavg / 5),
+           #                         TRUE ~ weighted_off_ppg),
+           # def_ppg_adj = case_when(weighted_def_ppg > quantile(weighted_def_ppg, 0.8) ~ weighted_def_ppg + (def_ppg_aboveavg / 2),
+           #                         weighted_def_ppg > mean(weighted_def_ppg) ~ weighted_def_ppg + (def_ppg_aboveavg / 5),
+           #                         TRUE ~ weighted_def_ppg)))
 } else if (as.numeric(nfl_week) == 9){
   ##### Week 9 weighted variable calculation #####
   ### Adding columns of variables weighted by season
@@ -4849,7 +4891,13 @@ if (as.numeric(nfl_week) == 0){
            weighted_net_xp_made_pg = ((xp_made_pg_PY1 - xp_made_pg_allowed_PY1) * 0.25) + ((xp_made_pg - xp_made_pg_allowed) * 0.75),
            weighted_net_st_ppg = (net_st_ppg_PY1 * 0.25) + (net_st_ppg * 0.75),
            off_ppg_aboveavg = weighted_off_ppg - mean(weighted_off_ppg),
-           def_ppg_aboveavg = weighted_def_ppg - mean(weighted_def_ppg))
+           def_ppg_aboveavg = weighted_def_ppg - mean(weighted_def_ppg))#,
+           # off_ppg_adj = case_when(weighted_off_ppg > quantile(weighted_off_ppg, 0.8) ~ weighted_off_ppg + (off_ppg_aboveavg / 2),
+           #                         weighted_off_ppg > mean(weighted_off_ppg) ~ weighted_off_ppg + (off_ppg_aboveavg / 5),
+           #                         TRUE ~ weighted_off_ppg),
+           # def_ppg_adj = case_when(weighted_def_ppg > quantile(weighted_def_ppg, 0.8) ~ weighted_def_ppg + (def_ppg_aboveavg / 2),
+           #                         weighted_def_ppg > mean(weighted_def_ppg) ~ weighted_def_ppg + (def_ppg_aboveavg / 5),
+           #                         TRUE ~ weighted_def_ppg)))
 } else if (as.numeric(nfl_week) == 10){
   ##### Week 10 weighted variable calculation #####
   ### Adding columns of variables weighted by season
@@ -4894,7 +4942,13 @@ if (as.numeric(nfl_week) == 0){
            weighted_net_xp_made_pg = ((xp_made_pg_PY1 - xp_made_pg_allowed_PY1) * 0.1) + ((xp_made_pg - xp_made_pg_allowed) * 0.9),
            weighted_net_st_ppg = (net_st_ppg_PY1 * 0.1) + (net_st_ppg * 0.9),
            off_ppg_aboveavg = weighted_off_ppg - mean(weighted_off_ppg),
-           def_ppg_aboveavg = weighted_def_ppg - mean(weighted_def_ppg))
+           def_ppg_aboveavg = weighted_def_ppg - mean(weighted_def_ppg))#,
+           # off_ppg_adj = case_when(weighted_off_ppg > quantile(weighted_off_ppg, 0.8) ~ weighted_off_ppg + (off_ppg_aboveavg / 2),
+           #                         weighted_off_ppg > mean(weighted_off_ppg) ~ weighted_off_ppg + (off_ppg_aboveavg / 5),
+           #                         TRUE ~ weighted_off_ppg),
+           # def_ppg_adj = case_when(weighted_def_ppg > quantile(weighted_def_ppg, 0.8) ~ weighted_def_ppg + (def_ppg_aboveavg / 2),
+           #                         weighted_def_ppg > mean(weighted_def_ppg) ~ weighted_def_ppg + (def_ppg_aboveavg / 5),
+           #                         TRUE ~ weighted_def_ppg)))
 } else{
   print("no more weighted vars, current season only")
 }
