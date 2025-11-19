@@ -32,15 +32,19 @@ Rating_text <- "_Ratings_Chart.png"
 Ranking_text <- "_Rankings_Chart.png"
 Histogram_text <- "_RatingHist.png"
 Output_Rating_Plot_text <- "VoA Outputs vs VoA Ratings"
+OffDef_Rating_Plot_text <- "VoA Off Rating vs VoA Def Rating"
 Output_Rating_Plot_png <- "Output_Rating.png"
+OffDef_Rating_Plot_png <- "OffDef_Rating.png"
 
 hist_title <- paste(season, week_text, nfl_week, nfl_text, VoA_text, "Ratings")
 Output_Rating_Plot_title <- paste(season, week_text, nfl_week, Output_Rating_Plot_text)
+OffDef_Rating_Plot_title <- paste(season, week_text, nfl_week, OffDef_Rating_Plot_text)
 table_file_pathway <- paste(season, week_text, nfl_week, "_", fulltable_png, sep = "")
 Output_filename <- paste(season, week_text, nfl_week, nfl_text, Rating_text, sep = "")
 Ranking_filename <- paste(season, week_text, nfl_week, nfl_text, Ranking_text, sep = "")
 hist_filename <- paste(season, week_text, nfl_week, "_", nfl_text, Histogram_text, sep = "")
 Output_Rating_Plot_filename <- paste(season, week_text, nfl_week, "_", Output_Rating_Plot_png, sep = "")
+OffDef_Rating_Plot_filename <- paste(season, week_text, nfl_week, "_", OffDef_Rating_Plot_png, sep = "")
 ### setting gt title based on whether it's after a playoff week or not
 if (as.numeric(nfl_week) == 19){
   gt_title <- paste(season, nfl_text, "Wildcard Round", VoA_text)
@@ -5827,7 +5831,7 @@ if (as.numeric(nfl_week) >= 3){
   VoA_Rating_Chart <- ggplot(Ratings_Rks, aes(x = week, y = VoA_Rating_Ovr, group = team)) +
     theme_bw() +
     geom_line(linewidth = 1.5) +
-    geom_point(size = 5) +
+    # geom_point(size = 5) +
     xlab("Week") +
     ylab("VoA Overall Rating") +
     labs(caption = "chart by @gshelor, data from nflfastR") +
@@ -5844,7 +5848,7 @@ if (as.numeric(nfl_week) >= 3){
   VoA_Ranking_Chart <- ggplot(Ratings_Rks, aes(x = week, y = VoA_Ranking_Ovr, group = team)) +
     theme_bw() +
     geom_line(linewidth = 1.5) +
-    geom_point(size = 5) +
+    # geom_point(size = 5) +
     xlab("Week") +
     ylab("VoA Ranking") +
     labs(caption = "chart by @gshelor, data from nflfastR") +
@@ -5862,6 +5866,7 @@ if (as.numeric(nfl_week) >= 3){
 
 ##### creating histogram of VoA Ratings #####
 Rating_histogram <- ggplot(VoA_Variables, aes(VoA_Rating_Ovr)) +
+  theme_bw() +
   geom_histogram(binwidth = 2,
                  col = "black",
                  fill = "orange") +
@@ -5879,7 +5884,7 @@ ggsave(hist_filename, path = output_dir, width = 50, height = 40, units = 'cm')
 ### Creating Scatterplot of VoA_Output vs VoA_Rating
 VoA_Output_Rating_plot <- ggplot(VoA_Variables, aes(x = VoA_Output, y = VoA_Rating_Ovr)) +
   theme_bw() +
-  geom_point(size = 5) +
+  # geom_point(size = 5) +
   geom_nfl_logos(aes(team_abbr = team), width = 0.05) +
   geom_smooth() +
   scale_x_continuous(breaks = seq(0,32,2)) +
@@ -5892,6 +5897,23 @@ VoA_Output_Rating_plot <- ggplot(VoA_Variables, aes(x = VoA_Output, y = VoA_Rati
 VoA_Output_Rating_plot
 ggsave(Output_Rating_Plot_filename, path = output_dir, width = 50, height = 40, units = 'cm')
 
+### Creating Scatterplot of VoA Offensive Ratings vs VoA Defensive Ratings
+VoA_OffDef_Rating_plot <- ggplot(VoA_Variables, aes(x = OffVoA_MeanRating, y = DefVoA_MeanRating)) +
+  theme_bw() +
+  # geom_point(size = 1) +
+  geom_nfl_logos(aes(team_abbr = team), width = 0.05) +
+  geom_hline(yintercept = median(VoA_Variables$DefVoA_MeanRating)) +
+  geom_vline(xintercept = median(VoA_Variables$OffVoA_MeanRating)) +
+  scale_y_reverse() +
+  # scale_x_continuous(breaks = seq(0,32,2)) +
+  # scale_y_continuous(breaks = seq(-40,40,5)) +
+  ggtitle(OffDef_Rating_Plot_title) +
+  xlab("VoA Offensive Rating") +
+  ylab("VoA Defensive Rating") +
+  labs(caption = "chart by @gshelor, data from nflfastR") +
+  theme(plot.title = element_text(size = 35, hjust = 0.5), axis.text.x = element_text(size = 20), axis.text.y = element_text(size = 20), axis.title.x = element_text(size = 22), axis.title.y = element_text(size = 22), legend.text = element_text(size = 20))
+VoA_OffDef_Rating_plot
+ggsave(OffDef_Rating_Plot_filename, path = output_dir, width = 50, height = 40, units = 'cm')
 
 
 EndTime <- Sys.time()
