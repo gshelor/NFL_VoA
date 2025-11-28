@@ -86,10 +86,10 @@ if (as.numeric(nfl_week) >= 6){
   SeasonMetrics <- CompletedGames |>
     group_by(season) |>
     summarize(games = nrow(CompletedGames),
-              mean_ae = mean(abs_error),
-              mean_vegas_ae = mean(vegas_abs_error),
-              mean_se = mean(sqd_error),
-              mean_vegas_se = mean(vegas_sqd_error),
+              MAE = mean(abs_error),
+              vegas_MAE = mean(vegas_abs_error),
+              MSE = mean(sqd_error),
+              vegas_MSE = mean(vegas_sqd_error),
               RMSE = rmse(result, Proj_Margin),
               vegas_RMSE = rmse(result, spread_line),
               straight_up_win_pct = sum(straight_up_win) / nrow(CompletedGames),
