@@ -106,12 +106,28 @@ if (as.numeric(nfl_week) >= 6){
 if (as.numeric(nfl_week) >= 2){
   VegasRMSECompPlot <- ggplot(CompletedWeeks, mapping = aes(x = week)) +
     theme_bw() +
+    geom_point(mapping = aes(y = RMSE)) +
+    geom_point(mapping = aes(y = vegas_RMSE), colour = 'blue') +
     geom_line(mapping = aes(y = RMSE)) +
     geom_line(mapping = aes(y = vegas_RMSE), colour = 'blue') +
     ggtitle(label = "RMSE and Vegas's RMSE (in blue) by Week") +
+    xlab("Week") +
     theme(plot.title = element_text(hjust = 0.5))
   
   VegasRMSECompPlot
+  
+  VegasWinPctCompPlot <- ggplot(CompletedWeeks, mapping = aes(x = week)) +
+    theme_bw() +
+    geom_point(mapping = aes(y = straight_up_win_pct)) +
+    geom_point(mapping = aes(y = vegas_straight_up_win_pct), colour = 'blue') +
+    geom_line(mapping = aes(y = straight_up_win_pct)) +
+    geom_line(mapping = aes(y = vegas_straight_up_win_pct), colour = 'blue') +
+    ggtitle(label = "RMSE and Vegas's Correct Winner % (in blue) by Week") +
+    xlab("Week") +
+    ylab("Correct Win (%)") +
+    theme(plot.title = element_text(hjust = 0.5))
+  
+  VegasWinPctCompPlot
 }
 # plot(CompletedWeeks$week, CompletedWeeks$RMSE, type = "l")
 # plot(CompletedWeeks$vegas_RMSE, type = "l", add = T)
