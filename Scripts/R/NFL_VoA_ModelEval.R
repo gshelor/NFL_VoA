@@ -110,7 +110,7 @@ if (as.numeric(nfl_week) >= 2){
     geom_point(mapping = aes(y = vegas_RMSE), colour = 'blue') +
     geom_line(mapping = aes(y = RMSE)) +
     geom_line(mapping = aes(y = vegas_RMSE), colour = 'blue') +
-    ggtitle(label = "RMSE and Vegas's RMSE (in blue) by Week") +
+    ggtitle(label = "RMSE (Vegas in blue) by Week") +
     xlab("Week") +
     theme(plot.title = element_text(hjust = 0.5))
   
@@ -122,7 +122,7 @@ if (as.numeric(nfl_week) >= 2){
     geom_point(mapping = aes(y = vegas_straight_up_win_pct), colour = 'blue') +
     geom_line(mapping = aes(y = straight_up_win_pct)) +
     geom_line(mapping = aes(y = vegas_straight_up_win_pct), colour = 'blue') +
-    ggtitle(label = "RMSE and Vegas's Correct Winner % (in blue) by Week") +
+    ggtitle(label = "Correct Winner % (Vegas in blue) by Week") +
     xlab("Week") +
     ylab("Correct Win (%)") +
     theme(plot.title = element_text(hjust = 0.5))
