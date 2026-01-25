@@ -1,0 +1,3 @@
+game_id,season,game_type,week,gameday,weekday,gametime,away_team,away_VoA_Rating,home_team,home_VoA_Rating,location,result,total,overtime,spread_line,total_line,div_game,temp,wind,stadium,Proj_Margin,proj_margin_abs,proj_winner,home_win_prob,win_prob
+2025_21_NE_DEN,2025,CON,21,2026-01-25,Sunday,15:00,NE,10.819892479329653,DEN,5.8547539719103625,Home,NA,NA,NA,-3.5,43.5,0,NA,NA,Empower Field at Mile High,-2.46513850741929,2.46513850741929,NE,0.439277538944421,0.560722461055579
+2025_21_LA_SEA,2025,CON,21,2026-01-25,Sunday,18:30,LA,11.069598650762618,SEA,11.89684251889723,Home,NA,NA,NA,2.5,45.5,1,NA,NA,Lumen Field,3.3272438681346124,3.3272438681346124,SEA,0.5814128217139882,0.5814128217139882
