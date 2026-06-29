@@ -6,7 +6,7 @@
 StartTime <- Sys.time()
 library(pacman)
 # fmt: skip
-p_load(tidyverse, gt, nflfastR, nflverse, here, gtExtras, cmdstanr, ggpubr, webshot2, parallel, RColorBrewer, fastDummies, glmnet, data.table)
+p_load(tidyverse, gt, nflfastR, nflverse, here, gtExtras, cmdstanr, ggpubr, webshot2, parallel, RColorBrewer, fastDummies, glmnet, data.table, arrow)
 
 ### Creating week and season strings
 season <- readline(prompt = "What season is it? ")
@@ -14,7 +14,7 @@ nfl_week <- readline(prompt = "What week just occurred? ")
 
 
 ##### setting strings for table titles, file pathways, unintelligible charts #####
-`%nin%` = Negate(`%in%`)
+`%nin%` <- Negate(`%in%`)
 output_dir <- here("Outputs", "RVoA", paste0("VoA", season))
 VoP_output_dir <- here("Outputs", "RVoA", paste0("VoA", season), "VoP")
 data_dir <- here("Data", paste("VoA", season, sep = ""))
@@ -133,13 +133,15 @@ for (i in c(data_dir, output_dir, tracking_chart_dir, PY_data_dir, VoP_data_dir,
 PY1 <- as.numeric(season) - 1
 PY2 <- as.numeric(season) - 2
 PY3 <- as.numeric(season) - 3
+PY4 <- as.numeric(season) - 4
+PY5 <- as.numeric(season) - 5
 
 ##### reading in data #####
 if (as.numeric(nfl_week) == 0) {
   ##### Week 0 (Preseason) Data Pull #####
   ### reading in PBP data
   PY_PBP <- nflfastR::load_pbp(
-    (as.numeric(season) - 3):(as.numeric(season) - 1)
+    (as.numeric(season) - 6):(as.numeric(season) - 1)
   ) |>
     filter(
       play_type_nfl != "GAME_START" &
@@ -154,6 +156,10 @@ if (as.numeric(nfl_week) == 0) {
     filter(season == PY2)
   PBP_PY3 <- PY_PBP |>
     filter(season == PY3)
+  PBP_PY4 <- PY_PBP |>
+    filter(season == PY4)
+  PBP_PY5 <- PY_PBP |>
+    filter(season == PY5)
 
   ### offensive and defensive plays
   PY1_rushpass_plays <- PBP_PY1 |>
@@ -292,149 +298,114 @@ if (as.numeric(nfl_week) == 0) {
   PY3_punts <- PBP_PY3 |>
     filter(play_type == "punt")
 
+  ### PY4
+  ### offensive and defensive plays
+  PY4_rushpass_plays <- PBP_PY4 |>
+    filter(play_type %in% c("run", "pass")) |>
+    drop_na(epa) |>
+    drop_na(yards_gained)
+  PY4_success_plays <- PY4_rushpass_plays |>
+    filter(play_type_nfl != "INTERCEPTION") |>
+    filter(
+      (down == 1 & (yards_gained >= (ydstogo / 2))) |
+        (down == 2 & (yards_gained >= (ydstogo * 0.7))) |
+        (down > 2 & (yards_gained >= ydstogo))
+    )
+  PY4_TDs <- PY4_rushpass_plays |>
+    filter(
+      touchdown == 1 &
+        play_type_nfl != "INTERCEPTION" &
+        play_type_nfl != "FUMBLE_RECOVERED_BY_OPPONENT" &
+        fumble_lost == 0 &
+        interception == 0
+    )
+  PY4_3rdDowns <- PY4_rushpass_plays |>
+    filter(down == 3)
+  PY4_4thDowns <- PY4_rushpass_plays |>
+    filter(down == 4)
+  PY4_passplays <- PY4_rushpass_plays |>
+    filter(play_type == "pass")
+  PY4_rushplays <- PY4_rushpass_plays |>
+    filter(play_type == "run")
+  PY4_scoringopp_plays <- PBP_PY4 |>
+    filter(ydstogo <= 40) |>
+    drop_na(drive)
+  PY4_Turnovers <- PBP_PY4 |>
+    filter(interception == 1 | fumble_lost == 1)
+  PY4_2pts <- PBP_PY4 |>
+    filter(play_type_nfl == "PAT2")
+  ### special teams plays
+  PY4_XPts <- PBP_PY4 |>
+    filter(play_type == "extra_point")
+  PY4_FGs <- PBP_PY4 |>
+    filter(play_type == "field_goal")
+  PY4_kickoffs <- PBP_PY4 |>
+    filter(play_type == "kickoff")
+  PY4_punts <- PBP_PY4 |>
+    filter(play_type == "punt")
+
+  ### PY5
+  ### offensive and defensive plays
+  PY5_rushpass_plays <- PBP_PY5 |>
+    filter(play_type %in% c("run", "pass")) |>
+    drop_na(epa) |>
+    drop_na(yards_gained)
+  PY5_success_plays <- PY5_rushpass_plays |>
+    filter(play_type_nfl != "INTERCEPTION") |>
+    filter(
+      (down == 1 & (yards_gained >= (ydstogo / 2))) |
+        (down == 2 & (yards_gained >= (ydstogo * 0.7))) |
+        (down > 2 & (yards_gained >= ydstogo))
+    )
+  PY5_TDs <- PY5_rushpass_plays |>
+    filter(
+      touchdown == 1 &
+        play_type_nfl != "INTERCEPTION" &
+        play_type_nfl != "FUMBLE_RECOVERED_BY_OPPONENT" &
+        fumble_lost == 0 &
+        interception == 0
+    )
+  PY5_3rdDowns <- PY5_rushpass_plays |>
+    filter(down == 3)
+  PY5_4thDowns <- PY5_rushpass_plays |>
+    filter(down == 4)
+  PY5_passplays <- PY5_rushpass_plays |>
+    filter(play_type == "pass")
+  PY5_rushplays <- PY5_rushpass_plays |>
+    filter(play_type == "run")
+  PY5_scoringopp_plays <- PBP_PY5 |>
+    filter(ydstogo <= 40) |>
+    drop_na(drive)
+  PY5_Turnovers <- PBP_PY5 |>
+    filter(interception == 1 | fumble_lost == 1)
+  PY5_2pts <- PBP_PY5 |>
+    filter(play_type_nfl == "PAT2")
+  ### special teams plays
+  PY5_XPts <- PBP_PY5 |>
+    filter(play_type == "extra_point")
+  PY5_FGs <- PBP_PY5 |>
+    filter(play_type == "field_goal")
+  PY5_kickoffs <- PBP_PY5 |>
+    filter(play_type == "kickoff")
+  PY5_punts <- PBP_PY5 |>
+    filter(play_type == "punt")
+
   ### creating dataframe to eventually store VoA Variables and ratings
-  VoA_Variables <- data.frame(
-    season = rep(as.numeric(season), 32),
-    week = rep(as.numeric(nfl_week), 32),
-    team = unique(PY_PBP$home_team),
-    off_ypp_PY1 = -999,
-    off_epa_PY1 = -999,
-    off_success_rt_PY1 = -999,
-    off_explosiveness_PY1 = -999,
-    off_third_conv_rate_PY1 = -999,
-    off_fourth_conv_rate_PY1 = -999,
-    off_pass_ypa_PY1 = -999,
-    off_pass_ypc_PY1 = -999,
-    off_rush_ypa_PY1 = -999,
-    off_pts_per_opp_PY1 = -999,
-    off_turnovers_PY1 = -999,
-    off_plays_pg_PY1 = -999,
-    off_ppg_PY1 = -999,
-    def_ypp_PY1 = -999,
-    def_epa_PY1 = -999,
-    def_success_rt_PY1 = -999,
-    def_explosiveness_PY1 = -999,
-    def_third_conv_rate_PY1 = -999,
-    def_fourth_conv_rate_PY1 = -999,
-    def_pass_ypa_PY1 = -999,
-    def_pass_ypc_PY1 = -999,
-    def_rush_ypa_PY1 = -999,
-    def_pts_per_opp_PY1 = -999,
-    def_plays_pg_PY1 = -999,
-    def_ppg_PY1 = -999,
-    st_net_epa_PY1 = -999,
-    st_punt_return_yds_PY1 = -999,
-    st_kick_return_yds_PY1 = -999,
-    st_kick_return_TDs_PY1 = -999,
-    st_punt_return_TDs_PY1 = -999,
-    fg_rate_PY1 = -999,
-    fg_made_pg_PY1 = -999,
-    xp_rate_PY1 = -999,
-    xp_made_pg_PY1 = -999,
-    st_punt_return_yds_allowed_PY1 = -999,
-    st_kick_return_yds_allowed_PY1 = -999,
-    st_kick_return_TDs_allowed_PY1 = -999,
-    st_punt_return_TDs_allowed_PY1 = -999,
-    fg_rate_allowed_PY1 = -999,
-    fg_made_pg_allowed_PY1 = -999,
-    xp_rate_allowed_PY1 = -999,
-    xp_made_pg_allowed_PY1 = -999,
-    net_st_ppg_PY1 = -999,
-    off_ypp_PY2 = -999,
-    off_epa_PY2 = -999,
-    off_success_rt_PY2 = -999,
-    off_explosiveness_PY2 = -999,
-    off_third_conv_rate_PY2 = -999,
-    off_fourth_conv_rate_PY2 = -999,
-    off_pass_ypa_PY2 = -999,
-    off_pass_ypc_PY2 = -999,
-    off_rush_ypa_PY2 = -999,
-    off_pts_per_opp_PY2 = -999,
-    off_turnovers_PY2 = -999,
-    off_plays_pg_PY2 = -999,
-    off_ppg_PY2 = -999,
-    def_ypp_PY2 = -999,
-    def_epa_PY2 = -999,
-    def_success_rt_PY2 = -999,
-    def_explosiveness_PY2 = -999,
-    def_third_conv_rate_PY2 = -999,
-    def_fourth_conv_rate_PY2 = -999,
-    def_pass_ypa_PY2 = -999,
-    def_pass_ypc_PY2 = -999,
-    def_rush_ypa_PY2 = -999,
-    def_pts_per_opp_PY2 = -999,
-    def_plays_pg_PY2 = -999,
-    def_ppg_PY2 = -999,
-    st_net_epa_PY2 = -999,
-    st_punt_return_yds_PY2 = -999,
-    st_kick_return_yds_PY2 = -999,
-    st_kick_return_TDs_PY2 = -999,
-    st_punt_return_TDs_PY2 = -999,
-    fg_rate_PY2 = -999,
-    fg_made_pg_PY2 = -999,
-    xp_rate_PY2 = -999,
-    xp_made_pg_PY2 = -999,
-    st_punt_return_yds_allowed_PY2 = -999,
-    st_kick_return_yds_allowed_PY2 = -999,
-    st_kick_return_TDs_allowed_PY2 = -999,
-    st_punt_return_TDs_allowed_PY2 = -999,
-    fg_rate_allowed_PY2 = -999,
-    fg_made_pg_allowed_PY2 = -999,
-    xp_rate_allowed_PY2 = -999,
-    xp_made_pg_allowed_PY2 = -999,
-    net_st_ppg_PY2 = -999,
-    off_ypp_PY3 = -999,
-    off_epa_PY3 = -999,
-    off_success_rt_PY3 = -999,
-    off_explosiveness_PY3 = -999,
-    off_third_conv_rate_PY3 = -999,
-    off_fourth_conv_rate_PY3 = -999,
-    off_pass_ypa_PY3 = -999,
-    off_pass_ypc_PY3 = -999,
-    off_rush_ypa_PY3 = -999,
-    off_pts_per_opp_PY3 = -999,
-    off_turnovers_PY3 = -999,
-    off_plays_pg_PY3 = -999,
-    off_ppg_PY3 = -999,
-    def_ypp_PY3 = -999,
-    def_epa_PY3 = -999,
-    def_success_rt_PY3 = -999,
-    def_explosiveness_PY3 = -999,
-    def_third_conv_rate_PY3 = -999,
-    def_fourth_conv_rate_PY3 = -999,
-    def_pass_ypa_PY3 = -999,
-    def_pass_ypc_PY3 = -999,
-    def_rush_ypa_PY3 = -999,
-    def_pts_per_opp_PY3 = -999,
-    def_plays_pg_PY3 = -999,
-    def_ppg_PY3 = -999,
-    st_net_epa_PY3 = -999,
-    st_punt_return_yds_PY3 = -999,
-    st_kick_return_yds_PY3 = -999,
-    st_kick_return_TDs_PY3 = -999,
-    st_punt_return_TDs_PY3 = -999,
-    fg_rate_PY3 = -999,
-    fg_made_pg_PY3 = -999,
-    xp_rate_PY3 = -999,
-    xp_made_pg_PY3 = -999,
-    st_punt_return_yds_allowed_PY3 = -999,
-    st_kick_return_yds_allowed_PY3 = -999,
-    st_kick_return_TDs_allowed_PY3 = -999,
-    st_punt_return_TDs_allowed_PY3 = -999,
-    fg_rate_allowed_PY3 = -999,
-    fg_made_pg_allowed_PY3 = -999,
-    xp_rate_allowed_PY3 = -999,
-    xp_made_pg_allowed_PY3 = -999,
-    net_st_ppg_PY3 = -999
-  )
+  VoAVariables <- create_voa_vars(as.numeric(nfl_week))
+  ### creating dataframes which will be combined row-wise to make larger dataset for model training
+  VoAVariablesTrain_PY1 <- create_voa_vars_train()
+  VoAVariablesTrain_PY2 <- create_voa_vars_train()
+  VoAVariablesTrain_PY3 <- create_voa_vars_train()
+  VoAVariablesTrain_PY4 <- create_voa_vars_train()
+  VoAVariablesTrain_PY5 <- create_voa_vars_train()
 } else if (as.numeric(nfl_week) <= 2) {
   ##### Weeks 1-2 Data Pull #####
   ### reading in PY data saved in week 0
-  PY_VoAVars <- read_csv(here(
+  PY_VoAVars <- read_parquet(here(
     "Data",
     paste0("VoA", season),
     "PYData",
-    "PYData.csv"
+    "PYData.parquet"
   )) |>
     select(
       team,
@@ -472,7 +443,6 @@ if (as.numeric(nfl_week) == 0) {
       adj_def_ypp_PY1,
       adj_def_explosiveness_PY1,
       adj_def_ppg_PY1,
-      ,
       st_net_epa_PY1,
       st_punt_return_yds_PY1,
       st_kick_return_yds_PY1,
@@ -594,60 +564,13 @@ if (as.numeric(nfl_week) == 0) {
     filter(play_type == "extra_point")
   FGs <- PBP |>
     filter(play_type == "field_goal")
-  kickoffs <- PBP |>
+  Kickoffs <- PBP |>
     filter(play_type == "kickoff")
-  punts <- PBP |>
+  Punts <- PBP |>
     filter(play_type == "punt")
 
   ### creating dataframe to eventually store VoA Variables and ratings
-  VoA_Variables <- data.frame(
-    season = rep(as.numeric(season), 32),
-    week = rep(as.numeric(nfl_week), 32),
-    team = unique(c(PBP$home_team, PBP$away_team)),
-    off_ypp = -999,
-    off_epa = -999,
-    off_success_rt = -999,
-    off_explosiveness = -999,
-    off_third_conv_rate = -999,
-    off_fourth_conv_rate = -999,
-    off_pass_ypa = -999,
-    off_pass_ypc = -999,
-    off_rush_ypa = -999,
-    off_pts_per_opp = -999,
-    off_turnovers = -999,
-    off_plays_pg = -999,
-    off_ppg = -999,
-    def_ypp = -999,
-    def_epa = -999,
-    def_success_rt = -999,
-    def_explosiveness = -999,
-    def_third_conv_rate = -999,
-    def_fourth_conv_rate = -999,
-    def_pass_ypa = -999,
-    def_pass_ypc = -999,
-    def_rush_ypa = -999,
-    def_pts_per_opp = -999,
-    def_plays_pg = -999,
-    def_ppg = -999,
-    st_net_epa = -999,
-    st_punt_return_yds = -999,
-    st_kick_return_yds = -999,
-    st_kick_return_TDs = -999,
-    st_punt_return_TDs = -999,
-    fg_rate = -999,
-    fg_made_pg = -999,
-    xp_rate = -999,
-    xp_made_pg = -999,
-    st_punt_return_yds_allowed = -999,
-    st_kick_return_yds_allowed = -999,
-    st_kick_return_TDs_allowed = -999,
-    st_punt_return_TDs_allowed = -999,
-    fg_rate_allowed = -999,
-    fg_made_pg_allowed = -999,
-    xp_rate_allowed = -999,
-    xp_made_pg_allowed = -999,
-    net_st_ppg = -999
-  )
+  VoA_Variables <- create_voa_vars()
 
   ### reading in completed games for error calculation
   CompletedGames <- load_schedules(as.numeric(season)) |>
@@ -791,9 +714,9 @@ if (as.numeric(nfl_week) == 0) {
     filter(play_type == "extra_point")
   FGs <- PBP |>
     filter(play_type == "field_goal")
-  kickoffs <- PBP |>
+  Kickoffs <- PBP |>
     filter(play_type == "kickoff")
-  punts <- PBP |>
+  Punts <- PBP |>
     filter(play_type == "punt")
 
   ### creating dataframe to eventually store VoA Variables and ratings
@@ -924,9 +847,9 @@ if (as.numeric(nfl_week) == 0) {
     filter(play_type == "extra_point")
   FGs <- PBP |>
     filter(play_type == "field_goal")
-  kickoffs <- PBP |>
+  Kickoffs <- PBP |>
     filter(play_type == "kickoff")
-  punts <- PBP |>
+  Punts <- PBP |>
     filter(play_type == "punt")
 
   ### creating dataframe to eventually store VoA Variables and ratings
@@ -1380,27 +1303,29 @@ if (as.numeric(nfl_week) == 0) {
 
     ### deriving stats from temp dfs
     ### PY1 stats
-    VoA_Variables$off_ypp_PY1[x] = mean(temp_PY1_offplays$yards_gained)
-    VoA_Variables$off_epa_PY1[x] = mean(temp_PY1_offplays$epa)
-    VoA_Variables$off_success_rt_PY1[x] = nrow(temp_PY1_offsuccessplays) /
+    VoA_Variables$off_ypp_PY1[x] <- mean(temp_PY1_offplays$yards_gained)
+    VoA_Variables$off_epa_PY1[x] <- mean(temp_PY1_offplays$epa)
+    VoA_Variables$off_success_rt_PY1[x] <- nrow(temp_PY1_offsuccessplays) /
       nrow(temp_PY1_offplays)
-    VoA_Variables$off_explosiveness_PY1[x] = mean(temp_PY1_offsuccessplays$epa)
-    VoA_Variables$off_third_conv_rate_PY1[x] = nrow(
+    VoA_Variables$off_explosiveness_PY1[x] <- mean(temp_PY1_offsuccessplays$epa)
+    VoA_Variables$off_third_conv_rate_PY1[x] <- nrow(
       temp_PY1_conv_offthirddowns
     ) /
       nrow(temp_PY1_offthirddowns)
-    VoA_Variables$off_fourth_conv_rate_PY1[x] = nrow(
+    VoA_Variables$off_fourth_conv_rate_PY1[x] <- nrow(
       temp_PY1_conv_offfourthdowns
     ) /
       nrow(temp_PY1_off_fourthdowns)
-    VoA_Variables$off_pass_ypa_PY1[x] = mean(
+    VoA_Variables$off_pass_ypa_PY1[x] <- mean(
       temp_PY1_off_passplays$yards_gained
     )
-    VoA_Variables$off_pass_ypc_PY1[x] = mean(temp_PY1_off_comppass$yards_gained)
-    VoA_Variables$off_rush_ypa_PY1[x] = mean(
+    VoA_Variables$off_pass_ypc_PY1[x] <- mean(
+      temp_PY1_off_comppass$yards_gained
+    )
+    VoA_Variables$off_rush_ypa_PY1[x] <- mean(
       temp_PY1_off_rushplays$yards_gained
     )
-    VoA_Variables$off_pts_per_opp_PY1[x] = ((nrow(
+    VoA_Variables$off_pts_per_opp_PY1[x] <- ((nrow(
       temp_PY1_off_scorringopp_TDs
     ) *
       6) +
@@ -1409,35 +1334,37 @@ if (as.numeric(nfl_week) == 0) {
         temp_PY1_off_scoringoppplays$game_id,
         temp_PY1_off_scoringoppplays$drive
       )))
-    VoA_Variables$off_turnovers_PY1[x] = nrow(temp_PY1_off_turnovers) /
+    VoA_Variables$off_turnovers_PY1[x] <- nrow(temp_PY1_off_turnovers) /
       length(unique(temp_PY1_offplays$week))
-    VoA_Variables$off_plays_pg_PY1[x] = nrow(temp_PY1_offplays) /
+    VoA_Variables$off_plays_pg_PY1[x] <- nrow(temp_PY1_offplays) /
       length(unique(temp_PY1_offplays$week))
-    VoA_Variables$off_ppg_PY1[x] = ((nrow(temp_PY1_off_TDs) * 6) +
+    VoA_Variables$off_ppg_PY1[x] <- ((nrow(temp_PY1_off_TDs) * 6) +
       (nrow(temp_PY1_off_2pts) * 2)) /
       length(unique(temp_PY1_off_rushplays$week))
     ## PY1 defensive stats now
-    VoA_Variables$def_ypp_PY1[x] = mean(temp_PY1_defplays$yards_gained)
-    VoA_Variables$def_epa_PY1[x] = mean(temp_PY1_defplays$epa)
-    VoA_Variables$def_success_rt_PY1[x] = nrow(temp_PY1_defsuccessplays) /
+    VoA_Variables$def_ypp_PY1[x] <- mean(temp_PY1_defplays$yards_gained)
+    VoA_Variables$def_epa_PY1[x] <- mean(temp_PY1_defplays$epa)
+    VoA_Variables$def_success_rt_PY1[x] <- nrow(temp_PY1_defsuccessplays) /
       nrow(temp_PY1_defplays)
-    VoA_Variables$def_explosiveness_PY1[x] = mean(temp_PY1_defsuccessplays$epa)
-    VoA_Variables$def_third_conv_rate_PY1[x] = nrow(
+    VoA_Variables$def_explosiveness_PY1[x] <- mean(temp_PY1_defsuccessplays$epa)
+    VoA_Variables$def_third_conv_rate_PY1[x] <- nrow(
       temp_PY1_conv_defthirddowns
     ) /
       nrow(temp_PY1_defthirddowns)
-    VoA_Variables$def_fourth_conv_rate_PY1[x] = nrow(
+    VoA_Variables$def_fourth_conv_rate_PY1[x] <- nrow(
       temp_PY1_conv_deffourthdowns
     ) /
       nrow(temp_PY1_def_fourthdowns)
-    VoA_Variables$def_pass_ypa_PY1[x] = mean(
+    VoA_Variables$def_pass_ypa_PY1[x] <- mean(
       temp_PY1_def_passplays$yards_gained
     )
-    VoA_Variables$def_pass_ypc_PY1[x] = mean(temp_PY1_def_comppass$yards_gained)
-    VoA_Variables$def_rush_ypa_PY1[x] = mean(
+    VoA_Variables$def_pass_ypc_PY1[x] <- mean(
+      temp_PY1_def_comppass$yards_gained
+    )
+    VoA_Variables$def_rush_ypa_PY1[x] <- mean(
       temp_PY1_def_rushplays$yards_gained
     )
-    VoA_Variables$def_pts_per_opp_PY1[x] = ((nrow(
+    VoA_Variables$def_pts_per_opp_PY1[x] <- ((nrow(
       temp_PY1_def_scorringopp_TDs
     ) *
       6) +
@@ -1446,57 +1373,61 @@ if (as.numeric(nfl_week) == 0) {
         temp_PY1_def_scoringoppplays$game_id,
         temp_PY1_def_scoringoppplays$drive
       )))
-    VoA_Variables$def_turnovers_PY1[x] = nrow(temp_PY1_def_turnovers) /
+    VoA_Variables$def_turnovers_PY1[x] <- nrow(temp_PY1_def_turnovers) /
       length(unique(temp_PY1_defplays$week))
-    VoA_Variables$def_plays_pg_PY1[x] = nrow(temp_PY1_defplays) /
+    VoA_Variables$def_plays_pg_PY1[x] <- nrow(temp_PY1_defplays) /
       length(unique(temp_PY1_defplays$week))
-    VoA_Variables$def_ppg_PY1[x] = ((nrow(temp_PY1_def_TDs) * 6) +
+    VoA_Variables$def_ppg_PY1[x] <- ((nrow(temp_PY1_def_TDs) * 6) +
       (nrow(temp_PY1_def_2pts) * 2)) /
       length(unique(temp_PY1_def_rushplays$week))
     ## PY1 Special teams stats now
-    VoA_Variables$st_net_epa_PY1[x] = mean(temp_PY1_off_st_plays$epa) -
+    VoA_Variables$st_net_epa_PY1[x] <- mean(temp_PY1_off_st_plays$epa) -
       mean(temp_PY1_def_st_plays$epa)
-    VoA_Variables$st_punt_return_yds_PY1[x] = mean(
+    VoA_Variables$st_punt_return_yds_PY1[x] <- mean(
       temp_PY1_returned_punts$return_yards
     )
-    VoA_Variables$st_kick_return_yds_PY1[x] = mean(
+    VoA_Variables$st_kick_return_yds_PY1[x] <- mean(
       temp_PY1_returned_kicks$return_yards
     )
-    VoA_Variables$st_kick_return_TDs_PY1[x] = nrow(temp_PY1_returned_kick_TDs) /
+    VoA_Variables$st_kick_return_TDs_PY1[x] <- nrow(
+      temp_PY1_returned_kick_TDs
+    ) /
       length(unique(temp_PY1_offplays$week))
-    VoA_Variables$st_punt_return_TDs_PY1[x] = nrow(temp_PY1_returned_punt_TDs) /
+    VoA_Variables$st_punt_return_TDs_PY1[x] <- nrow(
+      temp_PY1_returned_punt_TDs
+    ) /
       length(unique(temp_PY1_offplays$week))
-    VoA_Variables$fg_rate_PY1[x] = nrow(temp_PY1_off_goodFGs) /
+    VoA_Variables$fg_rate_PY1[x] <- nrow(temp_PY1_off_goodFGs) /
       nrow(temp_PY1_off_FGs)
-    VoA_Variables$fg_made_pg_PY1[x] = nrow(temp_PY1_off_goodFGs) /
+    VoA_Variables$fg_made_pg_PY1[x] <- nrow(temp_PY1_off_goodFGs) /
       length(unique(temp_PY1_offplays$week))
-    VoA_Variables$xp_rate_PY1[x] = nrow(temp_PY1_off_good_xps) /
+    VoA_Variables$xp_rate_PY1[x] <- nrow(temp_PY1_off_good_xps) /
       nrow(temp_PY1_off_xps)
-    VoA_Variables$xp_made_pg_PY1[x] = nrow(temp_PY1_off_good_xps) /
+    VoA_Variables$xp_made_pg_PY1[x] <- nrow(temp_PY1_off_good_xps) /
       length(unique(temp_PY1_offplays$week))
-    VoA_Variables$st_punt_return_yds_allowed_PY1[x] = mean(
+    VoA_Variables$st_punt_return_yds_allowed_PY1[x] <- mean(
       temp_PY1_kicked_punts$return_yards
     )
-    VoA_Variables$st_kick_return_yds_allowed_PY1[x] = mean(
+    VoA_Variables$st_kick_return_yds_allowed_PY1[x] <- mean(
       temp_PY1_kicked_kicks$return_yards
     )
-    VoA_Variables$st_kick_return_TDs_allowed_PY1[x] = nrow(
+    VoA_Variables$st_kick_return_TDs_allowed_PY1[x] <- nrow(
       temp_PY1_kicked_kick_TDs
     ) /
       length(unique(temp_PY1_offplays$week))
-    VoA_Variables$st_punt_return_TDs_allowed_PY1[x] = nrow(
+    VoA_Variables$st_punt_return_TDs_allowed_PY1[x] <- nrow(
       temp_PY1_kicked_punt_TDs
     ) /
       length(unique(temp_PY1_offplays$week))
-    VoA_Variables$fg_rate_allowed_PY1[x] = nrow(temp_PY1_def_goodFGs) /
+    VoA_Variables$fg_rate_allowed_PY1[x] <- nrow(temp_PY1_def_goodFGs) /
       nrow(temp_PY1_def_FGs)
-    VoA_Variables$fg_made_pg_allowed_PY1[x] = nrow(temp_PY1_def_goodFGs) /
+    VoA_Variables$fg_made_pg_allowed_PY1[x] <- nrow(temp_PY1_def_goodFGs) /
       length(unique(temp_PY1_offplays$week))
-    VoA_Variables$xp_rate_allowed_PY1[x] = nrow(temp_PY1_def_good_xps) /
+    VoA_Variables$xp_rate_allowed_PY1[x] <- nrow(temp_PY1_def_good_xps) /
       nrow(temp_PY1_def_xps)
-    VoA_Variables$xp_made_pg_allowed_PY1[x] = nrow(temp_PY1_def_good_xps) /
+    VoA_Variables$xp_made_pg_allowed_PY1[x] <- nrow(temp_PY1_def_good_xps) /
       length(unique(temp_PY1_offplays$week))
-    VoA_Variables$net_st_ppg_PY1[x] = (((nrow(temp_PY1_off_goodFGs) * 3) +
+    VoA_Variables$net_st_ppg_PY1[x] <- (((nrow(temp_PY1_off_goodFGs) * 3) +
       (nrow(temp_PY1_returned_punt_TDs) * 6) +
       (nrow(temp_PY1_returned_kick_TDs) * 6) +
       nrow(temp_PY1_off_good_xps)) -
@@ -1507,27 +1438,29 @@ if (as.numeric(nfl_week) == 0) {
       length(unique(temp_PY1_offplays$week))
 
     ### evaluating PY2 variables
-    VoA_Variables$off_ypp_PY2[x] = mean(temp_PY2_offplays$yards_gained)
-    VoA_Variables$off_epa_PY2[x] = mean(temp_PY2_offplays$epa)
-    VoA_Variables$off_success_rt_PY2[x] = nrow(temp_PY2_offsuccessplays) /
+    VoA_Variables$off_ypp_PY2[x] <- mean(temp_PY2_offplays$yards_gained)
+    VoA_Variables$off_epa_PY2[x] <- mean(temp_PY2_offplays$epa)
+    VoA_Variables$off_success_rt_PY2[x] <- nrow(temp_PY2_offsuccessplays) /
       nrow(temp_PY2_offplays)
-    VoA_Variables$off_explosiveness_PY2[x] = mean(temp_PY2_offsuccessplays$epa)
-    VoA_Variables$off_third_conv_rate_PY2[x] = nrow(
+    VoA_Variables$off_explosiveness_PY2[x] <- mean(temp_PY2_offsuccessplays$epa)
+    VoA_Variables$off_third_conv_rate_PY2[x] <- nrow(
       temp_PY2_conv_offthirddowns
     ) /
       nrow(temp_PY2_offthirddowns)
-    VoA_Variables$off_fourth_conv_rate_PY2[x] = nrow(
+    VoA_Variables$off_fourth_conv_rate_PY2[x] <- nrow(
       temp_PY2_conv_offfourthdowns
     ) /
       nrow(temp_PY2_off_fourthdowns)
-    VoA_Variables$off_pass_ypa_PY2[x] = mean(
+    VoA_Variables$off_pass_ypa_PY2[x] <- mean(
       temp_PY2_off_passplays$yards_gained
     )
-    VoA_Variables$off_pass_ypc_PY2[x] = mean(temp_PY2_off_comppass$yards_gained)
-    VoA_Variables$off_rush_ypa_PY2[x] = mean(
+    VoA_Variables$off_pass_ypc_PY2[x] <- mean(
+      temp_PY2_off_comppass$yards_gained
+    )
+    VoA_Variables$off_rush_ypa_PY2[x] <- mean(
       temp_PY2_off_rushplays$yards_gained
     )
-    VoA_Variables$off_pts_per_opp_PY2[x] = ((nrow(
+    VoA_Variables$off_pts_per_opp_PY2[x] <- ((nrow(
       temp_PY2_off_scorringopp_TDs
     ) *
       6) +
@@ -1536,35 +1469,37 @@ if (as.numeric(nfl_week) == 0) {
         temp_PY2_off_scoringoppplays$game_id,
         temp_PY2_off_scoringoppplays$drive
       )))
-    VoA_Variables$off_turnovers_PY2[x] = nrow(temp_PY2_off_turnovers) /
+    VoA_Variables$off_turnovers_PY2[x] <- nrow(temp_PY2_off_turnovers) /
       length(unique(temp_PY2_offplays$week))
-    VoA_Variables$off_plays_pg_PY2[x] = nrow(temp_PY2_offplays) /
+    VoA_Variables$off_plays_pg_PY2[x] <- nrow(temp_PY2_offplays) /
       length(unique(temp_PY2_offplays$week))
-    VoA_Variables$off_ppg_PY2[x] = ((nrow(temp_PY2_off_TDs) * 6) +
+    VoA_Variables$off_ppg_PY2[x] <- ((nrow(temp_PY2_off_TDs) * 6) +
       (nrow(temp_PY2_off_2pts) * 2)) /
       length(unique(temp_PY2_off_rushplays$week))
     ## PY2 defensive stats now
-    VoA_Variables$def_ypp_PY2[x] = mean(temp_PY2_defplays$yards_gained)
-    VoA_Variables$def_epa_PY2[x] = mean(temp_PY2_defplays$epa)
-    VoA_Variables$def_success_rt_PY2[x] = nrow(temp_PY2_defsuccessplays) /
+    VoA_Variables$def_ypp_PY2[x] <- mean(temp_PY2_defplays$yards_gained)
+    VoA_Variables$def_epa_PY2[x] <- mean(temp_PY2_defplays$epa)
+    VoA_Variables$def_success_rt_PY2[x] <- nrow(temp_PY2_defsuccessplays) /
       nrow(temp_PY2_defplays)
-    VoA_Variables$def_explosiveness_PY2[x] = mean(temp_PY2_defsuccessplays$epa)
-    VoA_Variables$def_third_conv_rate_PY2[x] = nrow(
+    VoA_Variables$def_explosiveness_PY2[x] <- mean(temp_PY2_defsuccessplays$epa)
+    VoA_Variables$def_third_conv_rate_PY2[x] <- nrow(
       temp_PY2_conv_defthirddowns
     ) /
       nrow(temp_PY2_defthirddowns)
-    VoA_Variables$def_fourth_conv_rate_PY2[x] = nrow(
+    VoA_Variables$def_fourth_conv_rate_PY2[x] <- nrow(
       temp_PY2_conv_deffourthdowns
     ) /
       nrow(temp_PY2_def_fourthdowns)
-    VoA_Variables$def_pass_ypa_PY2[x] = mean(
+    VoA_Variables$def_pass_ypa_PY2[x] <- mean(
       temp_PY2_def_passplays$yards_gained
     )
-    VoA_Variables$def_pass_ypc_PY2[x] = mean(temp_PY2_def_comppass$yards_gained)
-    VoA_Variables$def_rush_ypa_PY2[x] = mean(
+    VoA_Variables$def_pass_ypc_PY2[x] <- mean(
+      temp_PY2_def_comppass$yards_gained
+    )
+    VoA_Variables$def_rush_ypa_PY2[x] <- mean(
       temp_PY2_def_rushplays$yards_gained
     )
-    VoA_Variables$def_pts_per_opp_PY2[x] = ((nrow(
+    VoA_Variables$def_pts_per_opp_PY2[x] <- ((nrow(
       temp_PY2_def_scorringopp_TDs
     ) *
       6) +
@@ -1573,57 +1508,61 @@ if (as.numeric(nfl_week) == 0) {
         temp_PY2_def_scoringoppplays$game_id,
         temp_PY2_def_scoringoppplays$drive
       )))
-    VoA_Variables$def_turnovers_PY2[x] = nrow(temp_PY2_def_turnovers) /
+    VoA_Variables$def_turnovers_PY2[x] <- nrow(temp_PY2_def_turnovers) /
       length(unique(temp_PY2_defplays$week))
-    VoA_Variables$def_plays_pg_PY2[x] = nrow(temp_PY2_defplays) /
+    VoA_Variables$def_plays_pg_PY2[x] <- nrow(temp_PY2_defplays) /
       length(unique(temp_PY2_defplays$week))
-    VoA_Variables$def_ppg_PY2[x] = ((nrow(temp_PY2_def_TDs) * 6) +
+    VoA_Variables$def_ppg_PY2[x] <- ((nrow(temp_PY2_def_TDs) * 6) +
       (nrow(temp_PY2_def_2pts) * 2)) /
       length(unique(temp_PY2_def_rushplays$week))
     ## PY2 Special teams stats now
-    VoA_Variables$st_net_epa_PY2[x] = mean(temp_PY2_off_st_plays$epa) -
+    VoA_Variables$st_net_epa_PY2[x] <- mean(temp_PY2_off_st_plays$epa) -
       mean(temp_PY2_def_st_plays$epa)
-    VoA_Variables$st_punt_return_yds_PY2[x] = mean(
+    VoA_Variables$st_punt_return_yds_PY2[x] <- mean(
       temp_PY2_returned_punts$return_yards
     )
-    VoA_Variables$st_kick_return_yds_PY2[x] = mean(
+    VoA_Variables$st_kick_return_yds_PY2[x] <- mean(
       temp_PY2_returned_kicks$return_yards
     )
-    VoA_Variables$st_kick_return_TDs_PY2[x] = nrow(temp_PY2_returned_kick_TDs) /
+    VoA_Variables$st_kick_return_TDs_PY2[x] <- nrow(
+      temp_PY2_returned_kick_TDs
+    ) /
       length(unique(temp_PY2_offplays$week))
-    VoA_Variables$st_punt_return_TDs_PY2[x] = nrow(temp_PY2_returned_punt_TDs) /
+    VoA_Variables$st_punt_return_TDs_PY2[x] <- nrow(
+      temp_PY2_returned_punt_TDs
+    ) /
       length(unique(temp_PY2_offplays$week))
-    VoA_Variables$fg_rate_PY2[x] = nrow(temp_PY2_off_goodFGs) /
+    VoA_Variables$fg_rate_PY2[x] <- nrow(temp_PY2_off_goodFGs) /
       nrow(temp_PY2_off_FGs)
-    VoA_Variables$fg_made_pg_PY2[x] = nrow(temp_PY2_off_goodFGs) /
+    VoA_Variables$fg_made_pg_PY2[x] <- nrow(temp_PY2_off_goodFGs) /
       length(unique(temp_PY2_offplays$week))
-    VoA_Variables$xp_rate_PY2[x] = nrow(temp_PY2_off_good_xps) /
+    VoA_Variables$xp_rate_PY2[x] <- nrow(temp_PY2_off_good_xps) /
       nrow(temp_PY2_off_xps)
-    VoA_Variables$xp_made_pg_PY2[x] = nrow(temp_PY2_off_good_xps) /
+    VoA_Variables$xp_made_pg_PY2[x] <- nrow(temp_PY2_off_good_xps) /
       length(unique(temp_PY2_offplays$week))
-    VoA_Variables$st_punt_return_yds_allowed_PY2[x] = mean(
+    VoA_Variables$st_punt_return_yds_allowed_PY2[x] <- mean(
       temp_PY2_kicked_punts$return_yards
     )
-    VoA_Variables$st_kick_return_yds_allowed_PY2[x] = mean(
+    VoA_Variables$st_kick_return_yds_allowed_PY2[x] <- mean(
       temp_PY2_kicked_kicks$return_yards
     )
-    VoA_Variables$st_kick_return_TDs_allowed_PY2[x] = nrow(
+    VoA_Variables$st_kick_return_TDs_allowed_PY2[x] <- nrow(
       temp_PY2_kicked_kick_TDs
     ) /
       length(unique(temp_PY2_offplays$week))
-    VoA_Variables$st_punt_return_TDs_allowed_PY2[x] = nrow(
+    VoA_Variables$st_punt_return_TDs_allowed_PY2[x] <- nrow(
       temp_PY2_kicked_punt_TDs
     ) /
       length(unique(temp_PY2_offplays$week))
-    VoA_Variables$fg_rate_allowed_PY2[x] = nrow(temp_PY2_def_goodFGs) /
+    VoA_Variables$fg_rate_allowed_PY2[x] <- nrow(temp_PY2_def_goodFGs) /
       nrow(temp_PY2_def_FGs)
-    VoA_Variables$fg_made_pg_allowed_PY2[x] = nrow(temp_PY2_def_goodFGs) /
+    VoA_Variables$fg_made_pg_allowed_PY2[x] <- nrow(temp_PY2_def_goodFGs) /
       length(unique(temp_PY2_offplays$week))
-    VoA_Variables$xp_rate_allowed_PY2[x] = nrow(temp_PY2_def_good_xps) /
+    VoA_Variables$xp_rate_allowed_PY2[x] <- nrow(temp_PY2_def_good_xps) /
       nrow(temp_PY2_def_xps)
-    VoA_Variables$xp_made_pg_allowed_PY2[x] = nrow(temp_PY2_def_good_xps) /
+    VoA_Variables$xp_made_pg_allowed_PY2[x] <- nrow(temp_PY2_def_good_xps) /
       length(unique(temp_PY2_offplays$week))
-    VoA_Variables$net_st_ppg_PY2[x] = (((nrow(temp_PY2_off_goodFGs) * 3) +
+    VoA_Variables$net_st_ppg_PY2[x] <- (((nrow(temp_PY2_off_goodFGs) * 3) +
       (nrow(temp_PY2_returned_punt_TDs) * 6) +
       (nrow(temp_PY2_returned_kick_TDs) * 6) +
       nrow(temp_PY2_off_good_xps)) -
@@ -1634,27 +1573,29 @@ if (as.numeric(nfl_week) == 0) {
       length(unique(temp_PY2_offplays$week))
 
     ### evaluating PY3 variables
-    VoA_Variables$off_ypp_PY3[x] = mean(temp_PY3_offplays$yards_gained)
-    VoA_Variables$off_epa_PY3[x] = mean(temp_PY3_offplays$epa)
-    VoA_Variables$off_success_rt_PY3[x] = nrow(temp_PY3_offsuccessplays) /
+    VoA_Variables$off_ypp_PY3[x] <- mean(temp_PY3_offplays$yards_gained)
+    VoA_Variables$off_epa_PY3[x] <- mean(temp_PY3_offplays$epa)
+    VoA_Variables$off_success_rt_PY3[x] <- nrow(temp_PY3_offsuccessplays) /
       nrow(temp_PY3_offplays)
-    VoA_Variables$off_explosiveness_PY3[x] = mean(temp_PY3_offsuccessplays$epa)
-    VoA_Variables$off_third_conv_rate_PY3[x] = nrow(
+    VoA_Variables$off_explosiveness_PY3[x] <- mean(temp_PY3_offsuccessplays$epa)
+    VoA_Variables$off_third_conv_rate_PY3[x] <- nrow(
       temp_PY3_conv_offthirddowns
     ) /
       nrow(temp_PY3_offthirddowns)
-    VoA_Variables$off_fourth_conv_rate_PY3[x] = nrow(
+    VoA_Variables$off_fourth_conv_rate_PY3[x] <- nrow(
       temp_PY3_conv_offfourthdowns
     ) /
       nrow(temp_PY3_off_fourthdowns)
-    VoA_Variables$off_pass_ypa_PY3[x] = mean(
+    VoA_Variables$off_pass_ypa_PY3[x] <- mean(
       temp_PY3_off_passplays$yards_gained
     )
-    VoA_Variables$off_pass_ypc_PY3[x] = mean(temp_PY3_off_comppass$yards_gained)
-    VoA_Variables$off_rush_ypa_PY3[x] = mean(
+    VoA_Variables$off_pass_ypc_PY3[x] <- mean(
+      temp_PY3_off_comppass$yards_gained
+    )
+    VoA_Variables$off_rush_ypa_PY3[x] <- mean(
       temp_PY3_off_rushplays$yards_gained
     )
-    VoA_Variables$off_pts_per_opp_PY3[x] = ((nrow(
+    VoA_Variables$off_pts_per_opp_PY3[x] <- ((nrow(
       temp_PY3_off_scorringopp_TDs
     ) *
       6) +
@@ -1663,35 +1604,37 @@ if (as.numeric(nfl_week) == 0) {
         temp_PY3_off_scoringoppplays$game_id,
         temp_PY3_off_scoringoppplays$drive
       )))
-    VoA_Variables$off_turnovers_PY3[x] = nrow(temp_PY3_off_turnovers) /
+    VoA_Variables$off_turnovers_PY3[x] <- nrow(temp_PY3_off_turnovers) /
       length(unique(temp_PY3_offplays$week))
-    VoA_Variables$off_plays_pg_PY3[x] = nrow(temp_PY3_offplays) /
+    VoA_Variables$off_plays_pg_PY3[x] <- nrow(temp_PY3_offplays) /
       length(unique(temp_PY3_offplays$week))
-    VoA_Variables$off_ppg_PY3[x] = ((nrow(temp_PY3_off_TDs) * 6) +
+    VoA_Variables$off_ppg_PY3[x] <- ((nrow(temp_PY3_off_TDs) * 6) +
       (nrow(temp_PY3_off_2pts) * 2)) /
       length(unique(temp_PY3_off_rushplays$week))
     ## PY3 defensive stats now
-    VoA_Variables$def_ypp_PY3[x] = mean(temp_PY3_defplays$yards_gained)
-    VoA_Variables$def_epa_PY3[x] = mean(temp_PY3_defplays$epa)
-    VoA_Variables$def_success_rt_PY3[x] = nrow(temp_PY3_defsuccessplays) /
+    VoA_Variables$def_ypp_PY3[x] <- mean(temp_PY3_defplays$yards_gained)
+    VoA_Variables$def_epa_PY3[x] <- mean(temp_PY3_defplays$epa)
+    VoA_Variables$def_success_rt_PY3[x] <- nrow(temp_PY3_defsuccessplays) /
       nrow(temp_PY3_defplays)
-    VoA_Variables$def_explosiveness_PY3[x] = mean(temp_PY3_defsuccessplays$epa)
-    VoA_Variables$def_third_conv_rate_PY3[x] = nrow(
+    VoA_Variables$def_explosiveness_PY3[x] <- mean(temp_PY3_defsuccessplays$epa)
+    VoA_Variables$def_third_conv_rate_PY3[x] <- nrow(
       temp_PY3_conv_defthirddowns
     ) /
       nrow(temp_PY3_defthirddowns)
-    VoA_Variables$def_fourth_conv_rate_PY3[x] = nrow(
+    VoA_Variables$def_fourth_conv_rate_PY3[x] <- nrow(
       temp_PY3_conv_deffourthdowns
     ) /
       nrow(temp_PY3_def_fourthdowns)
-    VoA_Variables$def_pass_ypa_PY3[x] = mean(
+    VoA_Variables$def_pass_ypa_PY3[x] <- mean(
       temp_PY3_def_passplays$yards_gained
     )
-    VoA_Variables$def_pass_ypc_PY3[x] = mean(temp_PY3_def_comppass$yards_gained)
-    VoA_Variables$def_rush_ypa_PY3[x] = mean(
+    VoA_Variables$def_pass_ypc_PY3[x] <- mean(
+      temp_PY3_def_comppass$yards_gained
+    )
+    VoA_Variables$def_rush_ypa_PY3[x] <- mean(
       temp_PY3_def_rushplays$yards_gained
     )
-    VoA_Variables$def_pts_per_opp_PY3[x] = ((nrow(
+    VoA_Variables$def_pts_per_opp_PY3[x] <- ((nrow(
       temp_PY3_def_scorringopp_TDs
     ) *
       6) +
@@ -1700,57 +1643,61 @@ if (as.numeric(nfl_week) == 0) {
         temp_PY3_def_scoringoppplays$game_id,
         temp_PY3_def_scoringoppplays$drive
       )))
-    VoA_Variables$def_turnovers_PY3[x] = nrow(temp_PY3_def_turnovers) /
+    VoA_Variables$def_turnovers_PY3[x] <- nrow(temp_PY3_def_turnovers) /
       length(unique(temp_PY3_defplays$week))
-    VoA_Variables$def_plays_pg_PY3[x] = nrow(temp_PY3_defplays) /
+    VoA_Variables$def_plays_pg_PY3[x] <- nrow(temp_PY3_defplays) /
       length(unique(temp_PY3_defplays$week))
-    VoA_Variables$def_ppg_PY3[x] = ((nrow(temp_PY3_def_TDs) * 6) +
+    VoA_Variables$def_ppg_PY3[x] <- ((nrow(temp_PY3_def_TDs) * 6) +
       (nrow(temp_PY3_def_2pts) * 2)) /
       length(unique(temp_PY3_def_rushplays$week))
     ## PY3 Special teams stats now
-    VoA_Variables$st_net_epa_PY3[x] = mean(temp_PY3_off_st_plays$epa) -
+    VoA_Variables$st_net_epa_PY3[x] <- mean(temp_PY3_off_st_plays$epa) -
       mean(temp_PY3_def_st_plays$epa)
-    VoA_Variables$st_punt_return_yds_PY3[x] = mean(
+    VoA_Variables$st_punt_return_yds_PY3[x] <- mean(
       temp_PY3_returned_punts$return_yards
     )
-    VoA_Variables$st_kick_return_yds_PY3[x] = mean(
+    VoA_Variables$st_kick_return_yds_PY3[x] <- mean(
       temp_PY3_returned_kicks$return_yards
     )
-    VoA_Variables$st_kick_return_TDs_PY3[x] = nrow(temp_PY3_returned_kick_TDs) /
+    VoA_Variables$st_kick_return_TDs_PY3[x] <- nrow(
+      temp_PY3_returned_kick_TDs
+    ) /
       length(unique(temp_PY3_offplays$week))
-    VoA_Variables$st_punt_return_TDs_PY3[x] = nrow(temp_PY3_returned_punt_TDs) /
+    VoA_Variables$st_punt_return_TDs_PY3[x] <- nrow(
+      temp_PY3_returned_punt_TDs
+    ) /
       length(unique(temp_PY3_offplays$week))
-    VoA_Variables$fg_rate_PY3[x] = nrow(temp_PY3_off_goodFGs) /
+    VoA_Variables$fg_rate_PY3[x] <- nrow(temp_PY3_off_goodFGs) /
       nrow(temp_PY3_off_FGs)
-    VoA_Variables$fg_made_pg_PY3[x] = nrow(temp_PY3_off_goodFGs) /
+    VoA_Variables$fg_made_pg_PY3[x] <- nrow(temp_PY3_off_goodFGs) /
       length(unique(temp_PY3_offplays$week))
-    VoA_Variables$xp_rate_PY3[x] = nrow(temp_PY3_off_good_xps) /
+    VoA_Variables$xp_rate_PY3[x] <- nrow(temp_PY3_off_good_xps) /
       nrow(temp_PY3_off_xps)
-    VoA_Variables$xp_made_pg_PY3[x] = nrow(temp_PY3_off_good_xps) /
+    VoA_Variables$xp_made_pg_PY3[x] <- nrow(temp_PY3_off_good_xps) /
       length(unique(temp_PY3_offplays$week))
-    VoA_Variables$st_punt_return_yds_allowed_PY3[x] = mean(
+    VoA_Variables$st_punt_return_yds_allowed_PY3[x] <- mean(
       temp_PY3_kicked_punts$return_yards
     )
-    VoA_Variables$st_kick_return_yds_allowed_PY3[x] = mean(
+    VoA_Variables$st_kick_return_yds_allowed_PY3[x] <- mean(
       temp_PY3_kicked_kicks$return_yards
     )
-    VoA_Variables$st_kick_return_TDs_allowed_PY3[x] = nrow(
+    VoA_Variables$st_kick_return_TDs_allowed_PY3[x] <- nrow(
       temp_PY3_kicked_kick_TDs
     ) /
       length(unique(temp_PY3_offplays$week))
-    VoA_Variables$st_punt_return_TDs_allowed_PY3[x] = nrow(
+    VoA_Variables$st_punt_return_TDs_allowed_PY3[x] <- nrow(
       temp_PY3_kicked_punt_TDs
     ) /
       length(unique(temp_PY3_offplays$week))
-    VoA_Variables$fg_rate_allowed_PY3[x] = nrow(temp_PY3_def_goodFGs) /
+    VoA_Variables$fg_rate_allowed_PY3[x] <- nrow(temp_PY3_def_goodFGs) /
       nrow(temp_PY3_def_FGs)
-    VoA_Variables$fg_made_pg_allowed_PY3[x] = nrow(temp_PY3_def_goodFGs) /
+    VoA_Variables$fg_made_pg_allowed_PY3[x] <- nrow(temp_PY3_def_goodFGs) /
       length(unique(temp_PY3_offplays$week))
-    VoA_Variables$xp_rate_allowed_PY3[x] = nrow(temp_PY3_def_good_xps) /
+    VoA_Variables$xp_rate_allowed_PY3[x] <- nrow(temp_PY3_def_good_xps) /
       nrow(temp_PY3_def_xps)
-    VoA_Variables$xp_made_pg_allowed_PY3[x] = nrow(temp_PY3_def_good_xps) /
+    VoA_Variables$xp_made_pg_allowed_PY3[x] <- nrow(temp_PY3_def_good_xps) /
       length(unique(temp_PY3_offplays$week))
-    VoA_Variables$net_st_ppg_PY3[x] = (((nrow(temp_PY3_off_goodFGs) * 3) +
+    VoA_Variables$net_st_ppg_PY3[x] <- (((nrow(temp_PY3_off_goodFGs) * 3) +
       (nrow(temp_PY3_returned_punt_TDs) * 6) +
       (nrow(temp_PY3_returned_kick_TDs) * 6) +
       nrow(temp_PY3_off_good_xps)) -
@@ -1814,10 +1761,10 @@ if (as.numeric(nfl_week) == 0) {
     mutate(adj_coef = ridge_reg_coef + EPAAdj_glmnetcoef_vals_PY1[1])
 
   ### strings used to help match up adjusted value with proper team below
-  offstr = "posteam"
-  hfastr = "hfa"
-  defstr = "defteam"
-  stat = "epa"
+  offstr <- "posteam"
+  hfastr <- "hfa"
+  defstr <- "defteam"
+  stat <- "epa"
 
   ### calculating adjusted offensive EPA/play values, I think
   ## honestly I adapted all of this from Bud Davis's python code on the CFBD blog, I don't know what this does and I had to ask gemini to translate his python code to R and this is what it came up with and it seems to work, so I leave it as it is and pray to whichever deity is supposed to be running things around here that it doesn't break
@@ -1898,10 +1845,10 @@ if (as.numeric(nfl_week) == 0) {
     mutate(adj_coef = ridge_reg_coef + ExpAdj_glmnetcoef_vals_PY1[1])
 
   ### strings used to help match up adjusted value with proper team below
-  offstr = "posteam"
-  hfastr = "hfa"
-  defstr = "defteam"
-  stat = "epa"
+  offstr <- "posteam"
+  hfastr <- "hfa"
+  defstr <- "defteam"
+  stat <- "epa"
 
   ### calculating adjusted offensive explosiveness values, I think
   ExpAdj_dfAdjOff_PY1 <- ExpAdj_adjcoefs_PY1 |>
@@ -1995,10 +1942,10 @@ if (as.numeric(nfl_week) == 0) {
     mutate(adj_coef = ridge_reg_coef + PPGAdj_glmnetcoef_vals_PY1[1])
 
   ### strings used to help match up adjusted value with proper team below
-  offstr = "posteam"
-  hfastr = "hfa"
-  defstr = "defteam"
-  stat = "play_pts_scored"
+  offstr <- "posteam"
+  hfastr <- "hfa"
+  defstr <- "defteam"
+  stat <- "play_pts_scored"
 
   ### calculating adjusted offensive pts/play values, I think
   PPGAdj_dfAdjOff_PY1 <- PPGAdj_adjcoefs_PY1 |>
@@ -2080,10 +2027,10 @@ if (as.numeric(nfl_week) == 0) {
     mutate(adj_coef = ridge_reg_coef + YPPAdj_glmnetcoef_vals_PY1[1])
 
   ### strings used to help match up adjusted value with proper team below
-  offstr = "posteam"
-  hfastr = "hfa"
-  defstr = "defteam"
-  stat = "yards_gained"
+  offstr <- "posteam"
+  hfastr <- "hfa"
+  defstr <- "defteam"
+  stat <- "yards_gained"
 
   ### calculating adjusted offensive EPA/play values, I think
   ## honestly I adapted all of this from Bud Davis's python code on the CFBD blog, I don't know what this does and I had to ask gemini to translate his python code to R and this is what it came up with and it seems to work, so I leave it as it is and pray to whichever deity is supposed to be running things around here that it doesn't break
@@ -2166,10 +2113,10 @@ if (as.numeric(nfl_week) == 0) {
     mutate(adj_coef = ridge_reg_coef + EPAAdj_glmnetcoef_vals_PY2[1])
 
   ### strings used to help match up adjusted value with proper team below
-  offstr = "posteam"
-  hfastr = "hfa"
-  defstr = "defteam"
-  stat = "epa"
+  offstr <- "posteam"
+  hfastr <- "hfa"
+  defstr <- "defteam"
+  stat <- "epa"
 
   ### calculating adjusted offensive EPA/play values, I think
   ## honestly I adapted all of this from Bud Davis's python code on the CFBD blog, I don't know what this does and I had to ask gemini to translate his python code to R and this is what it came up with and it seems to work, so I leave it as it is and pray to whichever deity is supposed to be running things around here that it doesn't break
@@ -2250,10 +2197,10 @@ if (as.numeric(nfl_week) == 0) {
     mutate(adj_coef = ridge_reg_coef + ExpAdj_glmnetcoef_vals_PY2[1])
 
   ### strings used to help match up adjusted value with proper team below
-  offstr = "posteam"
-  hfastr = "hfa"
-  defstr = "defteam"
-  stat = "epa"
+  offstr <- "posteam"
+  hfastr <- "hfa"
+  defstr <- "defteam"
+  stat <- "epa"
 
   ### calculating adjusted offensive explosiveness values, I think
   ExpAdj_dfAdjOff_PY2 <- ExpAdj_adjcoefs_PY2 |>
@@ -2347,10 +2294,10 @@ if (as.numeric(nfl_week) == 0) {
     mutate(adj_coef = ridge_reg_coef + PPGAdj_glmnetcoef_vals_PY2[1])
 
   ### strings used to help match up adjusted value with proper team below
-  offstr = "posteam"
-  hfastr = "hfa"
-  defstr = "defteam"
-  stat = "play_pts_scored"
+  offstr <- "posteam"
+  hfastr <- "hfa"
+  defstr <- "defteam"
+  stat <- "play_pts_scored"
 
   ### calculating adjusted offensive pts/play values, I think
   PPGAdj_dfAdjOff_PY2 <- PPGAdj_adjcoefs_PY2 |>
@@ -2432,10 +2379,10 @@ if (as.numeric(nfl_week) == 0) {
     mutate(adj_coef = ridge_reg_coef + YPPAdj_glmnetcoef_vals_PY2[1])
 
   ### strings used to help match up adjusted value with proper team below
-  offstr = "posteam"
-  hfastr = "hfa"
-  defstr = "defteam"
-  stat = "yards_gained"
+  offstr <- "posteam"
+  hfastr <- "hfa"
+  defstr <- "defteam"
+  stat <- "yards_gained"
 
   ### calculating adjusted offensive EPA/play values, I think
   ## honestly I adapted all of this from Bud Davis's python code on the CFBD blog, I don't know what this does and I had to ask gemini to translate his python code to R and this is what it came up with and it seems to work, so I leave it as it is and pray to whichever deity is supposed to be running things around here that it doesn't break
@@ -2518,10 +2465,10 @@ if (as.numeric(nfl_week) == 0) {
     mutate(adj_coef = ridge_reg_coef + EPAAdj_glmnetcoef_vals_PY3[1])
 
   ### strings used to help match up adjusted value with proper team below
-  offstr = "posteam"
-  hfastr = "hfa"
-  defstr = "defteam"
-  stat = "epa"
+  offstr <- "posteam"
+  hfastr <- "hfa"
+  defstr <- "defteam"
+  stat <- "epa"
 
   ### calculating adjusted offensive EPA/play values, I think
   ## honestly I adapted all of this from Bud Davis's python code on the CFBD blog, I don't know what this does and I had to ask gemini to translate his python code to R and this is what it came up with and it seems to work, so I leave it as it is and pray to whichever deity is supposed to be running things around here that it doesn't break
@@ -2602,10 +2549,10 @@ if (as.numeric(nfl_week) == 0) {
     mutate(adj_coef = ridge_reg_coef + ExpAdj_glmnetcoef_vals_PY3[1])
 
   ### strings used to help match up adjusted value with proper team below
-  offstr = "posteam"
-  hfastr = "hfa"
-  defstr = "defteam"
-  stat = "epa"
+  offstr <- "posteam"
+  hfastr <- "hfa"
+  defstr <- "defteam"
+  stat <- "epa"
 
   ### calculating adjusted offensive explosiveness values, I think
   ExpAdj_dfAdjOff_PY3 <- ExpAdj_adjcoefs_PY3 |>
@@ -2699,10 +2646,10 @@ if (as.numeric(nfl_week) == 0) {
     mutate(adj_coef = ridge_reg_coef + PPGAdj_glmnetcoef_vals_PY3[1])
 
   ### strings used to help match up adjusted value with proper team below
-  offstr = "posteam"
-  hfastr = "hfa"
-  defstr = "defteam"
-  stat = "play_pts_scored"
+  offstr <- "posteam"
+  hfastr <- "hfa"
+  defstr <- "defteam"
+  stat <- "play_pts_scored"
 
   ### calculating adjusted offensive pts/play values, I think
   PPGAdj_dfAdjOff_PY3 <- PPGAdj_adjcoefs_PY3 |>
@@ -2784,10 +2731,10 @@ if (as.numeric(nfl_week) == 0) {
     mutate(adj_coef = ridge_reg_coef + YPPAdj_glmnetcoef_vals_PY3[1])
 
   ### strings used to help match up adjusted value with proper team below
-  offstr = "posteam"
-  hfastr = "hfa"
-  defstr = "defteam"
-  stat = "yards_gained"
+  offstr <- "posteam"
+  hfastr <- "hfa"
+  defstr <- "defteam"
+  stat <- "yards_gained"
 
   ### calculating adjusted offensive EPA/play values, I think
   ## honestly I adapted all of this from Bud Davis's python code on the CFBD blog, I don't know what this does and I had to ask gemini to translate his python code to R and this is what it came up with and it seems to work, so I leave it as it is and pray to whichever deity is supposed to be running things around here that it doesn't break
@@ -2911,17 +2858,17 @@ if (as.numeric(nfl_week) == 0) {
       filter(defteam == VoA_Variables$team[x] & field_goal_result == "made")
     temp_def_goodFGs <- temp_def_FGs |>
       filter(field_goal_result == "made")
-    temp_returned_punts <- punts |>
+    temp_returned_punts <- Punts |>
       filter(defteam == VoA_Variables$team[x])
-    temp_returned_kicks <- kickoffs |>
+    temp_returned_kicks <- Kickoffs |>
       filter(posteam == VoA_Variables$team[x])
     temp_returned_punt_TDs <- temp_returned_punts |>
       filter(return_touchdown == 1)
     temp_returned_kick_TDs <- temp_returned_kicks |>
       filter(return_touchdown == 1)
-    temp_kicked_punts <- punts |>
+    temp_kicked_punts <- Punts |>
       filter(posteam == VoA_Variables$team[x])
-    temp_kicked_kicks <- kickoffs |>
+    temp_kicked_kicks <- Kickoffs |>
       filter(defteam == VoA_Variables$team[x])
     temp_kicked_punt_TDs <- temp_kicked_punts |>
       filter(return_touchdown == 1)
@@ -2950,119 +2897,121 @@ if (as.numeric(nfl_week) == 0) {
     )
 
     ### Evaluating Stats
-    VoA_Variables$off_ypp[x] = mean(temp_offplays$yards_gained)
-    VoA_Variables$off_epa[x] = mean(temp_offplays$epa)
-    VoA_Variables$off_success_rt[x] = nrow(temp_offsuccessplays) /
+    VoA_Variables$off_ypp[x] <- mean(temp_offplays$yards_gained)
+    VoA_Variables$off_epa[x] <- mean(temp_offplays$epa)
+    VoA_Variables$off_success_rt[x] <- nrow(temp_offsuccessplays) /
       nrow(temp_offplays)
-    VoA_Variables$off_explosiveness[x] = mean(temp_offsuccessplays$epa)
-    VoA_Variables$off_third_conv_rate[x] = nrow(temp_conv_offthirddowns) /
+    VoA_Variables$off_explosiveness[x] <- mean(temp_offsuccessplays$epa)
+    VoA_Variables$off_third_conv_rate[x] <- nrow(temp_conv_offthirddowns) /
       nrow(temp_offthirddowns)
-    VoA_Variables$off_fourth_conv_rate[x] = nrow(temp_conv_offfourthdowns) /
+    VoA_Variables$off_fourth_conv_rate[x] <- nrow(temp_conv_offfourthdowns) /
       nrow(temp_off_fourthdowns)
-    VoA_Variables$off_pass_ypa[x] = mean(temp_off_passplays$yards_gained)
-    VoA_Variables$off_pass_ypc[x] = mean(temp_off_comppass$yards_gained)
-    VoA_Variables$off_rush_ypa[x] = mean(temp_off_rushplays$yards_gained)
-    VoA_Variables$off_pts_per_opp[x] = ((nrow(temp_off_scorringopp_TDs) * 6) +
+    VoA_Variables$off_pass_ypa[x] <- mean(temp_off_passplays$yards_gained)
+    VoA_Variables$off_pass_ypc[x] <- mean(temp_off_comppass$yards_gained)
+    VoA_Variables$off_rush_ypa[x] <- mean(temp_off_rushplays$yards_gained)
+    VoA_Variables$off_pts_per_opp[x] <- ((nrow(temp_off_scorringopp_TDs) * 6) +
       (nrow(temp_off_scorringopp_FGs) * 3)) /
       length(unique(paste0(
         temp_off_scoringoppplays$game_id,
         temp_off_scoringoppplays$drive
       )))
-    VoA_Variables$off_turnovers[x] = nrow(temp_off_turnovers) /
+    VoA_Variables$off_turnovers[x] <- nrow(temp_off_turnovers) /
       length(unique(temp_offplays$week))
-    VoA_Variables$off_plays_pg[x] = nrow(temp_offplays) /
+    VoA_Variables$off_plays_pg[x] <- nrow(temp_offplays) /
       length(unique(temp_offplays$week))
-    VoA_Variables$off_ppg[x] = ((nrow(temp_off_TDs) * 6) +
+    VoA_Variables$off_ppg[x] <- ((nrow(temp_off_TDs) * 6) +
       (nrow(temp_off_2pts) * 2)) /
       length(unique(temp_off_rushplays$week))
     ## PY1 defensive stats now
-    VoA_Variables$def_ypp[x] = mean(temp_defplays$yards_gained)
-    VoA_Variables$def_epa[x] = mean(temp_defplays$epa)
-    VoA_Variables$def_success_rt[x] = nrow(temp_defsuccessplays) /
+    VoA_Variables$def_ypp[x] <- mean(temp_defplays$yards_gained)
+    VoA_Variables$def_epa[x] <- mean(temp_defplays$epa)
+    VoA_Variables$def_success_rt[x] <- nrow(temp_defsuccessplays) /
       nrow(temp_defplays)
-    VoA_Variables$def_explosiveness[x] = mean(temp_defsuccessplays$epa)
-    VoA_Variables$def_third_conv_rate[x] = nrow(temp_conv_defthirddowns) /
+    VoA_Variables$def_explosiveness[x] <- mean(temp_defsuccessplays$epa)
+    VoA_Variables$def_third_conv_rate[x] <- nrow(temp_conv_defthirddowns) /
       nrow(temp_defthirddowns)
-    VoA_Variables$def_fourth_conv_rate[x] = nrow(temp_conv_deffourthdowns) /
+    VoA_Variables$def_fourth_conv_rate[x] <- nrow(temp_conv_deffourthdowns) /
       nrow(temp_def_fourthdowns)
-    VoA_Variables$def_pass_ypa[x] = mean(temp_def_passplays$yards_gained)
-    VoA_Variables$def_pass_ypc[x] = mean(temp_def_comppass$yards_gained)
-    VoA_Variables$def_rush_ypa[x] = mean(temp_def_rushplays$yards_gained)
-    VoA_Variables$def_pts_per_opp[x] = ((nrow(temp_def_scorringopp_TDs) * 6) +
+    VoA_Variables$def_pass_ypa[x] <- mean(temp_def_passplays$yards_gained)
+    VoA_Variables$def_pass_ypc[x] <- mean(temp_def_comppass$yards_gained)
+    VoA_Variables$def_rush_ypa[x] <- mean(temp_def_rushplays$yards_gained)
+    VoA_Variables$def_pts_per_opp[x] <- ((nrow(temp_def_scorringopp_TDs) * 6) +
       (nrow(temp_def_scorringopp_FGs) * 3)) /
       length(unique(paste0(
         temp_def_scoringoppplays$game_id,
         temp_def_scoringoppplays$drive
       )))
-    VoA_Variables$def_turnovers[x] = nrow(temp_def_turnovers) /
+    VoA_Variables$def_turnovers[x] <- nrow(temp_def_turnovers) /
       length(unique(temp_defplays$week))
-    VoA_Variables$def_plays_pg[x] = nrow(temp_defplays) /
+    VoA_Variables$def_plays_pg[x] <- nrow(temp_defplays) /
       length(unique(temp_defplays$week))
-    VoA_Variables$def_ppg[x] = ((nrow(temp_def_TDs) * 6) +
+    VoA_Variables$def_ppg[x] <- ((nrow(temp_def_TDs) * 6) +
       (nrow(temp_def_2pts) * 2)) /
       length(unique(temp_def_rushplays$week))
     ### Current Special teams stats now
-    VoA_Variables$st_net_epa[x] = mean(temp_off_st_plays$epa) -
+    VoA_Variables$st_net_epa[x] <- mean(temp_off_st_plays$epa) -
       mean(temp_def_st_plays$epa)
     ## if nobody's returned any punts yet
     if (nrow(temp_returned_punts) == 0 | is.na(nrow(temp_returned_punts))) {
-      VoA_Variables$st_punt_return_yds[x] = 0
+      VoA_Variables$st_punt_return_yds[x] <- 0
     } else {
-      VoA_Variables$st_punt_return_yds[x] = mean(
+      VoA_Variables$st_punt_return_yds[x] <- mean(
         temp_returned_punts$return_yards
       )
     }
-    VoA_Variables$st_kick_return_yds[x] = mean(temp_returned_kicks$return_yards)
-    VoA_Variables$st_kick_return_TDs[x] = nrow(temp_returned_kick_TDs) /
+    VoA_Variables$st_kick_return_yds[x] <- mean(
+      temp_returned_kicks$return_yards
+    )
+    VoA_Variables$st_kick_return_TDs[x] <- nrow(temp_returned_kick_TDs) /
       length(unique(temp_offplays$week))
-    VoA_Variables$st_punt_return_TDs[x] = nrow(temp_returned_punt_TDs) /
+    VoA_Variables$st_punt_return_TDs[x] <- nrow(temp_returned_punt_TDs) /
       length(unique(temp_offplays$week))
     if (nrow(temp_off_FGs) == 0 | is.na(nrow(temp_off_FGs))) {
-      VoA_Variables$fg_rate[x] = 0
+      VoA_Variables$fg_rate[x] <- 0
     } else {
-      VoA_Variables$fg_rate[x] = nrow(temp_off_goodFGs) / nrow(temp_off_FGs)
+      VoA_Variables$fg_rate[x] <- nrow(temp_off_goodFGs) / nrow(temp_off_FGs)
     }
-    VoA_Variables$fg_made_pg[x] = nrow(temp_off_goodFGs) /
+    VoA_Variables$fg_made_pg[x] <- nrow(temp_off_goodFGs) /
       length(unique(temp_offplays$week))
     if (nrow(temp_off_xps) == 0 | is.na(nrow(temp_off_xps))) {
-      VoA_Variables$xp_rate[x] = 0
+      VoA_Variables$xp_rate[x] <- 0
     } else {
-      VoA_Variables$xp_rate[x] = nrow(temp_off_good_xps) / nrow(temp_off_xps)
+      VoA_Variables$xp_rate[x] <- nrow(temp_off_good_xps) / nrow(temp_off_xps)
     }
-    VoA_Variables$xp_made_pg[x] = nrow(temp_off_good_xps) /
+    VoA_Variables$xp_made_pg[x] <- nrow(temp_off_good_xps) /
       length(unique(temp_offplays$week))
     ## if nobody's kicked any punts yet
     if (nrow(temp_kicked_punts) == 0 | is.na(nrow(temp_kicked_punts))) {
-      VoA_Variables$st_punt_return_yds_allowed[x] = 0
+      VoA_Variables$st_punt_return_yds_allowed[x] <- 0
     } else {
-      VoA_Variables$st_punt_return_yds_allowed[x] = mean(
+      VoA_Variables$st_punt_return_yds_allowed[x] <- mean(
         temp_kicked_punts$return_yards
       )
     }
-    VoA_Variables$st_kick_return_yds_allowed[x] = mean(
+    VoA_Variables$st_kick_return_yds_allowed[x] <- mean(
       temp_kicked_kicks$return_yards
     )
-    VoA_Variables$st_kick_return_TDs_allowed[x] = nrow(temp_kicked_kick_TDs) /
+    VoA_Variables$st_kick_return_TDs_allowed[x] <- nrow(temp_kicked_kick_TDs) /
       length(unique(temp_offplays$week))
-    VoA_Variables$st_punt_return_TDs_allowed[x] = nrow(temp_kicked_punt_TDs) /
+    VoA_Variables$st_punt_return_TDs_allowed[x] <- nrow(temp_kicked_punt_TDs) /
       length(unique(temp_offplays$week))
     if (nrow(temp_def_FGs) == 0 | is.na(nrow(temp_def_FGs))) {
-      VoA_Variables$fg_rate_allowed[x] = 0
+      VoA_Variables$fg_rate_allowed[x] <- 0
     } else {
-      VoA_Variables$fg_rate_allowed[x] = nrow(temp_def_goodFGs) /
+      VoA_Variables$fg_rate_allowed[x] <- nrow(temp_def_goodFGs) /
         nrow(temp_def_FGs)
     }
-    VoA_Variables$fg_made_pg_allowed[x] = nrow(temp_def_goodFGs) /
+    VoA_Variables$fg_made_pg_allowed[x] <- nrow(temp_def_goodFGs) /
       length(unique(temp_offplays$week))
     if (nrow(temp_def_xps) == 0 | is.na(nrow(temp_def_xps))) {
-      VoA_Variables$xp_rate_allowed[x] = 0
+      VoA_Variables$xp_rate_allowed[x] <- 0
     } else {
-      VoA_Variables$xp_rate_allowed[x] = nrow(temp_def_good_xps) /
+      VoA_Variables$xp_rate_allowed[x] <- nrow(temp_def_good_xps) /
         nrow(temp_def_xps)
     }
-    VoA_Variables$xp_made_pg_allowed[x] = nrow(temp_def_good_xps) /
+    VoA_Variables$xp_made_pg_allowed[x] <- nrow(temp_def_good_xps) /
       length(unique(temp_offplays$week))
-    VoA_Variables$net_st_ppg[x] = (((nrow(temp_off_goodFGs) * 3) +
+    VoA_Variables$net_st_ppg[x] <- (((nrow(temp_off_goodFGs) * 3) +
       (nrow(temp_returned_punt_TDs) * 6) +
       (nrow(temp_returned_kick_TDs) * 6) +
       nrow(temp_off_good_xps)) -
@@ -3128,10 +3077,10 @@ if (as.numeric(nfl_week) == 0) {
     mutate(adj_coef = ridge_reg_coef + EPAAdj_glmnetcoef_vals[1])
 
   ### strings used to help match up adjusted value with proper team below
-  offstr = "posteam"
-  hfastr = "hfa"
-  defstr = "defteam"
-  stat = "epa"
+  offstr <- "posteam"
+  hfastr <- "hfa"
+  defstr <- "defteam"
+  stat <- "epa"
 
   ### calculating adjusted offensive EPA/play values, I think
   ## honestly I adapted all of this from Bud Davis's python code on the CFBD blog, I don't know what this does and I had to ask gemini to translate his python code to R and this is what it came up with and it seems to work, so I leave it as it is and pray to whichever deity is supposed to be running things around here that it doesn't break
@@ -3210,10 +3159,10 @@ if (as.numeric(nfl_week) == 0) {
     mutate(adj_coef = ridge_reg_coef + ExpAdj_glmnetcoef_vals[1])
 
   ### strings used to help match up adjusted value with proper team below
-  offstr = "posteam"
-  hfastr = "hfa"
-  defstr = "defteam"
-  stat = "epa"
+  offstr <- "posteam"
+  hfastr <- "hfa"
+  defstr <- "defteam"
+  stat <- "epa"
 
   ### calculating adjusted offensive explosiveness values, I think
   ExpAdj_dfAdjOff <- ExpAdj_adjcoefs |>
@@ -3305,10 +3254,10 @@ if (as.numeric(nfl_week) == 0) {
     mutate(adj_coef = ridge_reg_coef + PPGAdj_glmnetcoef_vals[1])
 
   ### strings used to help match up adjusted value with proper team below
-  offstr = "posteam"
-  hfastr = "hfa"
-  defstr = "defteam"
-  stat = "play_pts_scored"
+  offstr <- "posteam"
+  hfastr <- "hfa"
+  defstr <- "defteam"
+  stat <- "play_pts_scored"
 
   ### calculating adjusted offensive pts/play values, I think
   PPGAdj_dfAdjOff <- PPGAdj_adjcoefs |>
@@ -3388,10 +3337,10 @@ if (as.numeric(nfl_week) == 0) {
     mutate(adj_coef = ridge_reg_coef + YPPAdj_glmnetcoef_vals[1])
 
   ### strings used to help match up adjusted value with proper team below
-  offstr = "posteam"
-  hfastr = "hfa"
-  defstr = "defteam"
-  stat = "yards_gained"
+  offstr <- "posteam"
+  hfastr <- "hfa"
+  defstr <- "defteam"
+  stat <- "yards_gained"
 
   ### calculating adjusted offensive EPA/play values, I think
   ## honestly I adapted all of this from Bud Davis's python code on the CFBD blog, I don't know what this does and I had to ask gemini to translate his python code to R and this is what it came up with and it seems to work, so I leave it as it is and pray to whichever deity is supposed to be running things around here that it doesn't break
@@ -3509,17 +3458,17 @@ if (as.numeric(nfl_week) == 0) {
       filter(defteam == VoA_Variables$team[x] & field_goal_result == "made")
     temp_def_goodFGs <- temp_def_FGs |>
       filter(field_goal_result == "made")
-    temp_returned_punts <- punts |>
+    temp_returned_punts <- Punts |>
       filter(defteam == VoA_Variables$team[x])
-    temp_returned_kicks <- kickoffs |>
+    temp_returned_kicks <- Kickoffs |>
       filter(posteam == VoA_Variables$team[x])
     temp_returned_punt_TDs <- temp_returned_punts |>
       filter(return_touchdown == 1)
     temp_returned_kick_TDs <- temp_returned_kicks |>
       filter(return_touchdown == 1)
-    temp_kicked_punts <- punts |>
+    temp_kicked_punts <- Punts |>
       filter(posteam == VoA_Variables$team[x])
-    temp_kicked_kicks <- kickoffs |>
+    temp_kicked_kicks <- Kickoffs |>
       filter(defteam == VoA_Variables$team[x])
     temp_kicked_punt_TDs <- temp_kicked_punts |>
       filter(return_touchdown == 1)
@@ -3548,91 +3497,95 @@ if (as.numeric(nfl_week) == 0) {
     )
 
     ### Evaluating Stats
-    VoA_Variables$off_ypp[x] = mean(temp_offplays$yards_gained)
-    VoA_Variables$off_epa[x] = mean(temp_offplays$epa)
-    VoA_Variables$off_success_rt[x] = nrow(temp_offsuccessplays) /
+    VoA_Variables$off_ypp[x] <- mean(temp_offplays$yards_gained)
+    VoA_Variables$off_epa[x] <- mean(temp_offplays$epa)
+    VoA_Variables$off_success_rt[x] <- nrow(temp_offsuccessplays) /
       nrow(temp_offplays)
-    VoA_Variables$off_explosiveness[x] = mean(temp_offsuccessplays$epa)
-    VoA_Variables$off_third_conv_rate[x] = nrow(temp_conv_offthirddowns) /
+    VoA_Variables$off_explosiveness[x] <- mean(temp_offsuccessplays$epa)
+    VoA_Variables$off_third_conv_rate[x] <- nrow(temp_conv_offthirddowns) /
       nrow(temp_offthirddowns)
-    VoA_Variables$off_fourth_conv_rate[x] = nrow(temp_conv_offfourthdowns) /
+    VoA_Variables$off_fourth_conv_rate[x] <- nrow(temp_conv_offfourthdowns) /
       nrow(temp_off_fourthdowns)
-    VoA_Variables$off_pass_ypa[x] = mean(temp_off_passplays$yards_gained)
-    VoA_Variables$off_pass_ypc[x] = mean(temp_off_comppass$yards_gained)
-    VoA_Variables$off_rush_ypa[x] = mean(temp_off_rushplays$yards_gained)
-    VoA_Variables$off_pts_per_opp[x] = ((nrow(temp_off_scorringopp_TDs) * 6) +
+    VoA_Variables$off_pass_ypa[x] <- mean(temp_off_passplays$yards_gained)
+    VoA_Variables$off_pass_ypc[x] <- mean(temp_off_comppass$yards_gained)
+    VoA_Variables$off_rush_ypa[x] <- mean(temp_off_rushplays$yards_gained)
+    VoA_Variables$off_pts_per_opp[x] <- ((nrow(temp_off_scorringopp_TDs) * 6) +
       (nrow(temp_off_scorringopp_FGs) * 3)) /
       length(unique(paste0(
         temp_off_scoringoppplays$game_id,
         temp_off_scoringoppplays$drive
       )))
-    VoA_Variables$off_turnovers[x] = nrow(temp_off_turnovers) /
+    VoA_Variables$off_turnovers[x] <- nrow(temp_off_turnovers) /
       length(unique(temp_offplays$week))
-    VoA_Variables$off_plays_pg[x] = nrow(temp_offplays) /
+    VoA_Variables$off_plays_pg[x] <- nrow(temp_offplays) /
       length(unique(temp_offplays$week))
-    VoA_Variables$off_ppg[x] = ((nrow(temp_off_TDs) * 6) +
+    VoA_Variables$off_ppg[x] <- ((nrow(temp_off_TDs) * 6) +
       (nrow(temp_off_2pts) * 2)) /
       length(unique(temp_off_rushplays$week))
     ## PY1 defensive stats now
-    VoA_Variables$def_ypp[x] = mean(temp_defplays$yards_gained)
-    VoA_Variables$def_epa[x] = mean(temp_defplays$epa)
-    VoA_Variables$def_success_rt[x] = nrow(temp_defsuccessplays) /
+    VoA_Variables$def_ypp[x] <- mean(temp_defplays$yards_gained)
+    VoA_Variables$def_epa[x] <- mean(temp_defplays$epa)
+    VoA_Variables$def_success_rt[x] <- nrow(temp_defsuccessplays) /
       nrow(temp_defplays)
-    VoA_Variables$def_explosiveness[x] = mean(temp_defsuccessplays$epa)
-    VoA_Variables$def_third_conv_rate[x] = nrow(temp_conv_defthirddowns) /
+    VoA_Variables$def_explosiveness[x] <- mean(temp_defsuccessplays$epa)
+    VoA_Variables$def_third_conv_rate[x] <- nrow(temp_conv_defthirddowns) /
       nrow(temp_defthirddowns)
-    VoA_Variables$def_fourth_conv_rate[x] = nrow(temp_conv_deffourthdowns) /
+    VoA_Variables$def_fourth_conv_rate[x] <- nrow(temp_conv_deffourthdowns) /
       nrow(temp_def_fourthdowns)
-    VoA_Variables$def_pass_ypa[x] = mean(temp_def_passplays$yards_gained)
-    VoA_Variables$def_pass_ypc[x] = mean(temp_def_comppass$yards_gained)
-    VoA_Variables$def_rush_ypa[x] = mean(temp_def_rushplays$yards_gained)
-    VoA_Variables$def_pts_per_opp[x] = ((nrow(temp_def_scorringopp_TDs) * 6) +
+    VoA_Variables$def_pass_ypa[x] <- mean(temp_def_passplays$yards_gained)
+    VoA_Variables$def_pass_ypc[x] <- mean(temp_def_comppass$yards_gained)
+    VoA_Variables$def_rush_ypa[x] <- mean(temp_def_rushplays$yards_gained)
+    VoA_Variables$def_pts_per_opp[x] <- ((nrow(temp_def_scorringopp_TDs) * 6) +
       (nrow(temp_def_scorringopp_FGs) * 3)) /
       length(unique(paste0(
         temp_def_scoringoppplays$game_id,
         temp_def_scoringoppplays$drive
       )))
-    VoA_Variables$def_turnovers[x] = nrow(temp_def_turnovers) /
+    VoA_Variables$def_turnovers[x] <- nrow(temp_def_turnovers) /
       length(unique(temp_defplays$week))
-    VoA_Variables$def_plays_pg[x] = nrow(temp_defplays) /
+    VoA_Variables$def_plays_pg[x] <- nrow(temp_defplays) /
       length(unique(temp_defplays$week))
-    VoA_Variables$def_ppg[x] = ((nrow(temp_def_TDs) * 6) +
+    VoA_Variables$def_ppg[x] <- ((nrow(temp_def_TDs) * 6) +
       (nrow(temp_def_2pts) * 2)) /
       length(unique(temp_def_rushplays$week))
     ## Current Special teams stats now
-    VoA_Variables$st_net_epa[x] = mean(temp_off_st_plays$epa) -
+    VoA_Variables$st_net_epa[x] <- mean(temp_off_st_plays$epa) -
       mean(temp_def_st_plays$epa)
-    VoA_Variables$st_punt_return_yds[x] = mean(temp_returned_punts$return_yards)
-    VoA_Variables$st_kick_return_yds[x] = mean(temp_returned_kicks$return_yards)
-    VoA_Variables$st_kick_return_TDs[x] = nrow(temp_returned_kick_TDs) /
+    VoA_Variables$st_punt_return_yds[x] <- mean(
+      temp_returned_punts$return_yards
+    )
+    VoA_Variables$st_kick_return_yds[x] <- mean(
+      temp_returned_kicks$return_yards
+    )
+    VoA_Variables$st_kick_return_TDs[x] <- nrow(temp_returned_kick_TDs) /
       length(unique(temp_offplays$week))
-    VoA_Variables$st_punt_return_TDs[x] = nrow(temp_returned_punt_TDs) /
+    VoA_Variables$st_punt_return_TDs[x] <- nrow(temp_returned_punt_TDs) /
       length(unique(temp_offplays$week))
-    VoA_Variables$fg_rate[x] = nrow(temp_off_goodFGs) / nrow(temp_off_FGs)
-    VoA_Variables$fg_made_pg[x] = nrow(temp_off_goodFGs) /
+    VoA_Variables$fg_rate[x] <- nrow(temp_off_goodFGs) / nrow(temp_off_FGs)
+    VoA_Variables$fg_made_pg[x] <- nrow(temp_off_goodFGs) /
       length(unique(temp_offplays$week))
-    VoA_Variables$xp_rate[x] = nrow(temp_off_good_xps) / nrow(temp_off_xps)
-    VoA_Variables$xp_made_pg[x] = nrow(temp_off_good_xps) /
+    VoA_Variables$xp_rate[x] <- nrow(temp_off_good_xps) / nrow(temp_off_xps)
+    VoA_Variables$xp_made_pg[x] <- nrow(temp_off_good_xps) /
       length(unique(temp_offplays$week))
-    VoA_Variables$st_punt_return_yds_allowed[x] = mean(
+    VoA_Variables$st_punt_return_yds_allowed[x] <- mean(
       temp_kicked_punts$return_yards
     )
-    VoA_Variables$st_kick_return_yds_allowed[x] = mean(
+    VoA_Variables$st_kick_return_yds_allowed[x] <- mean(
       temp_kicked_kicks$return_yards
     )
-    VoA_Variables$st_kick_return_TDs_allowed[x] = nrow(temp_kicked_kick_TDs) /
+    VoA_Variables$st_kick_return_TDs_allowed[x] <- nrow(temp_kicked_kick_TDs) /
       length(unique(temp_offplays$week))
-    VoA_Variables$st_punt_return_TDs_allowed[x] = nrow(temp_kicked_punt_TDs) /
+    VoA_Variables$st_punt_return_TDs_allowed[x] <- nrow(temp_kicked_punt_TDs) /
       length(unique(temp_offplays$week))
-    VoA_Variables$fg_rate_allowed[x] = nrow(temp_def_goodFGs) /
+    VoA_Variables$fg_rate_allowed[x] <- nrow(temp_def_goodFGs) /
       nrow(temp_def_FGs)
-    VoA_Variables$fg_made_pg_allowed[x] = nrow(temp_def_goodFGs) /
+    VoA_Variables$fg_made_pg_allowed[x] <- nrow(temp_def_goodFGs) /
       length(unique(temp_offplays$week))
-    VoA_Variables$xp_rate_allowed[x] = nrow(temp_def_good_xps) /
+    VoA_Variables$xp_rate_allowed[x] <- nrow(temp_def_good_xps) /
       nrow(temp_def_xps)
-    VoA_Variables$xp_made_pg_allowed[x] = nrow(temp_def_good_xps) /
+    VoA_Variables$xp_made_pg_allowed[x] <- nrow(temp_def_good_xps) /
       length(unique(temp_offplays$week))
-    VoA_Variables$net_st_ppg[x] = (((nrow(temp_off_goodFGs) * 3) +
+    VoA_Variables$net_st_ppg[x] <- (((nrow(temp_off_goodFGs) * 3) +
       (nrow(temp_returned_punt_TDs) * 6) +
       (nrow(temp_returned_kick_TDs) * 6) +
       nrow(temp_off_good_xps)) -
@@ -3698,10 +3651,10 @@ if (as.numeric(nfl_week) == 0) {
     mutate(adj_coef = ridge_reg_coef + EPAAdj_glmnetcoef_vals[1])
 
   ### strings used to help match up adjusted value with proper team below
-  offstr = "posteam"
-  hfastr = "hfa"
-  defstr = "defteam"
-  stat = "epa"
+  offstr <- "posteam"
+  hfastr <- "hfa"
+  defstr <- "defteam"
+  stat <- "epa"
 
   ### calculating adjusted offensive EPA/play values, I think
   ## honestly I adapted all of this from Bud Davis's python code on the CFBD blog, I don't know what this does and I had to ask gemini to translate his python code to R and this is what it came up with and it seems to work, so I leave it as it is and pray to whichever deity is supposed to be running things around here that it doesn't break
@@ -3780,10 +3733,10 @@ if (as.numeric(nfl_week) == 0) {
     mutate(adj_coef = ridge_reg_coef + ExpAdj_glmnetcoef_vals[1])
 
   ### strings used to help match up adjusted value with proper team below
-  offstr = "posteam"
-  hfastr = "hfa"
-  defstr = "defteam"
-  stat = "epa"
+  offstr <- "posteam"
+  hfastr <- "hfa"
+  defstr <- "defteam"
+  stat <- "epa"
 
   ### calculating adjusted offensive explosiveness values, I think
   ExpAdj_dfAdjOff <- ExpAdj_adjcoefs |>
@@ -3875,10 +3828,10 @@ if (as.numeric(nfl_week) == 0) {
     mutate(adj_coef = ridge_reg_coef + PPGAdj_glmnetcoef_vals[1])
 
   ### strings used to help match up adjusted value with proper team below
-  offstr = "posteam"
-  hfastr = "hfa"
-  defstr = "defteam"
-  stat = "play_pts_scored"
+  offstr <- "posteam"
+  hfastr <- "hfa"
+  defstr <- "defteam"
+  stat <- "play_pts_scored"
 
   ### calculating adjusted offensive pts/play values, I think
   PPGAdj_dfAdjOff <- PPGAdj_adjcoefs |>
@@ -3958,10 +3911,10 @@ if (as.numeric(nfl_week) == 0) {
     mutate(adj_coef = ridge_reg_coef + YPPAdj_glmnetcoef_vals[1])
 
   ### strings used to help match up adjusted value with proper team below
-  offstr = "posteam"
-  hfastr = "hfa"
-  defstr = "defteam"
-  stat = "yards_gained"
+  offstr <- "posteam"
+  hfastr <- "hfa"
+  defstr <- "defteam"
+  stat <- "yards_gained"
 
   ### calculating adjusted offensive EPA/play values, I think
   ## honestly I adapted all of this from Bud Davis's python code on the CFBD blog, I don't know what this does and I had to ask gemini to translate his python code to R and this is what it came up with and it seems to work, so I leave it as it is and pray to whichever deity is supposed to be running things around here that it doesn't break
@@ -4079,17 +4032,17 @@ if (as.numeric(nfl_week) == 0) {
       filter(defteam == VoA_Variables$team[x] & field_goal_result == "made")
     temp_def_goodFGs <- temp_def_FGs |>
       filter(field_goal_result == "made")
-    temp_returned_punts <- punts |>
+    temp_returned_punts <- Punts |>
       filter(defteam == VoA_Variables$team[x])
-    temp_returned_kicks <- kickoffs |>
+    temp_returned_kicks <- Kickoffs |>
       filter(posteam == VoA_Variables$team[x])
     temp_returned_punt_TDs <- temp_returned_punts |>
       filter(return_touchdown == 1)
     temp_returned_kick_TDs <- temp_returned_kicks |>
       filter(return_touchdown == 1)
-    temp_kicked_punts <- punts |>
+    temp_kicked_punts <- Punts |>
       filter(posteam == VoA_Variables$team[x])
-    temp_kicked_kicks <- kickoffs |>
+    temp_kicked_kicks <- Kickoffs |>
       filter(defteam == VoA_Variables$team[x])
     temp_kicked_punt_TDs <- temp_kicked_punts |>
       filter(return_touchdown == 1)
@@ -4118,91 +4071,95 @@ if (as.numeric(nfl_week) == 0) {
     )
 
     ### Evaluating Stats
-    VoA_Variables$off_ypp[x] = mean(temp_offplays$yards_gained)
-    VoA_Variables$off_epa[x] = mean(temp_offplays$epa)
-    VoA_Variables$off_success_rt[x] = nrow(temp_offsuccessplays) /
+    VoA_Variables$off_ypp[x] <- mean(temp_offplays$yards_gained)
+    VoA_Variables$off_epa[x] <- mean(temp_offplays$epa)
+    VoA_Variables$off_success_rt[x] <- nrow(temp_offsuccessplays) /
       nrow(temp_offplays)
-    VoA_Variables$off_explosiveness[x] = mean(temp_offsuccessplays$epa)
-    VoA_Variables$off_third_conv_rate[x] = nrow(temp_conv_offthirddowns) /
+    VoA_Variables$off_explosiveness[x] <- mean(temp_offsuccessplays$epa)
+    VoA_Variables$off_third_conv_rate[x] <- nrow(temp_conv_offthirddowns) /
       nrow(temp_offthirddowns)
-    VoA_Variables$off_fourth_conv_rate[x] = nrow(temp_conv_offfourthdowns) /
+    VoA_Variables$off_fourth_conv_rate[x] <- nrow(temp_conv_offfourthdowns) /
       nrow(temp_off_fourthdowns)
-    VoA_Variables$off_pass_ypa[x] = mean(temp_off_passplays$yards_gained)
-    VoA_Variables$off_pass_ypc[x] = mean(temp_off_comppass$yards_gained)
-    VoA_Variables$off_rush_ypa[x] = mean(temp_off_rushplays$yards_gained)
-    VoA_Variables$off_pts_per_opp[x] = ((nrow(temp_off_scorringopp_TDs) * 6) +
+    VoA_Variables$off_pass_ypa[x] <- mean(temp_off_passplays$yards_gained)
+    VoA_Variables$off_pass_ypc[x] <- mean(temp_off_comppass$yards_gained)
+    VoA_Variables$off_rush_ypa[x] <- mean(temp_off_rushplays$yards_gained)
+    VoA_Variables$off_pts_per_opp[x] <- ((nrow(temp_off_scorringopp_TDs) * 6) +
       (nrow(temp_off_scorringopp_FGs) * 3)) /
       length(unique(paste0(
         temp_off_scoringoppplays$game_id,
         temp_off_scoringoppplays$drive
       )))
-    VoA_Variables$off_turnovers[x] = nrow(temp_off_turnovers) /
+    VoA_Variables$off_turnovers[x] <- nrow(temp_off_turnovers) /
       length(unique(temp_offplays$week))
-    VoA_Variables$off_plays_pg[x] = nrow(temp_offplays) /
+    VoA_Variables$off_plays_pg[x] <- nrow(temp_offplays) /
       length(unique(temp_offplays$week))
-    VoA_Variables$off_ppg[x] = ((nrow(temp_off_TDs) * 6) +
+    VoA_Variables$off_ppg[x] <- ((nrow(temp_off_TDs) * 6) +
       (nrow(temp_off_2pts) * 2)) /
       length(unique(temp_off_rushplays$week))
     ## PY1 defensive stats now
-    VoA_Variables$def_ypp[x] = mean(temp_defplays$yards_gained)
-    VoA_Variables$def_epa[x] = mean(temp_defplays$epa)
-    VoA_Variables$def_success_rt[x] = nrow(temp_defsuccessplays) /
+    VoA_Variables$def_ypp[x] <- mean(temp_defplays$yards_gained)
+    VoA_Variables$def_epa[x] <- mean(temp_defplays$epa)
+    VoA_Variables$def_success_rt[x] <- nrow(temp_defsuccessplays) /
       nrow(temp_defplays)
-    VoA_Variables$def_explosiveness[x] = mean(temp_defsuccessplays$epa)
-    VoA_Variables$def_third_conv_rate[x] = nrow(temp_conv_defthirddowns) /
+    VoA_Variables$def_explosiveness[x] <- mean(temp_defsuccessplays$epa)
+    VoA_Variables$def_third_conv_rate[x] <- nrow(temp_conv_defthirddowns) /
       nrow(temp_defthirddowns)
-    VoA_Variables$def_fourth_conv_rate[x] = nrow(temp_conv_deffourthdowns) /
+    VoA_Variables$def_fourth_conv_rate[x] <- nrow(temp_conv_deffourthdowns) /
       nrow(temp_def_fourthdowns)
-    VoA_Variables$def_pass_ypa[x] = mean(temp_def_passplays$yards_gained)
-    VoA_Variables$def_pass_ypc[x] = mean(temp_def_comppass$yards_gained)
-    VoA_Variables$def_rush_ypa[x] = mean(temp_def_rushplays$yards_gained)
-    VoA_Variables$def_pts_per_opp[x] = ((nrow(temp_def_scorringopp_TDs) * 6) +
+    VoA_Variables$def_pass_ypa[x] <- mean(temp_def_passplays$yards_gained)
+    VoA_Variables$def_pass_ypc[x] <- mean(temp_def_comppass$yards_gained)
+    VoA_Variables$def_rush_ypa[x] <- mean(temp_def_rushplays$yards_gained)
+    VoA_Variables$def_pts_per_opp[x] <- ((nrow(temp_def_scorringopp_TDs) * 6) +
       (nrow(temp_def_scorringopp_FGs) * 3)) /
       length(unique(paste0(
         temp_def_scoringoppplays$game_id,
         temp_def_scoringoppplays$drive
       )))
-    VoA_Variables$def_turnovers[x] = nrow(temp_def_turnovers) /
+    VoA_Variables$def_turnovers[x] <- nrow(temp_def_turnovers) /
       length(unique(temp_defplays$week))
-    VoA_Variables$def_plays_pg[x] = nrow(temp_defplays) /
+    VoA_Variables$def_plays_pg[x] <- nrow(temp_defplays) /
       length(unique(temp_defplays$week))
-    VoA_Variables$def_ppg[x] = ((nrow(temp_def_TDs) * 6) +
+    VoA_Variables$def_ppg[x] <- ((nrow(temp_def_TDs) * 6) +
       (nrow(temp_def_2pts) * 2)) /
       length(unique(temp_def_rushplays$week))
     ## Current Special teams stats now
-    VoA_Variables$st_net_epa[x] = mean(temp_off_st_plays$epa) -
+    VoA_Variables$st_net_epa[x] <- mean(temp_off_st_plays$epa) -
       mean(temp_def_st_plays$epa)
-    VoA_Variables$st_punt_return_yds[x] = mean(temp_returned_punts$return_yards)
-    VoA_Variables$st_kick_return_yds[x] = mean(temp_returned_kicks$return_yards)
-    VoA_Variables$st_kick_return_TDs[x] = nrow(temp_returned_kick_TDs) /
+    VoA_Variables$st_punt_return_yds[x] <- mean(
+      temp_returned_punts$return_yards
+    )
+    VoA_Variables$st_kick_return_yds[x] <- mean(
+      temp_returned_kicks$return_yards
+    )
+    VoA_Variables$st_kick_return_TDs[x] <- nrow(temp_returned_kick_TDs) /
       length(unique(temp_offplays$week))
-    VoA_Variables$st_punt_return_TDs[x] = nrow(temp_returned_punt_TDs) /
+    VoA_Variables$st_punt_return_TDs[x] <- nrow(temp_returned_punt_TDs) /
       length(unique(temp_offplays$week))
-    VoA_Variables$fg_rate[x] = nrow(temp_off_goodFGs) / nrow(temp_off_FGs)
-    VoA_Variables$fg_made_pg[x] = nrow(temp_off_goodFGs) /
+    VoA_Variables$fg_rate[x] <- nrow(temp_off_goodFGs) / nrow(temp_off_FGs)
+    VoA_Variables$fg_made_pg[x] <- nrow(temp_off_goodFGs) /
       length(unique(temp_offplays$week))
-    VoA_Variables$xp_rate[x] = nrow(temp_off_good_xps) / nrow(temp_off_xps)
-    VoA_Variables$xp_made_pg[x] = nrow(temp_off_good_xps) /
+    VoA_Variables$xp_rate[x] <- nrow(temp_off_good_xps) / nrow(temp_off_xps)
+    VoA_Variables$xp_made_pg[x] <- nrow(temp_off_good_xps) /
       length(unique(temp_offplays$week))
-    VoA_Variables$st_punt_return_yds_allowed[x] = mean(
+    VoA_Variables$st_punt_return_yds_allowed[x] <- mean(
       temp_kicked_punts$return_yards
     )
-    VoA_Variables$st_kick_return_yds_allowed[x] = mean(
+    VoA_Variables$st_kick_return_yds_allowed[x] <- mean(
       temp_kicked_kicks$return_yards
     )
-    VoA_Variables$st_kick_return_TDs_allowed[x] = nrow(temp_kicked_kick_TDs) /
+    VoA_Variables$st_kick_return_TDs_allowed[x] <- nrow(temp_kicked_kick_TDs) /
       length(unique(temp_offplays$week))
-    VoA_Variables$st_punt_return_TDs_allowed[x] = nrow(temp_kicked_punt_TDs) /
+    VoA_Variables$st_punt_return_TDs_allowed[x] <- nrow(temp_kicked_punt_TDs) /
       length(unique(temp_offplays$week))
-    VoA_Variables$fg_rate_allowed[x] = nrow(temp_def_goodFGs) /
+    VoA_Variables$fg_rate_allowed[x] <- nrow(temp_def_goodFGs) /
       nrow(temp_def_FGs)
-    VoA_Variables$fg_made_pg_allowed[x] = nrow(temp_def_goodFGs) /
+    VoA_Variables$fg_made_pg_allowed[x] <- nrow(temp_def_goodFGs) /
       length(unique(temp_offplays$week))
-    VoA_Variables$xp_rate_allowed[x] = nrow(temp_def_good_xps) /
+    VoA_Variables$xp_rate_allowed[x] <- nrow(temp_def_good_xps) /
       nrow(temp_def_xps)
-    VoA_Variables$xp_made_pg_allowed[x] = nrow(temp_def_good_xps) /
+    VoA_Variables$xp_made_pg_allowed[x] <- nrow(temp_def_good_xps) /
       length(unique(temp_offplays$week))
-    VoA_Variables$net_st_ppg[x] = (((nrow(temp_off_goodFGs) * 3) +
+    VoA_Variables$net_st_ppg[x] <- (((nrow(temp_off_goodFGs) * 3) +
       (nrow(temp_returned_punt_TDs) * 6) +
       (nrow(temp_returned_kick_TDs) * 6) +
       nrow(temp_off_good_xps)) -
@@ -4268,10 +4225,10 @@ if (as.numeric(nfl_week) == 0) {
     mutate(adj_coef = ridge_reg_coef + EPAAdj_glmnetcoef_vals[1])
 
   ### strings used to help match up adjusted value with proper team below
-  offstr = "posteam"
-  hfastr = "hfa"
-  defstr = "defteam"
-  stat = "epa"
+  offstr <- "posteam"
+  hfastr <- "hfa"
+  defstr <- "defteam"
+  stat <- "epa"
 
   ### calculating adjusted offensive EPA/play values, I think
   ## honestly I adapted all of this from Bud Davis's python code on the CFBD blog, I don't know what this does and I had to ask gemini to translate his python code to R and this is what it came up with and it seems to work, so I leave it as it is and pray to whichever deity is supposed to be running things around here that it doesn't break
@@ -4350,10 +4307,10 @@ if (as.numeric(nfl_week) == 0) {
     mutate(adj_coef = ridge_reg_coef + ExpAdj_glmnetcoef_vals[1])
 
   ### strings used to help match up adjusted value with proper team below
-  offstr = "posteam"
-  hfastr = "hfa"
-  defstr = "defteam"
-  stat = "epa"
+  offstr <- "posteam"
+  hfastr <- "hfa"
+  defstr <- "defteam"
+  stat <- "epa"
 
   ### calculating adjusted offensive explosiveness values, I think
   ExpAdj_dfAdjOff <- ExpAdj_adjcoefs |>
@@ -4445,10 +4402,10 @@ if (as.numeric(nfl_week) == 0) {
     mutate(adj_coef = ridge_reg_coef + PPGAdj_glmnetcoef_vals[1])
 
   ### strings used to help match up adjusted value with proper team below
-  offstr = "posteam"
-  hfastr = "hfa"
-  defstr = "defteam"
-  stat = "play_pts_scored"
+  offstr <- "posteam"
+  hfastr <- "hfa"
+  defstr <- "defteam"
+  stat <- "play_pts_scored"
 
   ### calculating adjusted offensive pts/play values, I think
   PPGAdj_dfAdjOff <- PPGAdj_adjcoefs |>
@@ -4528,10 +4485,10 @@ if (as.numeric(nfl_week) == 0) {
     mutate(adj_coef = ridge_reg_coef + YPPAdj_glmnetcoef_vals[1])
 
   ### strings used to help match up adjusted value with proper team below
-  offstr = "posteam"
-  hfastr = "hfa"
-  defstr = "defteam"
-  stat = "yards_gained"
+  offstr <- "posteam"
+  hfastr <- "hfa"
+  defstr <- "defteam"
+  stat <- "yards_gained"
 
   ### calculating adjusted offensive EPA/play values, I think
   ## honestly I adapted all of this from Bud Davis's python code on the CFBD blog, I don't know what this does and I had to ask gemini to translate his python code to R and this is what it came up with and it seems to work, so I leave it as it is and pray to whichever deity is supposed to be running things around here that it doesn't break
@@ -4649,17 +4606,17 @@ if (as.numeric(nfl_week) == 0) {
       filter(defteam == VoA_Variables$team[x] & field_goal_result == "made")
     temp_def_goodFGs <- temp_def_FGs |>
       filter(field_goal_result == "made")
-    temp_returned_punts <- punts |>
+    temp_returned_punts <- Punts |>
       filter(defteam == VoA_Variables$team[x])
-    temp_returned_kicks <- kickoffs |>
+    temp_returned_kicks <- Kickoffs |>
       filter(posteam == VoA_Variables$team[x])
     temp_returned_punt_TDs <- temp_returned_punts |>
       filter(return_touchdown == 1)
     temp_returned_kick_TDs <- temp_returned_kicks |>
       filter(return_touchdown == 1)
-    temp_kicked_punts <- punts |>
+    temp_kicked_punts <- Punts |>
       filter(posteam == VoA_Variables$team[x])
-    temp_kicked_kicks <- kickoffs |>
+    temp_kicked_kicks <- Kickoffs |>
       filter(defteam == VoA_Variables$team[x])
     temp_kicked_punt_TDs <- temp_kicked_punts |>
       filter(return_touchdown == 1)
@@ -4688,91 +4645,95 @@ if (as.numeric(nfl_week) == 0) {
     )
 
     ### Evaluating Stats
-    VoA_Variables$off_ypp[x] = mean(temp_offplays$yards_gained)
-    VoA_Variables$off_epa[x] = mean(temp_offplays$epa)
-    VoA_Variables$off_success_rt[x] = nrow(temp_offsuccessplays) /
+    VoA_Variables$off_ypp[x] <- mean(temp_offplays$yards_gained)
+    VoA_Variables$off_epa[x] <- mean(temp_offplays$epa)
+    VoA_Variables$off_success_rt[x] <- nrow(temp_offsuccessplays) /
       nrow(temp_offplays)
-    VoA_Variables$off_explosiveness[x] = mean(temp_offsuccessplays$epa)
-    VoA_Variables$off_third_conv_rate[x] = nrow(temp_conv_offthirddowns) /
+    VoA_Variables$off_explosiveness[x] <- mean(temp_offsuccessplays$epa)
+    VoA_Variables$off_third_conv_rate[x] <- nrow(temp_conv_offthirddowns) /
       nrow(temp_offthirddowns)
-    VoA_Variables$off_fourth_conv_rate[x] = nrow(temp_conv_offfourthdowns) /
+    VoA_Variables$off_fourth_conv_rate[x] <- nrow(temp_conv_offfourthdowns) /
       nrow(temp_off_fourthdowns)
-    VoA_Variables$off_pass_ypa[x] = mean(temp_off_passplays$yards_gained)
-    VoA_Variables$off_pass_ypc[x] = mean(temp_off_comppass$yards_gained)
-    VoA_Variables$off_rush_ypa[x] = mean(temp_off_rushplays$yards_gained)
-    VoA_Variables$off_pts_per_opp[x] = ((nrow(temp_off_scorringopp_TDs) * 6) +
+    VoA_Variables$off_pass_ypa[x] <- mean(temp_off_passplays$yards_gained)
+    VoA_Variables$off_pass_ypc[x] <- mean(temp_off_comppass$yards_gained)
+    VoA_Variables$off_rush_ypa[x] <- mean(temp_off_rushplays$yards_gained)
+    VoA_Variables$off_pts_per_opp[x] <- ((nrow(temp_off_scorringopp_TDs) * 6) +
       (nrow(temp_off_scorringopp_FGs) * 3)) /
       length(unique(paste0(
         temp_off_scoringoppplays$game_id,
         temp_off_scoringoppplays$drive
       )))
-    VoA_Variables$off_turnovers[x] = nrow(temp_off_turnovers) /
+    VoA_Variables$off_turnovers[x] <- nrow(temp_off_turnovers) /
       length(unique(temp_offplays$week))
-    VoA_Variables$off_plays_pg[x] = nrow(temp_offplays) /
+    VoA_Variables$off_plays_pg[x] <- nrow(temp_offplays) /
       length(unique(temp_offplays$week))
-    VoA_Variables$off_ppg[x] = ((nrow(temp_off_TDs) * 6) +
+    VoA_Variables$off_ppg[x] <- ((nrow(temp_off_TDs) * 6) +
       (nrow(temp_off_2pts) * 2)) /
       length(unique(temp_off_rushplays$week))
     ## PY1 defensive stats now
-    VoA_Variables$def_ypp[x] = mean(temp_defplays$yards_gained)
-    VoA_Variables$def_epa[x] = mean(temp_defplays$epa)
-    VoA_Variables$def_success_rt[x] = nrow(temp_defsuccessplays) /
+    VoA_Variables$def_ypp[x] <- mean(temp_defplays$yards_gained)
+    VoA_Variables$def_epa[x] <- mean(temp_defplays$epa)
+    VoA_Variables$def_success_rt[x] <- nrow(temp_defsuccessplays) /
       nrow(temp_defplays)
-    VoA_Variables$def_explosiveness[x] = mean(temp_defsuccessplays$epa)
-    VoA_Variables$def_third_conv_rate[x] = nrow(temp_conv_defthirddowns) /
+    VoA_Variables$def_explosiveness[x] <- mean(temp_defsuccessplays$epa)
+    VoA_Variables$def_third_conv_rate[x] <- nrow(temp_conv_defthirddowns) /
       nrow(temp_defthirddowns)
-    VoA_Variables$def_fourth_conv_rate[x] = nrow(temp_conv_deffourthdowns) /
+    VoA_Variables$def_fourth_conv_rate[x] <- nrow(temp_conv_deffourthdowns) /
       nrow(temp_def_fourthdowns)
-    VoA_Variables$def_pass_ypa[x] = mean(temp_def_passplays$yards_gained)
-    VoA_Variables$def_pass_ypc[x] = mean(temp_def_comppass$yards_gained)
-    VoA_Variables$def_rush_ypa[x] = mean(temp_def_rushplays$yards_gained)
-    VoA_Variables$def_pts_per_opp[x] = ((nrow(temp_def_scorringopp_TDs) * 6) +
+    VoA_Variables$def_pass_ypa[x] <- mean(temp_def_passplays$yards_gained)
+    VoA_Variables$def_pass_ypc[x] <- mean(temp_def_comppass$yards_gained)
+    VoA_Variables$def_rush_ypa[x] <- mean(temp_def_rushplays$yards_gained)
+    VoA_Variables$def_pts_per_opp[x] <- ((nrow(temp_def_scorringopp_TDs) * 6) +
       (nrow(temp_def_scorringopp_FGs) * 3)) /
       length(unique(paste0(
         temp_def_scoringoppplays$game_id,
         temp_def_scoringoppplays$drive
       )))
-    VoA_Variables$def_turnovers[x] = nrow(temp_def_turnovers) /
+    VoA_Variables$def_turnovers[x] <- nrow(temp_def_turnovers) /
       length(unique(temp_defplays$week))
-    VoA_Variables$def_plays_pg[x] = nrow(temp_defplays) /
+    VoA_Variables$def_plays_pg[x] <- nrow(temp_defplays) /
       length(unique(temp_defplays$week))
-    VoA_Variables$def_ppg[x] = ((nrow(temp_def_TDs) * 6) +
+    VoA_Variables$def_ppg[x] <- ((nrow(temp_def_TDs) * 6) +
       (nrow(temp_def_2pts) * 2)) /
       length(unique(temp_def_rushplays$week))
     ## Current Special teams stats now
-    VoA_Variables$st_net_epa[x] = mean(temp_off_st_plays$epa) -
+    VoA_Variables$st_net_epa[x] <- mean(temp_off_st_plays$epa) -
       mean(temp_def_st_plays$epa)
-    VoA_Variables$st_punt_return_yds[x] = mean(temp_returned_punts$return_yards)
-    VoA_Variables$st_kick_return_yds[x] = mean(temp_returned_kicks$return_yards)
-    VoA_Variables$st_kick_return_TDs[x] = nrow(temp_returned_kick_TDs) /
+    VoA_Variables$st_punt_return_yds[x] <- mean(
+      temp_returned_punts$return_yards
+    )
+    VoA_Variables$st_kick_return_yds[x] <- mean(
+      temp_returned_kicks$return_yards
+    )
+    VoA_Variables$st_kick_return_TDs[x] <- nrow(temp_returned_kick_TDs) /
       length(unique(temp_offplays$week))
-    VoA_Variables$st_punt_return_TDs[x] = nrow(temp_returned_punt_TDs) /
+    VoA_Variables$st_punt_return_TDs[x] <- nrow(temp_returned_punt_TDs) /
       length(unique(temp_offplays$week))
-    VoA_Variables$fg_rate[x] = nrow(temp_off_goodFGs) / nrow(temp_off_FGs)
-    VoA_Variables$fg_made_pg[x] = nrow(temp_off_goodFGs) /
+    VoA_Variables$fg_rate[x] <- nrow(temp_off_goodFGs) / nrow(temp_off_FGs)
+    VoA_Variables$fg_made_pg[x] <- nrow(temp_off_goodFGs) /
       length(unique(temp_offplays$week))
-    VoA_Variables$xp_rate[x] = nrow(temp_off_good_xps) / nrow(temp_off_xps)
-    VoA_Variables$xp_made_pg[x] = nrow(temp_off_good_xps) /
+    VoA_Variables$xp_rate[x] <- nrow(temp_off_good_xps) / nrow(temp_off_xps)
+    VoA_Variables$xp_made_pg[x] <- nrow(temp_off_good_xps) /
       length(unique(temp_offplays$week))
-    VoA_Variables$st_punt_return_yds_allowed[x] = mean(
+    VoA_Variables$st_punt_return_yds_allowed[x] <- mean(
       temp_kicked_punts$return_yards
     )
-    VoA_Variables$st_kick_return_yds_allowed[x] = mean(
+    VoA_Variables$st_kick_return_yds_allowed[x] <- mean(
       temp_kicked_kicks$return_yards
     )
-    VoA_Variables$st_kick_return_TDs_allowed[x] = nrow(temp_kicked_kick_TDs) /
+    VoA_Variables$st_kick_return_TDs_allowed[x] <- nrow(temp_kicked_kick_TDs) /
       length(unique(temp_offplays$week))
-    VoA_Variables$st_punt_return_TDs_allowed[x] = nrow(temp_kicked_punt_TDs) /
+    VoA_Variables$st_punt_return_TDs_allowed[x] <- nrow(temp_kicked_punt_TDs) /
       length(unique(temp_offplays$week))
-    VoA_Variables$fg_rate_allowed[x] = nrow(temp_def_goodFGs) /
+    VoA_Variables$fg_rate_allowed[x] <- nrow(temp_def_goodFGs) /
       nrow(temp_def_FGs)
-    VoA_Variables$fg_made_pg_allowed[x] = nrow(temp_def_goodFGs) /
+    VoA_Variables$fg_made_pg_allowed[x] <- nrow(temp_def_goodFGs) /
       length(unique(temp_offplays$week))
-    VoA_Variables$xp_rate_allowed[x] = nrow(temp_def_good_xps) /
+    VoA_Variables$xp_rate_allowed[x] <- nrow(temp_def_good_xps) /
       nrow(temp_def_xps)
-    VoA_Variables$xp_made_pg_allowed[x] = nrow(temp_def_good_xps) /
+    VoA_Variables$xp_made_pg_allowed[x] <- nrow(temp_def_good_xps) /
       length(unique(temp_offplays$week))
-    VoA_Variables$net_st_ppg[x] = (((nrow(temp_off_goodFGs) * 3) +
+    VoA_Variables$net_st_ppg[x] <- (((nrow(temp_off_goodFGs) * 3) +
       (nrow(temp_returned_punt_TDs) * 6) +
       (nrow(temp_returned_kick_TDs) * 6) +
       nrow(temp_off_good_xps)) -
@@ -4838,10 +4799,10 @@ if (as.numeric(nfl_week) == 0) {
     mutate(adj_coef = ridge_reg_coef + EPAAdj_glmnetcoef_vals[1])
 
   ### strings used to help match up adjusted value with proper team below
-  offstr = "posteam"
-  hfastr = "hfa"
-  defstr = "defteam"
-  stat = "epa"
+  offstr <- "posteam"
+  hfastr <- "hfa"
+  defstr <- "defteam"
+  stat <- "epa"
 
   ### calculating adjusted offensive EPA/play values, I think
   ## honestly I adapted all of this from Bud Davis's python code on the CFBD blog, I don't know what this does and I had to ask gemini to translate his python code to R and this is what it came up with and it seems to work, so I leave it as it is and pray to whichever deity is supposed to be running things around here that it doesn't break
@@ -4920,10 +4881,10 @@ if (as.numeric(nfl_week) == 0) {
     mutate(adj_coef = ridge_reg_coef + ExpAdj_glmnetcoef_vals[1])
 
   ### strings used to help match up adjusted value with proper team below
-  offstr = "posteam"
-  hfastr = "hfa"
-  defstr = "defteam"
-  stat = "epa"
+  offstr <- "posteam"
+  hfastr <- "hfa"
+  defstr <- "defteam"
+  stat <- "epa"
 
   ### calculating adjusted offensive explosiveness values, I think
   ExpAdj_dfAdjOff <- ExpAdj_adjcoefs |>
@@ -5015,10 +4976,10 @@ if (as.numeric(nfl_week) == 0) {
     mutate(adj_coef = ridge_reg_coef + PPGAdj_glmnetcoef_vals[1])
 
   ### strings used to help match up adjusted value with proper team below
-  offstr = "posteam"
-  hfastr = "hfa"
-  defstr = "defteam"
-  stat = "play_pts_scored"
+  offstr <- "posteam"
+  hfastr <- "hfa"
+  defstr <- "defteam"
+  stat <- "play_pts_scored"
 
   ### calculating adjusted offensive pts/play values, I think
   PPGAdj_dfAdjOff <- PPGAdj_adjcoefs |>
@@ -5098,10 +5059,10 @@ if (as.numeric(nfl_week) == 0) {
     mutate(adj_coef = ridge_reg_coef + YPPAdj_glmnetcoef_vals[1])
 
   ### strings used to help match up adjusted value with proper team below
-  offstr = "posteam"
-  hfastr = "hfa"
-  defstr = "defteam"
-  stat = "yards_gained"
+  offstr <- "posteam"
+  hfastr <- "hfa"
+  defstr <- "defteam"
+  stat <- "yards_gained"
 
   ### calculating adjusted offensive EPA/play values, I think
   ## honestly I adapted all of this from Bud Davis's python code on the CFBD blog, I don't know what this does and I had to ask gemini to translate his python code to R and this is what it came up with and it seems to work, so I leave it as it is and pray to whichever deity is supposed to be running things around here that it doesn't break
@@ -5219,17 +5180,17 @@ if (as.numeric(nfl_week) == 0) {
       filter(defteam == VoA_Variables$team[x] & field_goal_result == "made")
     temp_def_goodFGs <- temp_def_FGs |>
       filter(field_goal_result == "made")
-    temp_returned_punts <- punts |>
+    temp_returned_punts <- Punts |>
       filter(defteam == VoA_Variables$team[x])
-    temp_returned_kicks <- kickoffs |>
+    temp_returned_kicks <- Kickoffs |>
       filter(posteam == VoA_Variables$team[x])
     temp_returned_punt_TDs <- temp_returned_punts |>
       filter(return_touchdown == 1)
     temp_returned_kick_TDs <- temp_returned_kicks |>
       filter(return_touchdown == 1)
-    temp_kicked_punts <- punts |>
+    temp_kicked_punts <- Punts |>
       filter(posteam == VoA_Variables$team[x])
-    temp_kicked_kicks <- kickoffs |>
+    temp_kicked_kicks <- Kickoffs |>
       filter(defteam == VoA_Variables$team[x])
     temp_kicked_punt_TDs <- temp_kicked_punts |>
       filter(return_touchdown == 1)
@@ -5258,91 +5219,95 @@ if (as.numeric(nfl_week) == 0) {
     )
 
     ### Evaluating Stats
-    VoA_Variables$off_ypp[x] = mean(temp_offplays$yards_gained)
-    VoA_Variables$off_epa[x] = mean(temp_offplays$epa)
-    VoA_Variables$off_success_rt[x] = nrow(temp_offsuccessplays) /
+    VoA_Variables$off_ypp[x] <- mean(temp_offplays$yards_gained)
+    VoA_Variables$off_epa[x] <- mean(temp_offplays$epa)
+    VoA_Variables$off_success_rt[x] <- nrow(temp_offsuccessplays) /
       nrow(temp_offplays)
-    VoA_Variables$off_explosiveness[x] = mean(temp_offsuccessplays$epa)
-    VoA_Variables$off_third_conv_rate[x] = nrow(temp_conv_offthirddowns) /
+    VoA_Variables$off_explosiveness[x] <- mean(temp_offsuccessplays$epa)
+    VoA_Variables$off_third_conv_rate[x] <- nrow(temp_conv_offthirddowns) /
       nrow(temp_offthirddowns)
-    VoA_Variables$off_fourth_conv_rate[x] = nrow(temp_conv_offfourthdowns) /
+    VoA_Variables$off_fourth_conv_rate[x] <- nrow(temp_conv_offfourthdowns) /
       nrow(temp_off_fourthdowns)
-    VoA_Variables$off_pass_ypa[x] = mean(temp_off_passplays$yards_gained)
-    VoA_Variables$off_pass_ypc[x] = mean(temp_off_comppass$yards_gained)
-    VoA_Variables$off_rush_ypa[x] = mean(temp_off_rushplays$yards_gained)
-    VoA_Variables$off_pts_per_opp[x] = ((nrow(temp_off_scorringopp_TDs) * 6) +
+    VoA_Variables$off_pass_ypa[x] <- mean(temp_off_passplays$yards_gained)
+    VoA_Variables$off_pass_ypc[x] <- mean(temp_off_comppass$yards_gained)
+    VoA_Variables$off_rush_ypa[x] <- mean(temp_off_rushplays$yards_gained)
+    VoA_Variables$off_pts_per_opp[x] <- ((nrow(temp_off_scorringopp_TDs) * 6) +
       (nrow(temp_off_scorringopp_FGs) * 3)) /
       length(unique(paste0(
         temp_off_scoringoppplays$game_id,
         temp_off_scoringoppplays$drive
       )))
-    VoA_Variables$off_turnovers[x] = nrow(temp_off_turnovers) /
+    VoA_Variables$off_turnovers[x] <- nrow(temp_off_turnovers) /
       length(unique(temp_offplays$week))
-    VoA_Variables$off_plays_pg[x] = nrow(temp_offplays) /
+    VoA_Variables$off_plays_pg[x] <- nrow(temp_offplays) /
       length(unique(temp_offplays$week))
-    VoA_Variables$off_ppg[x] = ((nrow(temp_off_TDs) * 6) +
+    VoA_Variables$off_ppg[x] <- ((nrow(temp_off_TDs) * 6) +
       (nrow(temp_off_2pts) * 2)) /
       length(unique(temp_off_rushplays$week))
     ## PY1 defensive stats now
-    VoA_Variables$def_ypp[x] = mean(temp_defplays$yards_gained)
-    VoA_Variables$def_epa[x] = mean(temp_defplays$epa)
-    VoA_Variables$def_success_rt[x] = nrow(temp_defsuccessplays) /
+    VoA_Variables$def_ypp[x] <- mean(temp_defplays$yards_gained)
+    VoA_Variables$def_epa[x] <- mean(temp_defplays$epa)
+    VoA_Variables$def_success_rt[x] <- nrow(temp_defsuccessplays) /
       nrow(temp_defplays)
-    VoA_Variables$def_explosiveness[x] = mean(temp_defsuccessplays$epa)
-    VoA_Variables$def_third_conv_rate[x] = nrow(temp_conv_defthirddowns) /
+    VoA_Variables$def_explosiveness[x] <- mean(temp_defsuccessplays$epa)
+    VoA_Variables$def_third_conv_rate[x] <- nrow(temp_conv_defthirddowns) /
       nrow(temp_defthirddowns)
-    VoA_Variables$def_fourth_conv_rate[x] = nrow(temp_conv_deffourthdowns) /
+    VoA_Variables$def_fourth_conv_rate[x] <- nrow(temp_conv_deffourthdowns) /
       nrow(temp_def_fourthdowns)
-    VoA_Variables$def_pass_ypa[x] = mean(temp_def_passplays$yards_gained)
-    VoA_Variables$def_pass_ypc[x] = mean(temp_def_comppass$yards_gained)
-    VoA_Variables$def_rush_ypa[x] = mean(temp_def_rushplays$yards_gained)
-    VoA_Variables$def_pts_per_opp[x] = ((nrow(temp_def_scorringopp_TDs) * 6) +
+    VoA_Variables$def_pass_ypa[x] <- mean(temp_def_passplays$yards_gained)
+    VoA_Variables$def_pass_ypc[x] <- mean(temp_def_comppass$yards_gained)
+    VoA_Variables$def_rush_ypa[x] <- mean(temp_def_rushplays$yards_gained)
+    VoA_Variables$def_pts_per_opp[x] <- ((nrow(temp_def_scorringopp_TDs) * 6) +
       (nrow(temp_def_scorringopp_FGs) * 3)) /
       length(unique(paste0(
         temp_def_scoringoppplays$game_id,
         temp_def_scoringoppplays$drive
       )))
-    VoA_Variables$def_turnovers[x] = nrow(temp_def_turnovers) /
+    VoA_Variables$def_turnovers[x] <- nrow(temp_def_turnovers) /
       length(unique(temp_defplays$week))
-    VoA_Variables$def_plays_pg[x] = nrow(temp_defplays) /
+    VoA_Variables$def_plays_pg[x] <- nrow(temp_defplays) /
       length(unique(temp_defplays$week))
-    VoA_Variables$def_ppg[x] = ((nrow(temp_def_TDs) * 6) +
+    VoA_Variables$def_ppg[x] <- ((nrow(temp_def_TDs) * 6) +
       (nrow(temp_def_2pts) * 2)) /
       length(unique(temp_def_rushplays$week))
     ## Current Special teams stats now
-    VoA_Variables$st_net_epa[x] = mean(temp_off_st_plays$epa) -
+    VoA_Variables$st_net_epa[x] <- mean(temp_off_st_plays$epa) -
       mean(temp_def_st_plays$epa)
-    VoA_Variables$st_punt_return_yds[x] = mean(temp_returned_punts$return_yards)
-    VoA_Variables$st_kick_return_yds[x] = mean(temp_returned_kicks$return_yards)
-    VoA_Variables$st_kick_return_TDs[x] = nrow(temp_returned_kick_TDs) /
+    VoA_Variables$st_punt_return_yds[x] <- mean(
+      temp_returned_punts$return_yards
+    )
+    VoA_Variables$st_kick_return_yds[x] <- mean(
+      temp_returned_kicks$return_yards
+    )
+    VoA_Variables$st_kick_return_TDs[x] <- nrow(temp_returned_kick_TDs) /
       length(unique(temp_offplays$week))
-    VoA_Variables$st_punt_return_TDs[x] = nrow(temp_returned_punt_TDs) /
+    VoA_Variables$st_punt_return_TDs[x] <- nrow(temp_returned_punt_TDs) /
       length(unique(temp_offplays$week))
-    VoA_Variables$fg_rate[x] = nrow(temp_off_goodFGs) / nrow(temp_off_FGs)
-    VoA_Variables$fg_made_pg[x] = nrow(temp_off_goodFGs) /
+    VoA_Variables$fg_rate[x] <- nrow(temp_off_goodFGs) / nrow(temp_off_FGs)
+    VoA_Variables$fg_made_pg[x] <- nrow(temp_off_goodFGs) /
       length(unique(temp_offplays$week))
-    VoA_Variables$xp_rate[x] = nrow(temp_off_good_xps) / nrow(temp_off_xps)
-    VoA_Variables$xp_made_pg[x] = nrow(temp_off_good_xps) /
+    VoA_Variables$xp_rate[x] <- nrow(temp_off_good_xps) / nrow(temp_off_xps)
+    VoA_Variables$xp_made_pg[x] <- nrow(temp_off_good_xps) /
       length(unique(temp_offplays$week))
-    VoA_Variables$st_punt_return_yds_allowed[x] = mean(
+    VoA_Variables$st_punt_return_yds_allowed[x] <- mean(
       temp_kicked_punts$return_yards
     )
-    VoA_Variables$st_kick_return_yds_allowed[x] = mean(
+    VoA_Variables$st_kick_return_yds_allowed[x] <- mean(
       temp_kicked_kicks$return_yards
     )
-    VoA_Variables$st_kick_return_TDs_allowed[x] = nrow(temp_kicked_kick_TDs) /
+    VoA_Variables$st_kick_return_TDs_allowed[x] <- nrow(temp_kicked_kick_TDs) /
       length(unique(temp_offplays$week))
-    VoA_Variables$st_punt_return_TDs_allowed[x] = nrow(temp_kicked_punt_TDs) /
+    VoA_Variables$st_punt_return_TDs_allowed[x] <- nrow(temp_kicked_punt_TDs) /
       length(unique(temp_offplays$week))
-    VoA_Variables$fg_rate_allowed[x] = nrow(temp_def_goodFGs) /
+    VoA_Variables$fg_rate_allowed[x] <- nrow(temp_def_goodFGs) /
       nrow(temp_def_FGs)
-    VoA_Variables$fg_made_pg_allowed[x] = nrow(temp_def_goodFGs) /
+    VoA_Variables$fg_made_pg_allowed[x] <- nrow(temp_def_goodFGs) /
       length(unique(temp_offplays$week))
-    VoA_Variables$xp_rate_allowed[x] = nrow(temp_def_good_xps) /
+    VoA_Variables$xp_rate_allowed[x] <- nrow(temp_def_good_xps) /
       nrow(temp_def_xps)
-    VoA_Variables$xp_made_pg_allowed[x] = nrow(temp_def_good_xps) /
+    VoA_Variables$xp_made_pg_allowed[x] <- nrow(temp_def_good_xps) /
       length(unique(temp_offplays$week))
-    VoA_Variables$net_st_ppg[x] = (((nrow(temp_off_goodFGs) * 3) +
+    VoA_Variables$net_st_ppg[x] <- (((nrow(temp_off_goodFGs) * 3) +
       (nrow(temp_returned_punt_TDs) * 6) +
       (nrow(temp_returned_kick_TDs) * 6) +
       nrow(temp_off_good_xps)) -
@@ -5409,10 +5374,10 @@ if (as.numeric(nfl_week) == 0) {
     mutate(adj_coef = ridge_reg_coef + EPAAdj_glmnetcoef_vals[1])
 
   ### strings used to help match up adjusted value with proper team below
-  offstr = "posteam"
-  hfastr = "hfa"
-  defstr = "defteam"
-  stat = "epa"
+  offstr <- "posteam"
+  hfastr <- "hfa"
+  defstr <- "defteam"
+  stat <- "epa"
 
   ### calculating adjusted offensive EPA/play values, I think
   ## honestly I adapted all of this from Bud Davis's python code on the CFBD blog, I don't know what this does and I had to ask gemini to translate his python code to R and this is what it came up with and it seems to work, so I leave it as it is and pray to whichever deity is supposed to be running things around here that it doesn't break
@@ -5491,10 +5456,10 @@ if (as.numeric(nfl_week) == 0) {
     mutate(adj_coef = ridge_reg_coef + ExpAdj_glmnetcoef_vals[1])
 
   ### strings used to help match up adjusted value with proper team below
-  offstr = "posteam"
-  hfastr = "hfa"
-  defstr = "defteam"
-  stat = "epa"
+  offstr <- "posteam"
+  hfastr <- "hfa"
+  defstr <- "defteam"
+  stat <- "epa"
 
   ### calculating adjusted offensive explosiveness values, I think
   ExpAdj_dfAdjOff <- ExpAdj_adjcoefs |>
@@ -5586,10 +5551,10 @@ if (as.numeric(nfl_week) == 0) {
     mutate(adj_coef = ridge_reg_coef + PPGAdj_glmnetcoef_vals[1])
 
   ### strings used to help match up adjusted value with proper team below
-  offstr = "posteam"
-  hfastr = "hfa"
-  defstr = "defteam"
-  stat = "play_pts_scored"
+  offstr <- "posteam"
+  hfastr <- "hfa"
+  defstr <- "defteam"
+  stat <- "play_pts_scored"
 
   ### calculating adjusted offensive pts/play values, I think
   PPGAdj_dfAdjOff <- PPGAdj_adjcoefs |>
@@ -5669,10 +5634,10 @@ if (as.numeric(nfl_week) == 0) {
     mutate(adj_coef = ridge_reg_coef + YPPAdj_glmnetcoef_vals[1])
 
   ### strings used to help match up adjusted value with proper team below
-  offstr = "posteam"
-  hfastr = "hfa"
-  defstr = "defteam"
-  stat = "yards_gained"
+  offstr <- "posteam"
+  hfastr <- "hfa"
+  defstr <- "defteam"
+  stat <- "yards_gained"
 
   ### calculating adjusted offensive EPA/play values, I think
   ## honestly I adapted all of this from Bud Davis's python code on the CFBD blog, I don't know what this does and I had to ask gemini to translate his python code to R and this is what it came up with and it seems to work, so I leave it as it is and pray to whichever deity is supposed to be running things around here that it doesn't break
@@ -5790,17 +5755,17 @@ if (as.numeric(nfl_week) == 0) {
       filter(defteam == VoA_Variables$team[x] & field_goal_result == "made")
     temp_def_goodFGs <- temp_def_FGs |>
       filter(field_goal_result == "made")
-    temp_returned_punts <- punts |>
+    temp_returned_punts <- Punts |>
       filter(defteam == VoA_Variables$team[x])
-    temp_returned_kicks <- kickoffs |>
+    temp_returned_kicks <- Kickoffs |>
       filter(posteam == VoA_Variables$team[x])
     temp_returned_punt_TDs <- temp_returned_punts |>
       filter(return_touchdown == 1)
     temp_returned_kick_TDs <- temp_returned_kicks |>
       filter(return_touchdown == 1)
-    temp_kicked_punts <- punts |>
+    temp_kicked_punts <- Punts |>
       filter(posteam == VoA_Variables$team[x])
-    temp_kicked_kicks <- kickoffs |>
+    temp_kicked_kicks <- Kickoffs |>
       filter(defteam == VoA_Variables$team[x])
     temp_kicked_punt_TDs <- temp_kicked_punts |>
       filter(return_touchdown == 1)
@@ -5829,91 +5794,95 @@ if (as.numeric(nfl_week) == 0) {
     )
 
     ### Evaluating Stats
-    VoA_Variables$off_ypp[x] = mean(temp_offplays$yards_gained)
-    VoA_Variables$off_epa[x] = mean(temp_offplays$epa)
-    VoA_Variables$off_success_rt[x] = nrow(temp_offsuccessplays) /
+    VoA_Variables$off_ypp[x] <- mean(temp_offplays$yards_gained)
+    VoA_Variables$off_epa[x] <- mean(temp_offplays$epa)
+    VoA_Variables$off_success_rt[x] <- nrow(temp_offsuccessplays) /
       nrow(temp_offplays)
-    VoA_Variables$off_explosiveness[x] = mean(temp_offsuccessplays$epa)
-    VoA_Variables$off_third_conv_rate[x] = nrow(temp_conv_offthirddowns) /
+    VoA_Variables$off_explosiveness[x] <- mean(temp_offsuccessplays$epa)
+    VoA_Variables$off_third_conv_rate[x] <- nrow(temp_conv_offthirddowns) /
       nrow(temp_offthirddowns)
-    VoA_Variables$off_fourth_conv_rate[x] = nrow(temp_conv_offfourthdowns) /
+    VoA_Variables$off_fourth_conv_rate[x] <- nrow(temp_conv_offfourthdowns) /
       nrow(temp_off_fourthdowns)
-    VoA_Variables$off_pass_ypa[x] = mean(temp_off_passplays$yards_gained)
-    VoA_Variables$off_pass_ypc[x] = mean(temp_off_comppass$yards_gained)
-    VoA_Variables$off_rush_ypa[x] = mean(temp_off_rushplays$yards_gained)
-    VoA_Variables$off_pts_per_opp[x] = ((nrow(temp_off_scorringopp_TDs) * 6) +
+    VoA_Variables$off_pass_ypa[x] <- mean(temp_off_passplays$yards_gained)
+    VoA_Variables$off_pass_ypc[x] <- mean(temp_off_comppass$yards_gained)
+    VoA_Variables$off_rush_ypa[x] <- mean(temp_off_rushplays$yards_gained)
+    VoA_Variables$off_pts_per_opp[x] <- ((nrow(temp_off_scorringopp_TDs) * 6) +
       (nrow(temp_off_scorringopp_FGs) * 3)) /
       length(unique(paste0(
         temp_off_scoringoppplays$game_id,
         temp_off_scoringoppplays$drive
       )))
-    VoA_Variables$off_turnovers[x] = nrow(temp_off_turnovers) /
+    VoA_Variables$off_turnovers[x] <- nrow(temp_off_turnovers) /
       length(unique(temp_offplays$week))
-    VoA_Variables$off_plays_pg[x] = nrow(temp_offplays) /
+    VoA_Variables$off_plays_pg[x] <- nrow(temp_offplays) /
       length(unique(temp_offplays$week))
-    VoA_Variables$off_ppg[x] = ((nrow(temp_off_TDs) * 6) +
+    VoA_Variables$off_ppg[x] <- ((nrow(temp_off_TDs) * 6) +
       (nrow(temp_off_2pts) * 2)) /
       length(unique(temp_off_rushplays$week))
     ## PY1 defensive stats now
-    VoA_Variables$def_ypp[x] = mean(temp_defplays$yards_gained)
-    VoA_Variables$def_epa[x] = mean(temp_defplays$epa)
-    VoA_Variables$def_success_rt[x] = nrow(temp_defsuccessplays) /
+    VoA_Variables$def_ypp[x] <- mean(temp_defplays$yards_gained)
+    VoA_Variables$def_epa[x] <- mean(temp_defplays$epa)
+    VoA_Variables$def_success_rt[x] <- nrow(temp_defsuccessplays) /
       nrow(temp_defplays)
-    VoA_Variables$def_explosiveness[x] = mean(temp_defsuccessplays$epa)
-    VoA_Variables$def_third_conv_rate[x] = nrow(temp_conv_defthirddowns) /
+    VoA_Variables$def_explosiveness[x] <- mean(temp_defsuccessplays$epa)
+    VoA_Variables$def_third_conv_rate[x] <- nrow(temp_conv_defthirddowns) /
       nrow(temp_defthirddowns)
-    VoA_Variables$def_fourth_conv_rate[x] = nrow(temp_conv_deffourthdowns) /
+    VoA_Variables$def_fourth_conv_rate[x] <- nrow(temp_conv_deffourthdowns) /
       nrow(temp_def_fourthdowns)
-    VoA_Variables$def_pass_ypa[x] = mean(temp_def_passplays$yards_gained)
-    VoA_Variables$def_pass_ypc[x] = mean(temp_def_comppass$yards_gained)
-    VoA_Variables$def_rush_ypa[x] = mean(temp_def_rushplays$yards_gained)
-    VoA_Variables$def_pts_per_opp[x] = ((nrow(temp_def_scorringopp_TDs) * 6) +
+    VoA_Variables$def_pass_ypa[x] <- mean(temp_def_passplays$yards_gained)
+    VoA_Variables$def_pass_ypc[x] <- mean(temp_def_comppass$yards_gained)
+    VoA_Variables$def_rush_ypa[x] <- mean(temp_def_rushplays$yards_gained)
+    VoA_Variables$def_pts_per_opp[x] <- ((nrow(temp_def_scorringopp_TDs) * 6) +
       (nrow(temp_def_scorringopp_FGs) * 3)) /
       length(unique(paste0(
         temp_def_scoringoppplays$game_id,
         temp_def_scoringoppplays$drive
       )))
-    VoA_Variables$def_turnovers[x] = nrow(temp_def_turnovers) /
+    VoA_Variables$def_turnovers[x] <- nrow(temp_def_turnovers) /
       length(unique(temp_defplays))
-    VoA_Variables$def_plays_pg[x] = nrow(temp_defplays) /
+    VoA_Variables$def_plays_pg[x] <- nrow(temp_defplays) /
       length(unique(temp_defplays$week))
-    VoA_Variables$def_ppg[x] = ((nrow(temp_def_TDs) * 6) +
+    VoA_Variables$def_ppg[x] <- ((nrow(temp_def_TDs) * 6) +
       (nrow(temp_def_2pts) * 2)) /
       length(unique(temp_def_rushplays$week))
     ## Current Special teams stats now
-    VoA_Variables$st_net_epa[x] = mean(temp_off_st_plays$epa) -
+    VoA_Variables$st_net_epa[x] <- mean(temp_off_st_plays$epa) -
       mean(temp_def_st_plays$epa)
-    VoA_Variables$st_punt_return_yds[x] = mean(temp_returned_punts$return_yards)
-    VoA_Variables$st_kick_return_yds[x] = mean(temp_returned_kicks$return_yards)
-    VoA_Variables$st_kick_return_TDs[x] = nrow(temp_returned_kick_TDs) /
+    VoA_Variables$st_punt_return_yds[x] <- mean(
+      temp_returned_punts$return_yards
+    )
+    VoA_Variables$st_kick_return_yds[x] <- mean(
+      temp_returned_kicks$return_yards
+    )
+    VoA_Variables$st_kick_return_TDs[x] <- nrow(temp_returned_kick_TDs) /
       length(unique(temp_offplays$week))
-    VoA_Variables$st_punt_return_TDs[x] = nrow(temp_returned_punt_TDs) /
+    VoA_Variables$st_punt_return_TDs[x] <- nrow(temp_returned_punt_TDs) /
       length(unique(temp_offplays$week))
-    VoA_Variables$fg_rate[x] = nrow(temp_off_goodFGs) / nrow(temp_off_FGs)
-    VoA_Variables$fg_made_pg[x] = nrow(temp_off_goodFGs) /
+    VoA_Variables$fg_rate[x] <- nrow(temp_off_goodFGs) / nrow(temp_off_FGs)
+    VoA_Variables$fg_made_pg[x] <- nrow(temp_off_goodFGs) /
       length(unique(temp_offplays$week))
-    VoA_Variables$xp_rate[x] = nrow(temp_off_good_xps) / nrow(temp_off_xps)
-    VoA_Variables$xp_made_pg[x] = nrow(temp_off_good_xps) /
+    VoA_Variables$xp_rate[x] <- nrow(temp_off_good_xps) / nrow(temp_off_xps)
+    VoA_Variables$xp_made_pg[x] <- nrow(temp_off_good_xps) /
       length(unique(temp_offplays$week))
-    VoA_Variables$st_punt_return_yds_allowed[x] = mean(
+    VoA_Variables$st_punt_return_yds_allowed[x] <- mean(
       temp_kicked_punts$return_yards
     )
-    VoA_Variables$st_kick_return_yds_allowed[x] = mean(
+    VoA_Variables$st_kick_return_yds_allowed[x] <- mean(
       temp_kicked_kicks$return_yards
     )
-    VoA_Variables$st_kick_return_TDs_allowed[x] = nrow(temp_kicked_kick_TDs) /
+    VoA_Variables$st_kick_return_TDs_allowed[x] <- nrow(temp_kicked_kick_TDs) /
       length(unique(temp_offplays$week))
-    VoA_Variables$st_punt_return_TDs_allowed[x] = nrow(temp_kicked_punt_TDs) /
+    VoA_Variables$st_punt_return_TDs_allowed[x] <- nrow(temp_kicked_punt_TDs) /
       length(unique(temp_offplays$week))
-    VoA_Variables$fg_rate_allowed[x] = nrow(temp_def_goodFGs) /
+    VoA_Variables$fg_rate_allowed[x] <- nrow(temp_def_goodFGs) /
       nrow(temp_def_FGs)
-    VoA_Variables$fg_made_pg_allowed[x] = nrow(temp_def_goodFGs) /
+    VoA_Variables$fg_made_pg_allowed[x] <- nrow(temp_def_goodFGs) /
       length(unique(temp_offplays$week))
-    VoA_Variables$xp_rate_allowed[x] = nrow(temp_def_good_xps) /
+    VoA_Variables$xp_rate_allowed[x] <- nrow(temp_def_good_xps) /
       nrow(temp_def_xps)
-    VoA_Variables$xp_made_pg_allowed[x] = nrow(temp_def_good_xps) /
+    VoA_Variables$xp_made_pg_allowed[x] <- nrow(temp_def_good_xps) /
       length(unique(temp_offplays$week))
-    VoA_Variables$net_st_ppg[x] = (((nrow(temp_off_goodFGs) * 3) +
+    VoA_Variables$net_st_ppg[x] <- (((nrow(temp_off_goodFGs) * 3) +
       (nrow(temp_returned_punt_TDs) * 6) +
       (nrow(temp_returned_kick_TDs) * 6) +
       nrow(temp_off_good_xps)) -
@@ -5988,10 +5957,10 @@ if (as.numeric(nfl_week) == 0) {
     mutate(adj_coef = ridge_reg_coef + EPAAdj_glmnetcoef_vals[1])
 
   ### strings used to help match up adjusted value with proper team below
-  offstr = "posteam"
-  hfastr = "hfa"
-  defstr = "defteam"
-  stat = "epa"
+  offstr <- "posteam"
+  hfastr <- "hfa"
+  defstr <- "defteam"
+  stat <- "epa"
 
   ### calculating adjusted offensive EPA/play values, I think
   ## honestly I adapted all of this from Bud Davis's python code on the CFBD blog, I don't know what this does and I had to ask gemini to translate his python code to R and this is what it came up with and it seems to work, so I leave it as it is and pray to whichever deity is supposed to be running things around here that it doesn't break
@@ -6070,10 +6039,10 @@ if (as.numeric(nfl_week) == 0) {
     mutate(adj_coef = ridge_reg_coef + ExpAdj_glmnetcoef_vals[1])
 
   ### strings used to help match up adjusted value with proper team below
-  offstr = "posteam"
-  hfastr = "hfa"
-  defstr = "defteam"
-  stat = "epa"
+  offstr <- "posteam"
+  hfastr <- "hfa"
+  defstr <- "defteam"
+  stat <- "epa"
 
   ### calculating adjusted offensive explosiveness values, I think
   ExpAdj_dfAdjOff <- ExpAdj_adjcoefs |>
@@ -6165,10 +6134,10 @@ if (as.numeric(nfl_week) == 0) {
     mutate(adj_coef = ridge_reg_coef + PPGAdj_glmnetcoef_vals[1])
 
   ### strings used to help match up adjusted value with proper team below
-  offstr = "posteam"
-  hfastr = "hfa"
-  defstr = "defteam"
-  stat = "play_pts_scored"
+  offstr <- "posteam"
+  hfastr <- "hfa"
+  defstr <- "defteam"
+  stat <- "play_pts_scored"
 
   ### calculating adjusted offensive pts/play values, I think
   PPGAdj_dfAdjOff <- PPGAdj_adjcoefs |>
@@ -6248,10 +6217,10 @@ if (as.numeric(nfl_week) == 0) {
     mutate(adj_coef = ridge_reg_coef + YPPAdj_glmnetcoef_vals[1])
 
   ### strings used to help match up adjusted value with proper team below
-  offstr = "posteam"
-  hfastr = "hfa"
-  defstr = "defteam"
-  stat = "yards_gained"
+  offstr <- "posteam"
+  hfastr <- "hfa"
+  defstr <- "defteam"
+  stat <- "yards_gained"
 
   ### calculating adjusted offensive EPA/play values, I think
   ## honestly I adapted all of this from Bud Davis's python code on the CFBD blog, I don't know what this does and I had to ask gemini to translate his python code to R and this is what it came up with and it seems to work, so I leave it as it is and pray to whichever deity is supposed to be running things around here that it doesn't break
@@ -7164,16 +7133,16 @@ if (as.numeric(nfl_week) == 0) {
       away_def_VoA_rating = -999
     )
   for (i in 1:nrow(CompletedGames)) {
-    CompletedGames$home_off_VoA_rating[i] = PrevWeek_VoA$OffVoA_MedRating[
+    CompletedGames$home_off_VoA_rating[i] <- PrevWeek_VoA$OffVoA_MedRating[
       PrevWeek_VoA$team == CompletedGames$home_team[i]
     ]
-    CompletedGames$home_def_VoA_rating[i] = PrevWeek_VoA$DefVoA_MedRating[
+    CompletedGames$home_def_VoA_rating[i] <- PrevWeek_VoA$DefVoA_MedRating[
       PrevWeek_VoA$team == CompletedGames$home_team[i]
     ]
-    CompletedGames$away_off_VoA_rating[i] = PrevWeek_VoA$OffVoA_MedRating[
+    CompletedGames$away_off_VoA_rating[i] <- PrevWeek_VoA$OffVoA_MedRating[
       PrevWeek_VoA$team == CompletedGames$away_team[i]
     ]
-    CompletedGames$away_def_VoA_rating[i] = PrevWeek_VoA$DefVoA_MedRating[
+    CompletedGames$away_def_VoA_rating[i] <- PrevWeek_VoA$DefVoA_MedRating[
       PrevWeek_VoA$team == CompletedGames$away_team[i]
     ]
   }
@@ -7198,22 +7167,22 @@ if (as.numeric(nfl_week) == 0) {
         )
       )
 
-    VoA_Variables$off_error[i] = mean(temp_games$off_error)
-    VoA_Variables$def_error[i] = mean(temp_games$def_error)
+    VoA_Variables$off_error[i] <- mean(temp_games$off_error)
+    VoA_Variables$def_error[i] <- mean(temp_games$def_error)
   }
 
   ### adjusting adjusted off and def ppg to account for error
   set.seed(802)
   for (i in 1:nrow(VoA_Variables)) {
     temp_off_ppg <- VoA_Variables$weighted_off_ppg[i]
-    VoA_Variables$weighted_off_ppg[i] = temp_off_ppg +
+    VoA_Variables$weighted_off_ppg[i] <- temp_off_ppg +
       rnorm(
         1,
         mean = VoA_Variables$off_error[i] / 10,
         sd = sd(VoA_Variables$off_error)
       )
     temp_def_ppg <- VoA_Variables$weighted_def_ppg[i]
-    VoA_Variables$weighted_def_ppg[i] = temp_def_ppg +
+    VoA_Variables$weighted_def_ppg[i] <- temp_def_ppg +
       rnorm(
         1,
         mean = VoA_Variables$def_error[i] / 10,
@@ -7222,13 +7191,13 @@ if (as.numeric(nfl_week) == 0) {
 
     ### making sure all values are > 0
     if (VoA_Variables$weighted_off_ppg[i] <= 0) {
-      VoA_Variables$weighted_off_ppg[i] = abs(VoA_Variables$weighted_off_ppg[
+      VoA_Variables$weighted_off_ppg[i] <- abs(VoA_Variables$weighted_off_ppg[
         i
       ]) +
         abs(rnorm(1, 5, 1))
     }
     if (VoA_Variables$weighted_def_ppg[i] <= 0) {
-      VoA_Variables$weighted_def_ppg[i] = abs(VoA_Variables$weighted_def_ppg[
+      VoA_Variables$weighted_def_ppg[i] <- abs(VoA_Variables$weighted_def_ppg[
         i
       ]) +
         abs(rnorm(1, 5, 1))
@@ -7252,16 +7221,16 @@ if (as.numeric(nfl_week) == 0) {
       away_def_VoA_rating = -999
     )
   for (i in 1:nrow(CompletedGames)) {
-    CompletedGames$home_off_VoA_rating[i] = PrevWeek_VoA$OffVoA_MedRating[
+    CompletedGames$home_off_VoA_rating[i] <- PrevWeek_VoA$OffVoA_MedRating[
       PrevWeek_VoA$team == CompletedGames$home_team[i]
     ]
-    CompletedGames$home_def_VoA_rating[i] = PrevWeek_VoA$DefVoA_MedRating[
+    CompletedGames$home_def_VoA_rating[i] <- PrevWeek_VoA$DefVoA_MedRating[
       PrevWeek_VoA$team == CompletedGames$home_team[i]
     ]
-    CompletedGames$away_off_VoA_rating[i] = PrevWeek_VoA$OffVoA_MedRating[
+    CompletedGames$away_off_VoA_rating[i] <- PrevWeek_VoA$OffVoA_MedRating[
       PrevWeek_VoA$team == CompletedGames$away_team[i]
     ]
-    CompletedGames$away_def_VoA_rating[i] = PrevWeek_VoA$DefVoA_MedRating[
+    CompletedGames$away_def_VoA_rating[i] <- PrevWeek_VoA$DefVoA_MedRating[
       PrevWeek_VoA$team == CompletedGames$away_team[i]
     ]
   }
@@ -7285,22 +7254,22 @@ if (as.numeric(nfl_week) == 0) {
         )
       )
 
-    VoA_Variables$off_error[i] = mean(temp_games$off_error)
-    VoA_Variables$def_error[i] = mean(temp_games$def_error)
+    VoA_Variables$off_error[i] <- mean(temp_games$off_error)
+    VoA_Variables$def_error[i] <- mean(temp_games$def_error)
   }
 
   ### adjusting adjusted off and def ppg to account for error
   set.seed(802)
   for (i in 1:nrow(VoA_Variables)) {
     temp_off_ppg <- VoA_Variables$weighted_off_ppg[i]
-    VoA_Variables$weighted_off_ppg[i] = temp_off_ppg +
+    VoA_Variables$weighted_off_ppg[i] <- temp_off_ppg +
       rnorm(
         1,
         mean = VoA_Variables$off_error[i] / 5,
         sd = sd(VoA_Variables$off_error)
       )
     temp_def_ppg <- VoA_Variables$weighted_def_ppg[i]
-    VoA_Variables$weighted_def_ppg[i] = temp_def_ppg +
+    VoA_Variables$weighted_def_ppg[i] <- temp_def_ppg +
       rnorm(
         1,
         mean = VoA_Variables$def_error[i] / 5,
@@ -7310,13 +7279,13 @@ if (as.numeric(nfl_week) == 0) {
     ### making sure all values are > 0
     set.seed(802)
     if (VoA_Variables$weighted_off_ppg[i] <= 0) {
-      VoA_Variables$weighted_off_ppg[i] = abs(VoA_Variables$weighted_off_ppg[
+      VoA_Variables$weighted_off_ppg[i] <- abs(VoA_Variables$weighted_off_ppg[
         i
       ]) +
         abs(rnorm(1, 5, 1))
     }
     if (VoA_Variables$weighted_def_ppg[i] <= 0) {
-      VoA_Variables$weighted_def_ppg[i] = abs(VoA_Variables$weighted_def_ppg[
+      VoA_Variables$weighted_def_ppg[i] <- abs(VoA_Variables$weighted_def_ppg[
         i
       ]) +
         abs(rnorm(1, 5, 1))
@@ -7340,16 +7309,16 @@ if (as.numeric(nfl_week) == 0) {
       away_def_VoA_rating = -999
     )
   for (i in 1:nrow(CompletedGames)) {
-    CompletedGames$home_off_VoA_rating[i] = PrevWeek_VoA$OffVoA_MedRating[
+    CompletedGames$home_off_VoA_rating[i] <- PrevWeek_VoA$OffVoA_MedRating[
       PrevWeek_VoA$team == CompletedGames$home_team[i]
     ]
-    CompletedGames$home_def_VoA_rating[i] = PrevWeek_VoA$DefVoA_MedRating[
+    CompletedGames$home_def_VoA_rating[i] <- PrevWeek_VoA$DefVoA_MedRating[
       PrevWeek_VoA$team == CompletedGames$home_team[i]
     ]
-    CompletedGames$away_off_VoA_rating[i] = PrevWeek_VoA$OffVoA_MedRating[
+    CompletedGames$away_off_VoA_rating[i] <- PrevWeek_VoA$OffVoA_MedRating[
       PrevWeek_VoA$team == CompletedGames$away_team[i]
     ]
-    CompletedGames$away_def_VoA_rating[i] = PrevWeek_VoA$DefVoA_MedRating[
+    CompletedGames$away_def_VoA_rating[i] <- PrevWeek_VoA$DefVoA_MedRating[
       PrevWeek_VoA$team == CompletedGames$away_team[i]
     ]
   }
@@ -7373,22 +7342,22 @@ if (as.numeric(nfl_week) == 0) {
         )
       )
 
-    VoA_Variables$off_error[i] = mean(temp_games$off_error)
-    VoA_Variables$def_error[i] = mean(temp_games$def_error)
+    VoA_Variables$off_error[i] <- mean(temp_games$off_error)
+    VoA_Variables$def_error[i] <- mean(temp_games$def_error)
   }
 
   ### adjusting adjusted off and def ppg to account for error
   set.seed(802)
   for (i in 1:nrow(VoA_Variables)) {
     temp_off_ppg <- VoA_Variables$weighted_off_ppg[i]
-    VoA_Variables$weighted_off_ppg[i] = temp_off_ppg +
+    VoA_Variables$weighted_off_ppg[i] <- temp_off_ppg +
       rnorm(
         1,
         mean = VoA_Variables$off_error[i] / 2.5,
         sd = sd(VoA_Variables$off_error)
       )
     temp_def_ppg <- VoA_Variables$weighted_def_ppg[i]
-    VoA_Variables$weighted_def_ppg[i] = temp_def_ppg +
+    VoA_Variables$weighted_def_ppg[i] <- temp_def_ppg +
       rnorm(
         1,
         mean = VoA_Variables$def_error[i] / 2.5,
@@ -7398,13 +7367,13 @@ if (as.numeric(nfl_week) == 0) {
     ### making sure all values are > 0
     set.seed(802)
     if (VoA_Variables$weighted_off_ppg[i] <= 0) {
-      VoA_Variables$weighted_off_ppg[i] = abs(VoA_Variables$weighted_off_ppg[
+      VoA_Variables$weighted_off_ppg[i] <- abs(VoA_Variables$weighted_off_ppg[
         i
       ]) +
         abs(rnorm(1, 5, 1))
     }
     if (VoA_Variables$weighted_def_ppg[i] <= 0) {
-      VoA_Variables$weighted_def_ppg[i] = abs(VoA_Variables$weighted_def_ppg[
+      VoA_Variables$weighted_def_ppg[i] <- abs(VoA_Variables$weighted_def_ppg[
         i
       ]) +
         abs(rnorm(1, 5, 1))
@@ -7428,16 +7397,16 @@ if (as.numeric(nfl_week) == 0) {
       away_def_VoA_rating = -999
     )
   for (i in 1:nrow(CompletedGames)) {
-    CompletedGames$home_off_VoA_rating[i] = PrevWeek_VoA$OffVoA_MedRating[
+    CompletedGames$home_off_VoA_rating[i] <- PrevWeek_VoA$OffVoA_MedRating[
       PrevWeek_VoA$team == CompletedGames$home_team[i]
     ]
-    CompletedGames$home_def_VoA_rating[i] = PrevWeek_VoA$DefVoA_MedRating[
+    CompletedGames$home_def_VoA_rating[i] <- PrevWeek_VoA$DefVoA_MedRating[
       PrevWeek_VoA$team == CompletedGames$home_team[i]
     ]
-    CompletedGames$away_off_VoA_rating[i] = PrevWeek_VoA$OffVoA_MedRating[
+    CompletedGames$away_off_VoA_rating[i] <- PrevWeek_VoA$OffVoA_MedRating[
       PrevWeek_VoA$team == CompletedGames$away_team[i]
     ]
-    CompletedGames$away_def_VoA_rating[i] = PrevWeek_VoA$DefVoA_MedRating[
+    CompletedGames$away_def_VoA_rating[i] <- PrevWeek_VoA$DefVoA_MedRating[
       PrevWeek_VoA$team == CompletedGames$away_team[i]
     ]
   }
@@ -7461,22 +7430,22 @@ if (as.numeric(nfl_week) == 0) {
         )
       )
 
-    VoA_Variables$off_error[i] = mean(temp_games$off_error)
-    VoA_Variables$def_error[i] = mean(temp_games$def_error)
+    VoA_Variables$off_error[i] <- mean(temp_games$off_error)
+    VoA_Variables$def_error[i] <- mean(temp_games$def_error)
   }
 
   ### adjusting adjusted off and def ppg to account for error
   for (i in 1:nrow(VoA_Variables)) {
     set.seed(802)
     temp_off_ppg <- VoA_Variables$adj_off_ppg[i]
-    VoA_Variables$adj_off_ppg[i] = temp_off_ppg +
+    VoA_Variables$adj_off_ppg[i] <- temp_off_ppg +
       rnorm(
         1,
         mean = VoA_Variables$off_error[i],
         sd = sd(VoA_Variables$off_error)
       )
     temp_def_ppg <- VoA_Variables$adj_def_ppg[i]
-    VoA_Variables$adj_def_ppg[i] = temp_def_ppg +
+    VoA_Variables$adj_def_ppg[i] <- temp_def_ppg +
       rnorm(
         1,
         mean = VoA_Variables$def_error[i],
@@ -7486,11 +7455,11 @@ if (as.numeric(nfl_week) == 0) {
     ### making sure all values are > 0
     set.seed(802)
     if (VoA_Variables$adj_off_ppg[i] <= 0) {
-      VoA_Variables$adj_off_ppg[i] = abs(VoA_Variables$adj_off_ppg[i]) +
+      VoA_Variables$adj_off_ppg[i] <- abs(VoA_Variables$adj_off_ppg[i]) +
         abs(rnorm(1, 5, 1))
     }
     if (VoA_Variables$adj_def_ppg[i] <= 0) {
-      VoA_Variables$adj_def_ppg[i] = abs(VoA_Variables$adj_def_ppg[i]) +
+      VoA_Variables$adj_def_ppg[i] <- abs(VoA_Variables$adj_def_ppg[i]) +
         abs(rnorm(1, 5, 1))
     }
   }
@@ -7679,7 +7648,7 @@ if (as.numeric(nfl_week) <= 10) {
   Off_VoA_fit
 
   ### Print the diagnostics
-  # print(Off_VoA_fit$cmdstan_diagnose())
+  print(Off_VoA_fit$cmdstan_diagnose())
 
   ### Extracting Parameters
   Off_VoA_pars <- Off_VoA_fit$draws(
@@ -8171,11 +8140,15 @@ if (as.numeric(nfl_week) <= 10) {
 for (i in 1:nrow(VoA_Variables)) {
   set.seed(802)
   if (VoA_Variables$OffVoA_MedRating[i] <= 0) {
-    VoA_Variables$OffVoA_MedRating[i] = abs(VoA_Variables$OffVoA_MedRating[i]) +
+    VoA_Variables$OffVoA_MedRating[i] <- abs(VoA_Variables$OffVoA_MedRating[
+      i
+    ]) +
       abs(rnorm(1, 1, 1))
   }
   if (VoA_Variables$DefVoA_MedRating[i] <= 0) {
-    VoA_Variables$DefVoA_MedRating[i] = abs(VoA_Variables$DefVoA_MedRating[i]) +
+    VoA_Variables$DefVoA_MedRating[i] <- abs(VoA_Variables$DefVoA_MedRating[
+      i
+    ]) +
       abs(rnorm(1, 1, 1))
   }
 }
