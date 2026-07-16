@@ -6,13 +6,14 @@
 StartTime <- Sys.time()
 library(pacman)
 # fmt: skip
-p_load(tidyverse, gt, nflfastR, nflverse, here, gtExtras, cmdstanr, ggpubr, webshot2, parallel, RColorBrewer, fastDummies, glmnet, data.table, arrow, lme4)
+p_load(tidyverse, gt, nflfastR, nflverse, here, gtExtras, cmdstanr, ggpubr, webshot2, parallel, RColorBrewer, data.table, arrow, lme4)
 
 ### running script which reads in functions used in data cleaning/model prep
 source(here("Scripts", "R", "NFL_VoAFuncs.R"))
 
 ### Creating week and season strings
-season <- readline(prompt = "What season is it? ")
+# fmt: skip
+season <- readline(prompt = "What season is it? (year that the NFL season starts in) ")
 nfl_week <- readline(prompt = "What week just occurred? ")
 
 
@@ -26,7 +27,7 @@ PY_data_dir <- here("Data", paste0("VoA", season), "PYData")
 VoP_data_dir <- here("Data", paste0("VoA", season), "VoP")
 Accuracy_data_dir <- here("Data", paste0("VoA", season), "AccuracyMetrics")
 preseason_text <- "Preseason"
-VoAString <- "VoA.csv"
+VoAString <- "VoA.parquet"
 week_text <- "Week"
 fulltable_png <- "VoAFullTable.png"
 VoA_text <- "Vortex of Accuracy"
@@ -401,7 +402,6 @@ if (as.numeric(nfl_week) == 0) {
   VoAVariablesTrain_PY3 <- create_voa_vars_train(PY3)
   VoAVariablesTrain_PY4 <- create_voa_vars_train(PY4)
   VoAVariablesTrain_PY5 <- create_voa_vars_train(PY5)
-  print("temp break")
 } else if (as.numeric(nfl_week) <= 2) {
   ##### Weeks 1-2 Data Pull #####
   ### reading in PY data saved in week 0
@@ -2023,7 +2023,7 @@ if (as.numeric(nfl_week) <= 10) {
   ST_VoA_datalist <- list(
     N = nrow(VoATrain),
     net_st_ppg = VoATrain$net_st_ppg,
-    net_st_epa = VoATrain$net_st_epa,
+    net_st_epa = VoATrain$st_net_epa,
     net_kick_return_avg = VoATrain$net_kick_return_yds,
     net_punt_return_avg = VoATrain$net_punt_return_yds,
     net_fg_rate = VoATrain$net_fg_rate,
@@ -2603,7 +2603,7 @@ VoA_Table |>
 
 
 ##### Exporting final dataframe as csv #####
-write_csv(VoAVariables, file_pathway)
+write_parquet(VoAVariables, file_pathway)
 
 
 ##### Setting up the Unintelligible Charts #####
@@ -2613,29 +2613,29 @@ write_csv(VoAVariables, file_pathway)
 FinalTable <- FinalTable |>
   select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
 if (as.numeric(nfl_week) == 3) {
-  Week0_VoA <- read_csv(here(
+  Week0_VoA <- read_parquet(here(
     "Data",
     paste0("VoA", season),
-    paste0(season, "Week0_VoA.csv")
+    paste0(season, "Week0_VoA.parquet")
   )) |>
     select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
-  Week1_VoA <- read_csv(here(
+  Week1_VoA <- read_parquet(here(
     "Data",
     paste0("VoA", season),
-    paste0(season, "Week1_VoA.csv")
+    paste0(season, "Week1_VoA.parquet")
   )) |>
     select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
-  Week2_VoA <- read_csv(here(
+  Week2_VoA <- read_parquet(here(
     "Data",
     paste0("VoA", season),
-    paste0(season, "Week2_VoA.csv")
+    paste0(season, "Week2_VoA.parquet")
   )) |>
     select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
   Ratings_Rks <- rbind(
     Week0_VoA,
     rbind(Week1_VoA, rbind(Week2_VoA, FinalTable))
   )
-  write_csv(
+  write_parquet(
     Ratings_Rks,
     paste(
       data_dir,
@@ -2643,20 +2643,20 @@ if (as.numeric(nfl_week) == 3) {
       "/",
       season,
       week_text,
-      "0_3Ratings_Rks.csv",
+      "0_3Ratings_Rks.parquet",
       sep = ""
     )
   )
 } else if (as.numeric(nfl_week) == 4) {
-  Ratings_Rks <- read_csv(here(
+  Ratings_Rks <- read_parquet(here(
     "Data",
     paste0("VoA", season),
     "TrackingChartCSVs",
-    paste(season, week_text, "0_3Ratings_Rks.csv", sep = "")
+    paste(season, week_text, "0_3Ratings_Rks.parquet", sep = "")
   )) |>
     select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
   Ratings_Rks <- rbind(Ratings_Rks, FinalTable)
-  write_csv(
+  write_parquet(
     Ratings_Rks,
     paste(
       data_dir,
@@ -2664,20 +2664,20 @@ if (as.numeric(nfl_week) == 3) {
       "/",
       season,
       week_text,
-      "0_4Ratings_Rks.csv",
+      "0_4Ratings_Rks.parquet",
       sep = ""
     )
   )
 } else if (as.numeric(nfl_week) == 5) {
-  Ratings_Rks <- read_csv(here(
+  Ratings_Rks <- read_parquet(here(
     "Data",
     paste0("VoA", season),
     "TrackingChartCSVs",
-    paste(season, week_text, "0_4Ratings_Rks.csv", sep = "")
+    paste(season, week_text, "0_4Ratings_Rks.parquet", sep = "")
   )) |>
     select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
   Ratings_Rks <- rbind(Ratings_Rks, FinalTable)
-  write_csv(
+  write_parquet(
     Ratings_Rks,
     paste(
       data_dir,
@@ -2685,20 +2685,20 @@ if (as.numeric(nfl_week) == 3) {
       "/",
       season,
       week_text,
-      "0_5Ratings_Rks.csv",
+      "0_5Ratings_Rks.parquet",
       sep = ""
     )
   )
 } else if (as.numeric(nfl_week) == 6) {
-  Ratings_Rks <- read_csv(here(
+  Ratings_Rks <- read_parquet(here(
     "Data",
     paste0("VoA", season),
     "TrackingChartCSVs",
-    paste(season, week_text, "0_5Ratings_Rks.csv", sep = "")
+    paste(season, week_text, "0_5Ratings_Rks.parquet", sep = "")
   )) |>
     select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
   Ratings_Rks <- rbind(Ratings_Rks, FinalTable)
-  write_csv(
+  write_parquet(
     Ratings_Rks,
     paste(
       data_dir,
@@ -2706,20 +2706,20 @@ if (as.numeric(nfl_week) == 3) {
       "/",
       season,
       week_text,
-      "0_6Ratings_Rks.csv",
+      "0_6Ratings_Rks.parquet",
       sep = ""
     )
   )
 } else if (as.numeric(nfl_week) == 7) {
-  Ratings_Rks <- read_csv(here(
+  Ratings_Rks <- read_parquet(here(
     "Data",
     paste0("VoA", season),
     "TrackingChartCSVs",
-    paste(season, week_text, "0_6Ratings_Rks.csv", sep = "")
+    paste(season, week_text, "0_6Ratings_Rks.parquet", sep = "")
   )) |>
     select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
   Ratings_Rks <- rbind(Ratings_Rks, FinalTable)
-  write_csv(
+  write_parquet(
     Ratings_Rks,
     paste(
       data_dir,
@@ -2727,20 +2727,20 @@ if (as.numeric(nfl_week) == 3) {
       "/",
       season,
       week_text,
-      "0_7Ratings_Rks.csv",
+      "0_7Ratings_Rks.parquet",
       sep = ""
     )
   )
 } else if (as.numeric(nfl_week) == 8) {
-  Ratings_Rks <- read_csv(here(
+  Ratings_Rks <- read_parquet(here(
     "Data",
     paste0("VoA", season),
     "TrackingChartCSVs",
-    paste(season, week_text, "0_7Ratings_Rks.csv", sep = "")
+    paste(season, week_text, "0_7Ratings_Rks.parquet", sep = "")
   )) |>
     select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
   Ratings_Rks <- rbind(Ratings_Rks, FinalTable)
-  write_csv(
+  write_parquet(
     Ratings_Rks,
     paste(
       data_dir,
@@ -2748,20 +2748,20 @@ if (as.numeric(nfl_week) == 3) {
       "/",
       season,
       week_text,
-      "0_8Ratings_Rks.csv",
+      "0_8Ratings_Rks.parquet",
       sep = ""
     )
   )
 } else if (as.numeric(nfl_week) == 9) {
-  Ratings_Rks <- read_csv(here(
+  Ratings_Rks <- read_parquet(here(
     "Data",
     paste0("VoA", season),
     "TrackingChartCSVs",
-    paste(season, week_text, "0_8Ratings_Rks.csv", sep = "")
+    paste(season, week_text, "0_8Ratings_Rks.parquet", sep = "")
   )) |>
     select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
   Ratings_Rks <- rbind(Ratings_Rks, FinalTable)
-  write_csv(
+  write_parquet(
     Ratings_Rks,
     paste(
       data_dir,
@@ -2769,20 +2769,20 @@ if (as.numeric(nfl_week) == 3) {
       "/",
       season,
       week_text,
-      "0_9Ratings_Rks.csv",
+      "0_9Ratings_Rks.parquet",
       sep = ""
     )
   )
 } else if (as.numeric(nfl_week) == 10) {
-  Ratings_Rks <- read_csv(here(
+  Ratings_Rks <- read_parquet(here(
     "Data",
     paste0("VoA", season),
     "TrackingChartCSVs",
-    paste(season, week_text, "0_9Ratings_Rks.csv", sep = "")
+    paste(season, week_text, "0_9Ratings_Rks.parquet", sep = "")
   )) |>
     select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
   Ratings_Rks <- rbind(Ratings_Rks, FinalTable)
-  write_csv(
+  write_parquet(
     Ratings_Rks,
     paste(
       data_dir,
@@ -2790,20 +2790,20 @@ if (as.numeric(nfl_week) == 3) {
       "/",
       season,
       week_text,
-      "0_10Ratings_Rks.csv",
+      "0_10Ratings_Rks.parquet",
       sep = ""
     )
   )
 } else if (as.numeric(nfl_week) == 11) {
-  Ratings_Rks <- read_csv(here(
+  Ratings_Rks <- read_parquet(here(
     "Data",
     paste0("VoA", season),
     "TrackingChartCSVs",
-    paste(season, week_text, "0_10Ratings_Rks.csv", sep = "")
+    paste(season, week_text, "0_10Ratings_Rks.parquet", sep = "")
   )) |>
     select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
   Ratings_Rks <- rbind(Ratings_Rks, FinalTable)
-  write_csv(
+  write_parquet(
     Ratings_Rks,
     paste(
       data_dir,
@@ -2811,20 +2811,20 @@ if (as.numeric(nfl_week) == 3) {
       "/",
       season,
       week_text,
-      "0_11Ratings_Rks.csv",
+      "0_11Ratings_Rks.parquet",
       sep = ""
     )
   )
 } else if (as.numeric(nfl_week) == 12) {
-  Ratings_Rks <- read_csv(here(
+  Ratings_Rks <- read_parquet(here(
     "Data",
     paste0("VoA", season),
     "TrackingChartCSVs",
-    paste(season, week_text, "0_11Ratings_Rks.csv", sep = "")
+    paste(season, week_text, "0_11Ratings_Rks.parquet", sep = "")
   )) |>
     select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
   Ratings_Rks <- rbind(Ratings_Rks, FinalTable)
-  write_csv(
+  write_parquet(
     Ratings_Rks,
     paste(
       data_dir,
@@ -2832,20 +2832,20 @@ if (as.numeric(nfl_week) == 3) {
       "/",
       season,
       week_text,
-      "0_12Ratings_Rks.csv",
+      "0_12Ratings_Rks.parquet",
       sep = ""
     )
   )
 } else if (as.numeric(nfl_week) == 13) {
-  Ratings_Rks <- read_csv(here(
+  Ratings_Rks <- read_parquet(here(
     "Data",
     paste0("VoA", season),
     "TrackingChartCSVs",
-    paste(season, week_text, "0_12Ratings_Rks.csv", sep = "")
+    paste(season, week_text, "0_12Ratings_Rks.parquet", sep = "")
   )) |>
     select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
   Ratings_Rks <- rbind(Ratings_Rks, FinalTable)
-  write_csv(
+  write_parquet(
     Ratings_Rks,
     paste(
       data_dir,
@@ -2853,20 +2853,20 @@ if (as.numeric(nfl_week) == 3) {
       "/",
       season,
       week_text,
-      "0_13Ratings_Rks.csv",
+      "0_13Ratings_Rks.parquet",
       sep = ""
     )
   )
 } else if (as.numeric(nfl_week) == 14) {
-  Ratings_Rks <- read_csv(here(
+  Ratings_Rks <- read_parquet(here(
     "Data",
     paste0("VoA", season),
     "TrackingChartCSVs",
-    paste(season, week_text, "0_13Ratings_Rks.csv", sep = "")
+    paste(season, week_text, "0_13Ratings_Rks.parquet", sep = "")
   )) |>
     select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
   Ratings_Rks <- rbind(Ratings_Rks, FinalTable)
-  write_csv(
+  write_parquet(
     Ratings_Rks,
     paste(
       data_dir,
@@ -2874,20 +2874,20 @@ if (as.numeric(nfl_week) == 3) {
       "/",
       season,
       week_text,
-      "0_14Ratings_Rks.csv",
+      "0_14Ratings_Rks.parquet",
       sep = ""
     )
   )
 } else if (as.numeric(nfl_week) == 15) {
-  Ratings_Rks <- read_csv(here(
+  Ratings_Rks <- read_parquet(here(
     "Data",
     paste0("VoA", season),
     "TrackingChartCSVs",
-    paste(season, week_text, "0_14Ratings_Rks.csv", sep = "")
+    paste(season, week_text, "0_14Ratings_Rks.parquet", sep = "")
   )) |>
     select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
   Ratings_Rks <- rbind(Ratings_Rks, FinalTable)
-  write_csv(
+  write_parquet(
     Ratings_Rks,
     paste(
       data_dir,
@@ -2895,20 +2895,20 @@ if (as.numeric(nfl_week) == 3) {
       "/",
       season,
       week_text,
-      "0_15Ratings_Rks.csv",
+      "0_15Ratings_Rks.parquet",
       sep = ""
     )
   )
 } else if (as.numeric(nfl_week) == 16) {
-  Ratings_Rks <- read_csv(here(
+  Ratings_Rks <- read_parquet(here(
     "Data",
     paste0("VoA", season),
     "TrackingChartCSVs",
-    paste(season, week_text, "0_15Ratings_Rks.csv", sep = "")
+    paste(season, week_text, "0_15Ratings_Rks.parquet", sep = "")
   )) |>
     select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
   Ratings_Rks <- rbind(Ratings_Rks, FinalTable)
-  write_csv(
+  write_parquet(
     Ratings_Rks,
     paste(
       data_dir,
@@ -2916,20 +2916,20 @@ if (as.numeric(nfl_week) == 3) {
       "/",
       season,
       week_text,
-      "0_16Ratings_Rks.csv",
+      "0_16Ratings_Rks.parquet",
       sep = ""
     )
   )
 } else if (as.numeric(nfl_week) == 17) {
-  Ratings_Rks <- read_csv(here(
+  Ratings_Rks <- read_parquet(here(
     "Data",
     paste0("VoA", season),
     "TrackingChartCSVs",
-    paste(season, week_text, "0_16Ratings_Rks.csv", sep = "")
+    paste(season, week_text, "0_16Ratings_Rks.parquet", sep = "")
   )) |>
     select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
   Ratings_Rks <- rbind(Ratings_Rks, FinalTable)
-  write_csv(
+  write_parquet(
     Ratings_Rks,
     paste(
       data_dir,
@@ -2937,20 +2937,20 @@ if (as.numeric(nfl_week) == 3) {
       "/",
       season,
       week_text,
-      "0_17Ratings_Rks.csv",
+      "0_17Ratings_Rks.parquet",
       sep = ""
     )
   )
 } else if (as.numeric(nfl_week) == 18) {
-  Ratings_Rks <- read_csv(here(
+  Ratings_Rks <- read_parquet(here(
     "Data",
     paste0("VoA", season),
     "TrackingChartCSVs",
-    paste(season, week_text, "0_17Ratings_Rks.csv", sep = "")
+    paste(season, week_text, "0_17Ratings_Rks.parquet", sep = "")
   )) |>
     select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
   Ratings_Rks <- rbind(Ratings_Rks, FinalTable)
-  write_csv(
+  write_parquet(
     Ratings_Rks,
     paste(
       data_dir,
@@ -2958,20 +2958,20 @@ if (as.numeric(nfl_week) == 3) {
       "/",
       season,
       week_text,
-      "0_18Ratings_Rks.csv",
+      "0_18Ratings_Rks.parquet",
       sep = ""
     )
   )
 } else if (as.numeric(nfl_week) == 19) {
-  Ratings_Rks <- read_csv(here(
+  Ratings_Rks <- read_parquet(here(
     "Data",
     paste0("VoA", season),
     "TrackingChartCSVs",
-    paste(season, week_text, "0_18Ratings_Rks.csv", sep = "")
+    paste(season, week_text, "0_18Ratings_Rks.parquet", sep = "")
   )) |>
     select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
   Ratings_Rks <- rbind(Ratings_Rks, FinalTable)
-  write_csv(
+  write_parquet(
     Ratings_Rks,
     paste(
       data_dir,
@@ -2979,20 +2979,20 @@ if (as.numeric(nfl_week) == 3) {
       "/",
       season,
       week_text,
-      "0_19Ratings_Rks.csv",
+      "0_19Ratings_Rks.parquet",
       sep = ""
     )
   )
 } else if (as.numeric(nfl_week) == 20) {
-  Ratings_Rks <- read_csv(here(
+  Ratings_Rks <- read_parquet(here(
     "Data",
     paste0("VoA", season),
     "TrackingChartCSVs",
-    paste(season, week_text, "0_19Ratings_Rks.csv", sep = "")
+    paste(season, week_text, "0_19Ratings_Rks.parquet", sep = "")
   )) |>
     select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
   Ratings_Rks <- rbind(Ratings_Rks, FinalTable)
-  write_csv(
+  write_parquet(
     Ratings_Rks,
     paste(
       data_dir,
@@ -3000,20 +3000,20 @@ if (as.numeric(nfl_week) == 3) {
       "/",
       season,
       week_text,
-      "0_20Ratings_Rks.csv",
+      "0_20Ratings_Rks.parquet",
       sep = ""
     )
   )
 } else if (as.numeric(nfl_week) == 21) {
-  Ratings_Rks <- read_csv(here(
+  Ratings_Rks <- read_parquet(here(
     "Data",
     paste0("VoA", season),
     "TrackingChartCSVs",
-    paste(season, week_text, "0_20Ratings_Rks.csv", sep = "")
+    paste(season, week_text, "0_20Ratings_Rks.parquet", sep = "")
   )) |>
     select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
   Ratings_Rks <- rbind(Ratings_Rks, FinalTable)
-  write_csv(
+  write_parquet(
     Ratings_Rks,
     paste(
       data_dir,
@@ -3021,20 +3021,20 @@ if (as.numeric(nfl_week) == 3) {
       "/",
       season,
       week_text,
-      "0_21Ratings_Rks.csv",
+      "0_21Ratings_Rks.parquet",
       sep = ""
     )
   )
 } else if (as.numeric(nfl_week) == 22) {
-  Ratings_Rks <- read_csv(here(
+  Ratings_Rks <- read_parquet(here(
     "Data",
     paste0("VoA", season),
     "TrackingChartCSVs",
-    paste(season, week_text, "0_21Ratings_Rks.csv", sep = "")
+    paste(season, week_text, "0_21Ratings_Rks.parquet", sep = "")
   )) |>
     select(team, week, VoA_Output, VoA_Ranking_Ovr, VoA_Rating_Ovr)
   Ratings_Rks <- rbind(Ratings_Rks, FinalTable)
-  write_csv(
+  write_parquet(
     Ratings_Rks,
     paste(
       data_dir,
@@ -3042,7 +3042,7 @@ if (as.numeric(nfl_week) == 3) {
       "/",
       season,
       week_text,
-      "0_22Ratings_Rks.csv",
+      "0_22Ratings_Rks.parquet",
       sep = ""
     )
   )
@@ -3285,26 +3285,3 @@ ggsave(
 EndTime <- Sys.time()
 EndTime - StartTime
 ##### End of Script #####
-
-##### POOPYPANTS TESTING, PLEASE IGNORE #####
-# fmt: skip
-poopypants <- read_csv(here("Data", "VoA2025", "2025Week20_VoA.csv"))
-# fmt: skip
-nfl_adj_stats <- poopypants |>
-  select(team, off_epa, off_explosiveness, off_ypp, def_epa, def_explosiveness, def_ypp, starts_with("adj_")
-  )
-
-PBP_EPAAdjustment <- PY1_rushpass_plays |>
-  select(game_id, home_team, away_team, posteam, defteam, epa, location) |>
-  mutate(
-    hfa = as.factor(case_when(
-      location == "Neutral" ~ 0,
-      posteam == home_team ~ 1,
-      TRUE ~ -1
-    )),
-    ### home team on offense
-    posteam = as.factor(posteam),
-    ### home team on defense
-    defteam = as.factor(defteam)
-  ) |>
-  drop_na()

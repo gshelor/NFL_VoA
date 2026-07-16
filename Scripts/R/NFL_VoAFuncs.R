@@ -553,7 +553,15 @@ extract_pbp_stats <- function(
     ### EPA/play
     ### subsetting columns for epa/play adjustment
     PBP_EPAAdjustment <- rushpass_plays |>
-        select(game_id, home_team, posteam, defteam, epa, location) |>
+        select(
+            game_id,
+            home_team,
+            away_team,
+            posteam,
+            defteam,
+            epa,
+            location
+        ) |>
         mutate(
             hfa = as.factor(case_when(
                 location == "Neutral" ~ 0,
@@ -665,7 +673,15 @@ extract_pbp_stats <- function(
     ### Explosiveness
     ### subsetting columns for epa/play (explosiveness, so only EPA/play on successful plays) adjustment
     PBP_ExpAdjustment <- success_plays |>
-        select(game_id, home_team, posteam, defteam, epa, location) |>
+        select(
+            game_id,
+            home_team,
+            away_team,
+            posteam,
+            defteam,
+            epa,
+            location
+        ) |>
         mutate(
             hfa = as.factor(case_when(
                 location == "Neutral" ~ 0,
@@ -708,7 +724,7 @@ extract_pbp_stats <- function(
         left_join(def_adj, by = "team") |>
         mutate(
             adj_off_explosiveness = adj_off_explosiveness + avg_explosiveness,
-            adj_def_explosiveness = adj_def_explosiveness + avg_explosivensss
+            adj_def_explosiveness = adj_def_explosiveness + avg_explosiveness
         )
 
     ### ppg
@@ -718,6 +734,7 @@ extract_pbp_stats <- function(
         select(
             game_id,
             home_team,
+            away_team,
             posteam,
             defteam,
             two_point_conv_result,
@@ -742,7 +759,7 @@ extract_pbp_stats <- function(
             posteam = as.factor(posteam),
             defteam = as.factor(defteam)
         ) |>
-        drop_na(game_id, home_team, posteam, defteam, hfa, location)
+        drop_na(game_id, home_team, away_team, posteam, defteam, hfa, location)
 
     ### fitting mixed effects model, treating posessing team and defensive team as random effects
     set.seed(802)
@@ -781,7 +798,15 @@ extract_pbp_stats <- function(
     ### yards/play opponent adjustment
     ### subsetting columns for adjustment
     PBP_YPPAdjustment <- rushpass_plays |>
-        select(game_id, home_team, posteam, defteam, yards_gained, location) |>
+        select(
+            game_id,
+            home_team,
+            away_team,
+            posteam,
+            defteam,
+            yards_gained,
+            location
+        ) |>
         mutate(
             hfa = as.factor(case_when(
                 location == "Neutral" ~ 0,
@@ -1701,7 +1726,15 @@ extract_VoAVars_pbp_stats <- function(
     ### EPA/play
     ### subsetting columns for epa/play adjustment
     PBP_EPAAdjustment_PY1 <- PY1_rushpass_plays |>
-        select(game_id, home_team, posteam, defteam, epa, location) |>
+        select(
+            game_id,
+            home_team,
+            away_team,
+            posteam,
+            defteam,
+            epa,
+            location
+        ) |>
         mutate(
             hfa = as.factor(case_when(
                 location == "Neutral" ~ 0,
@@ -1814,7 +1847,15 @@ extract_VoAVars_pbp_stats <- function(
     ### Explosiveness
     ### subsetting columns for epa/play (explosiveness, so only EPA/play on successful plays) adjustment
     PBP_ExpAdjustment_PY1 <- PY1_success_plays |>
-        select(game_id, home_team, posteam, defteam, epa, location) |>
+        select(
+            game_id,
+            home_team,
+            away_team,
+            posteam,
+            defteam,
+            epa,
+            location
+        ) |>
         mutate(
             hfa = as.factor(case_when(
                 location == "Neutral" ~ 0,
@@ -1859,7 +1900,7 @@ extract_VoAVars_pbp_stats <- function(
             adj_off_explosiveness_PY1 = adj_off_explosiveness_PY1 +
                 avg_explosiveness,
             adj_def_explosiveness_PY1 = adj_def_explosiveness_PY1 +
-                avg_explosivensss
+                avg_explosiveness
         )
 
     ### ppg
@@ -1869,6 +1910,7 @@ extract_VoAVars_pbp_stats <- function(
         select(
             game_id,
             home_team,
+            away_team,
             posteam,
             defteam,
             two_point_conv_result,
@@ -1893,7 +1935,7 @@ extract_VoAVars_pbp_stats <- function(
             posteam = as.factor(posteam),
             defteam = as.factor(defteam)
         ) |>
-        drop_na(game_id, home_team, posteam, defteam, hfa, location)
+        drop_na(game_id, home_team, away_team, posteam, defteam, hfa, location)
 
     ### fitting mixed effects model, treating posessing team and defensive team as random effects
     set.seed(802)
@@ -1926,17 +1968,25 @@ extract_VoAVars_pbp_stats <- function(
         left_join(def_adj, by = "team") |>
         mutate(
             adj_off_ppg_PY1 = adj_off_pts_per_play_PY1 *
-                mean(adj_off_plays_pg) *
+                mean(adj_off_plays_pg_PY1) *
                 1.5,
-            adj_def_pp_PY1g = adj_def_pts_per_play_PY1 *
-                mean(adj_def_plays_pg) *
+            adj_def_ppg_PY1 = adj_def_pts_per_play_PY1 *
+                mean(adj_def_plays_pg_PY1) *
                 1.5
         )
 
     ### yards/play opponent adjustment
     ### subsetting columns for adjustment
     PBP_YPPAdjustment_PY1 <- PY1_rushpass_plays |>
-        select(game_id, home_team, posteam, defteam, yards_gained, location) |>
+        select(
+            game_id,
+            home_team,
+            away_team,
+            posteam,
+            defteam,
+            yards_gained,
+            location
+        ) |>
         mutate(
             hfa = as.factor(case_when(
                 location == "Neutral" ~ 0,
@@ -1987,7 +2037,15 @@ extract_VoAVars_pbp_stats <- function(
     ### EPA/play
     ### subsetting columns for epa/play adjustment
     PBP_EPAAdjustment_PY2 <- PY2_rushpass_plays |>
-        select(game_id, home_team, posteam, defteam, epa, location) |>
+        select(
+            game_id,
+            home_team,
+            away_team,
+            posteam,
+            defteam,
+            epa,
+            location
+        ) |>
         mutate(
             hfa = as.factor(case_when(
                 location == "Neutral" ~ 0,
@@ -2100,7 +2158,15 @@ extract_VoAVars_pbp_stats <- function(
     ### Explosiveness
     ### subsetting columns for epa/play (explosiveness, so only EPA/play on successful plays) adjustment
     PBP_ExpAdjustment_PY2 <- PY2_success_plays |>
-        select(game_id, home_team, posteam, defteam, epa, location) |>
+        select(
+            game_id,
+            home_team,
+            away_team,
+            posteam,
+            defteam,
+            epa,
+            location
+        ) |>
         mutate(
             hfa = as.factor(case_when(
                 location == "Neutral" ~ 0,
@@ -2145,7 +2211,7 @@ extract_VoAVars_pbp_stats <- function(
             adj_off_explosiveness_PY2 = adj_off_explosiveness_PY2 +
                 avg_explosiveness,
             adj_def_explosiveness_PY2 = adj_def_explosiveness_PY2 +
-                avg_explosivensss
+                avg_explosiveness
         )
 
     ### ppg
@@ -2155,6 +2221,7 @@ extract_VoAVars_pbp_stats <- function(
         select(
             game_id,
             home_team,
+            away_team,
             posteam,
             defteam,
             two_point_conv_result,
@@ -2179,7 +2246,7 @@ extract_VoAVars_pbp_stats <- function(
             posteam = as.factor(posteam),
             defteam = as.factor(defteam)
         ) |>
-        drop_na(game_id, home_team, posteam, defteam, hfa, location)
+        drop_na(game_id, home_team, away_team, posteam, defteam, hfa, location)
 
     ### fitting mixed effects model, treating posessing team and defensive team as random effects
     set.seed(802)
@@ -2212,17 +2279,25 @@ extract_VoAVars_pbp_stats <- function(
         left_join(def_adj, by = "team") |>
         mutate(
             adj_off_ppg_PY2 = adj_off_pts_per_play_PY2 *
-                mean(adj_off_plays_pg) *
+                mean(adj_off_plays_pg_PY2) *
                 1.5,
-            adj_def_pp_PY2g = adj_def_pts_per_play_PY2 *
-                mean(adj_def_plays_pg) *
+            adj_def_ppg_PY2 = adj_def_pts_per_play_PY2 *
+                mean(adj_def_plays_pg_PY2) *
                 1.5
         )
 
     ### yards/play opponent adjustment
     ### subsetting columns for adjustment
     PBP_YPPAdjustment_PY2 <- PY2_rushpass_plays |>
-        select(game_id, home_team, posteam, defteam, yards_gained, location) |>
+        select(
+            game_id,
+            home_team,
+            away_team,
+            posteam,
+            defteam,
+            yards_gained,
+            location
+        ) |>
         mutate(
             hfa = as.factor(case_when(
                 location == "Neutral" ~ 0,
@@ -2273,7 +2348,15 @@ extract_VoAVars_pbp_stats <- function(
     ### EPA/play
     ### subsetting columns for epa/play adjustment
     PBP_EPAAdjustment_PY3 <- PY3_rushpass_plays |>
-        select(game_id, home_team, posteam, defteam, epa, location) |>
+        select(
+            game_id,
+            home_team,
+            away_team,
+            posteam,
+            defteam,
+            epa,
+            location
+        ) |>
         mutate(
             hfa = as.factor(case_when(
                 location == "Neutral" ~ 0,
@@ -2386,7 +2469,15 @@ extract_VoAVars_pbp_stats <- function(
     ### Explosiveness
     ### subsetting columns for epa/play (explosiveness, so only EPA/play on successful plays) adjustment
     PBP_ExpAdjustment_PY3 <- PY3_success_plays |>
-        select(game_id, home_team, posteam, defteam, epa, location) |>
+        select(
+            game_id,
+            home_team,
+            away_team,
+            posteam,
+            defteam,
+            epa,
+            location
+        ) |>
         mutate(
             hfa = as.factor(case_when(
                 location == "Neutral" ~ 0,
@@ -2431,7 +2522,7 @@ extract_VoAVars_pbp_stats <- function(
             adj_off_explosiveness_PY3 = adj_off_explosiveness_PY3 +
                 avg_explosiveness,
             adj_def_explosiveness_PY3 = adj_def_explosiveness_PY3 +
-                avg_explosivensss
+                avg_explosiveness
         )
 
     ### ppg
@@ -2441,6 +2532,7 @@ extract_VoAVars_pbp_stats <- function(
         select(
             game_id,
             home_team,
+            away_team,
             posteam,
             defteam,
             two_point_conv_result,
@@ -2465,7 +2557,7 @@ extract_VoAVars_pbp_stats <- function(
             posteam = as.factor(posteam),
             defteam = as.factor(defteam)
         ) |>
-        drop_na(game_id, home_team, posteam, defteam, hfa, location)
+        drop_na(game_id, home_team, away_team, posteam, defteam, hfa, location)
 
     ### fitting mixed effects model, treating posessing team and defensive team as random effects
     set.seed(802)
@@ -2498,17 +2590,25 @@ extract_VoAVars_pbp_stats <- function(
         left_join(def_adj, by = "team") |>
         mutate(
             adj_off_ppg_PY3 = adj_off_pts_per_play_PY3 *
-                mean(adj_off_plays_pg) *
+                mean(adj_off_plays_pg_PY3) *
                 1.5,
-            adj_def_pp_PY3g = adj_def_pts_per_play_PY3 *
-                mean(adj_def_plays_pg) *
+            adj_def_ppg_PY3 = adj_def_pts_per_play_PY3 *
+                mean(adj_def_plays_pg_PY3) *
                 1.5
         )
 
     ### yards/play opponent adjustment
     ### subsetting columns for adjustment
     PBP_YPPAdjustment_PY3 <- PY3_rushpass_plays |>
-        select(game_id, home_team, posteam, defteam, yards_gained, location) |>
+        select(
+            game_id,
+            home_team,
+            away_team,
+            posteam,
+            defteam,
+            yards_gained,
+            location
+        ) |>
         mutate(
             hfa = as.factor(case_when(
                 location == "Neutral" ~ 0,
