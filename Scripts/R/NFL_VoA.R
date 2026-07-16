@@ -2602,8 +2602,9 @@ VoA_Table |>
   )
 
 
-##### Exporting final dataframe as csv #####
+##### Exporting final dataframe as parquet file #####
 write_parquet(VoAVariables, file_pathway)
+write_parquet(VoAVariables, here("Data", "CurrentVoA.parquet"))
 
 
 ##### Setting up the Unintelligible Charts #####
