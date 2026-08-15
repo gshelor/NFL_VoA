@@ -1836,7 +1836,7 @@ if (as.numeric(nfl_week) <= 10) {
     third_conv_rate = VoATrain$off_third_conv_rate,
     off_pts_per_opp = VoATrain$off_pts_per_opp,
     off_plays_pg = VoATrain$adj_off_plays_pg,
-    VoA_Output = (1 / VoATrain$VoA_Output)
+    VoA_Output = VoATrain$VoA_Output
   )
 
   ### fitting stan model
@@ -1854,11 +1854,11 @@ if (as.numeric(nfl_week) <= 10) {
 
   ### saving Off_VoA_fit as an RDS file so that I'm not re-compiling and/or re-fitting the model every single week
   ## hoping that using more years of complete season data will help produce a more stable model
-  write_rds(
-    Off_VoA_fit,
-    file = here("Data", "FittedModels", "OffVoAStanFit.rds"),
-    compress = "gz"
-  )
+  # write_rds(
+  #   Off_VoA_fit,
+  #   file = here("Data", "FittedModels", "OffVoAStanFit.rds"),
+  #   compress = "gz"
+  # )
 
   ### Print the diagnostics
   print(Off_VoA_fit$cmdstan_diagnose())
@@ -2355,14 +2355,14 @@ if (as.numeric(nfl_week) <= 10) {
 ### making sure all values are > 0
 for (i in 1:nrow(VoAVariables)) {
   set.seed(802)
-  if (VoAVariables$OffVoA_MedRating[i] <= 0) {
-    VoAVariables$OffVoA_MedRating[i] <- abs(VoAVariables$OffVoA_MedRating[
+  if (VoAVariables$OffVoA_MeanRating[i] <= 0) {
+    VoAVariables$OffVoA_MeanRating[i] <- abs(VoAVariables$OffVoA_MeanRating[
       i
     ]) +
       abs(rnorm(1, 1, 1))
   }
-  if (VoAVariables$DefVoA_MedRating[i] <= 0) {
-    VoAVariables$DefVoA_MedRating[i] <- abs(VoAVariables$DefVoA_MedRating[
+  if (VoAVariables$DefVoA_MeanRating[i] <= 0) {
+    VoAVariables$DefVoA_MeanRating[i] <- abs(VoAVariables$DefVoA_MeanRating[
       i
     ]) +
       abs(rnorm(1, 1, 1))
@@ -2373,7 +2373,7 @@ for (i in 1:nrow(VoAVariables)) {
 ##### Ranking VoA Rating columns #####
 VoAVariables <- VoAVariables |>
   mutate(
-    VoA_Rating_Ovr = OffVoA_MedRating - DefVoA_MedRating + STVoA_MedRating,
+    VoA_Rating_Ovr = OffVoA_MeanRating - DefVoA_MeanRating + STVoA_MeanRating,
     VoA_Rating_05Pct = OffVoA_05PctRating -
       DefVoA_05PctRating +
       STVoA_05PctRating,
@@ -2381,9 +2381,9 @@ VoAVariables <- VoAVariables |>
       DefVoA_95PctRating +
       STVoA_95PctRating,
     VoA_Ranking_Ovr = dense_rank(desc(VoA_Rating_Ovr)),
-    OffVoA_Ranking = dense_rank(desc(OffVoA_MedRating)),
-    DefVoA_Ranking = dense_rank(DefVoA_MedRating),
-    STVoA_Ranking = dense_rank(desc(STVoA_MedRating))
+    OffVoA_Ranking = dense_rank(desc(OffVoA_MeanRating)),
+    DefVoA_Ranking = dense_rank(DefVoA_MeanRating),
+    STVoA_Ranking = dense_rank(desc(STVoA_MeanRating))
   )
 
 
@@ -2395,11 +2395,11 @@ FinalTable <- VoAVariables |>
     VoA_Output,
     VoA_Rating_Ovr,
     VoA_Ranking_Ovr,
-    OffVoA_MedRating,
+    OffVoA_MeanRating,
     OffVoA_Ranking,
-    DefVoA_MedRating,
+    DefVoA_MeanRating,
     DefVoA_Ranking,
-    STVoA_MedRating,
+    STVoA_MeanRating,
     STVoA_Ranking
   ) |>
   arrange(VoA_Ranking_Ovr)
@@ -2424,17 +2424,17 @@ if (as.numeric(nfl_week) == 0) {
     ) |>
     fmt_number(
       # A column (numeric data)
-      columns = c(OffVoA_MedRating), # What column variable?
+      columns = c(OffVoA_MeanRating), # What column variable?
       decimals = 3 # With four decimal places
     ) |>
     fmt_number(
       # A column (numeric data)
-      columns = c(DefVoA_MedRating), # What column variable?
+      columns = c(DefVoA_MeanRating), # What column variable?
       decimals = 3 # With four decimal places
     ) |>
     fmt_number(
       # A column (numeric data)
-      columns = c(STVoA_MedRating), # What column variable?
+      columns = c(STVoA_MeanRating), # What column variable?
       decimals = 3 # With four decimal places
     ) |>
     fmt_number(
@@ -2454,7 +2454,7 @@ if (as.numeric(nfl_week) == 0) {
     ) |>
     data_color(
       # Update cell colors, testing different color palettes
-      columns = c(OffVoA_MedRating), # ...for dose column
+      columns = c(OffVoA_MeanRating), # ...for dose column
       fn = scales::col_numeric(
         # <- bc it's numeric
         palette = brewer.pal(11, "RdYlGn"), # A color scheme (gradient)
@@ -2464,7 +2464,7 @@ if (as.numeric(nfl_week) == 0) {
     ) |>
     data_color(
       # Update cell colors, testing different color palettes
-      columns = c(DefVoA_MedRating), # ...for dose column
+      columns = c(DefVoA_MeanRating), # ...for dose column
       fn = scales::col_numeric(
         # <- bc it's numeric
         palette = brewer.pal(11, "RdYlGn"), # A color scheme (gradient)
@@ -2474,7 +2474,7 @@ if (as.numeric(nfl_week) == 0) {
     ) |>
     data_color(
       # Update cell colors, testing different color palettes
-      columns = c(STVoA_MedRating), # ...for dose column
+      columns = c(STVoA_MeanRating), # ...for dose column
       fn = scales::col_numeric(
         # <- bc it's numeric
         palette = brewer.pal(11, "RdYlGn"), # A color scheme (gradient)
@@ -2486,11 +2486,11 @@ if (as.numeric(nfl_week) == 0) {
     cols_label(
       VoA_Rating_Ovr = "Overall VoA Rating",
       VoA_Ranking_Ovr = "VoA Ranking",
-      OffVoA_MedRating = "Off VoA Rating",
+      OffVoA_MeanRating = "Off VoA Rating",
       OffVoA_Ranking = "Off Ranking",
-      DefVoA_MedRating = "Def VoA Rating",
+      DefVoA_MeanRating = "Def VoA Rating",
       DefVoA_Ranking = "Def Ranking",
-      STVoA_MedRating = "ST VoA Rating",
+      STVoA_MeanRating = "ST VoA Rating",
       STVoA_Ranking = "ST Ranking"
     ) |> # Update labels
     # cols_move_to_end(columns = "VoA_Rating_Ovr") |>
@@ -2517,17 +2517,17 @@ if (as.numeric(nfl_week) == 0) {
     ) |>
     fmt_number(
       # A column (numeric data)
-      columns = c(OffVoA_MedRating), # What column variable? FinalVoATop25$VoA_Rating
+      columns = c(OffVoA_MeanRating), # What column variable? FinalVoATop25$VoA_Rating
       decimals = 3 # With four decimal places
     ) |>
     fmt_number(
       # A column (numeric data)
-      columns = c(DefVoA_MedRating), # What column variable? FinalVoATop25$VoA_Rating
+      columns = c(DefVoA_MeanRating), # What column variable? FinalVoATop25$VoA_Rating
       decimals = 3 # With four decimal places
     ) |>
     fmt_number(
       # A column (numeric data)
-      columns = c(STVoA_MedRating), # What column variable? FinalVoATop25$VoA_Rating
+      columns = c(STVoA_MeanRating), # What column variable? FinalVoATop25$VoA_Rating
       decimals = 3 # With four decimal places
     ) |>
     fmt_number(
@@ -2547,7 +2547,7 @@ if (as.numeric(nfl_week) == 0) {
     ) |>
     data_color(
       # Update cell colors, testing different color palettes
-      columns = c(OffVoA_MedRating), # ...for dose column
+      columns = c(OffVoA_MeanRating), # ...for dose column
       fn = scales::col_numeric(
         # <- bc it's numeric
         palette = brewer.pal(11, "RdYlGn"), # A color scheme (gradient)
@@ -2557,7 +2557,7 @@ if (as.numeric(nfl_week) == 0) {
     ) |>
     data_color(
       # Update cell colors, testing different color palettes
-      columns = c(DefVoA_MedRating), # ...for dose column
+      columns = c(DefVoA_MeanRating), # ...for dose column
       fn = scales::col_numeric(
         # <- bc it's numeric
         palette = brewer.pal(11, "RdYlGn"), # A color scheme (gradient)
@@ -2567,7 +2567,7 @@ if (as.numeric(nfl_week) == 0) {
     ) |>
     data_color(
       # Update cell colors, testing different color palettes
-      columns = c(STVoA_MedRating), # ...for dose column
+      columns = c(STVoA_MeanRating), # ...for dose column
       fn = scales::col_numeric(
         # <- bc it's numeric
         palette = brewer.pal(11, "RdYlGn"), # A color scheme (gradient)
@@ -2579,11 +2579,11 @@ if (as.numeric(nfl_week) == 0) {
     cols_label(
       VoA_Rating_Ovr = "Overall VoA Rating",
       VoA_Ranking_Ovr = "VoA Ranking",
-      OffVoA_MedRating = "Off VoA Rating",
+      OffVoA_MeanRating = "Off VoA Rating",
       OffVoA_Ranking = "Off Ranking",
-      DefVoA_MedRating = "Def VoA Rating",
+      DefVoA_MeanRating = "Def VoA Rating",
       DefVoA_Ranking = "Def Ranking",
-      STVoA_MedRating = "ST VoA Rating",
+      STVoA_MeanRating = "ST VoA Rating",
       STVoA_Ranking = "ST Ranking"
     ) |> # Update labels
     # cols_move_to_end(columns = "VoA_Rating") |>
@@ -3286,3 +3286,17 @@ ggsave(
 EndTime <- Sys.time()
 EndTime - StartTime
 ##### End of Script #####
+
+### NA debugging
+# nas_why <- data.frame(apply(VoAVariables, 2, anyNA))
+# nas_sum <- data.frame(apply(VoAVariables, 2, is.na))
+# nas_sum <- data.frame(apply(nas_sum, 2, sum))
+# colnames(nas_why) <- c("containsNAs")
+# colnames(nas_sum) <- c("NAsum")
+# nas_sum <- nas_sum |>
+#   filter(NAsum > 0 & NAsum < 200)
+# nas_why <- nas_why |>
+#   filter(containsNAs == TRUE)
+# nas_why_col <- VoAVariables |>
+#   filter(is.na(adj_off_epa_PY3))
+# recruit_nas_teams <- anti_join(VoAVariables, recruit, by = "team")

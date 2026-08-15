@@ -533,6 +533,24 @@ extract_pbp_stats <- function(
     ### Adding columns of ppg above avg for both offense and defense and adjusting off_ppg and def_ppg
     VoA_df <- VoA_df |>
         mutate(
+            st_kick_return_yds = case_when(
+                is.na(st_kick_return_yds) ~ 0,
+                TRUE ~ st_kick_return_yds
+            ),
+            st_kick_return_yds_allowed = case_when(
+                is.na(st_kick_return_yds_allowed) ~ 0,
+                TRUE ~ st_kick_return_yds_allowed
+            ),
+            st_punt_return_yds = case_when(
+                is.na(st_punt_return_yds) ~ 0,
+                TRUE ~ st_punt_return_yds
+            ),
+            st_punt_return_yds_allowed = case_when(
+                is.na(st_punt_return_yds_allowed) ~ 0,
+                TRUE ~ st_punt_return_yds_allowed
+            )
+        ) |>
+        mutate(
             net_punt_return_yds = st_punt_return_yds -
                 st_punt_return_yds_allowed,
             net_kick_return_yds = st_kick_return_yds -
@@ -1720,6 +1738,59 @@ extract_VoAVars_pbp_stats <- function(
                 nrow(temp_PY3_def_good_xps))) /
             length(unique(temp_PY3_offplays$week))
     }
+
+    ### confirming no NAs in some columns that have presented issues
+    VoA_df <- VoA_df |>
+        mutate(
+            st_kick_return_yds_PY3 = case_when(
+                is.na(st_kick_return_yds_PY3) ~ 0,
+                TRUE ~ st_kick_return_yds_PY3
+            ),
+            st_kick_return_yds_allowed_PY3 = case_when(
+                is.na(st_kick_return_yds_allowed_PY3) ~ 0,
+                TRUE ~ st_kick_return_yds_allowed_PY3
+            ),
+            st_punt_return_yds_PY3 = case_when(
+                is.na(st_punt_return_yds_PY3) ~ 0,
+                TRUE ~ st_punt_return_yds_PY3
+            ),
+            st_punt_return_yds_allowed_PY3 = case_when(
+                is.na(st_punt_return_yds_allowed_PY3) ~ 0,
+                TRUE ~ st_punt_return_yds_allowed_PY3
+            ),
+            st_kick_return_yds_PY2 = case_when(
+                is.na(st_kick_return_yds_PY2) ~ 0,
+                TRUE ~ st_kick_return_yds_PY2
+            ),
+            st_kick_return_yds_allowed_PY2 = case_when(
+                is.na(st_kick_return_yds_allowed_PY2) ~ 0,
+                TRUE ~ st_kick_return_yds_allowed_PY2
+            ),
+            st_punt_return_yds_PY2 = case_when(
+                is.na(st_punt_return_yds_PY2) ~ 0,
+                TRUE ~ st_punt_return_yds_PY2
+            ),
+            st_punt_return_yds_allowed_PY2 = case_when(
+                is.na(st_punt_return_yds_allowed_PY2) ~ 0,
+                TRUE ~ st_punt_return_yds_allowed_PY2
+            ),
+            st_kick_return_yds_PY1 = case_when(
+                is.na(st_kick_return_yds_PY1) ~ 0,
+                TRUE ~ st_kick_return_yds_PY1
+            ),
+            st_kick_return_yds_allowed_PY1 = case_when(
+                is.na(st_kick_return_yds_allowed_PY1) ~ 0,
+                TRUE ~ st_kick_return_yds_allowed_PY1
+            ),
+            st_punt_return_yds_PY1 = case_when(
+                is.na(st_punt_return_yds_PY1) ~ 0,
+                TRUE ~ st_punt_return_yds_PY1
+            ),
+            st_punt_return_yds_allowed_PY1 = case_when(
+                is.na(st_punt_return_yds_allowed_PY1) ~ 0,
+                TRUE ~ st_punt_return_yds_allowed_PY1
+            ),
+        )
 
     ### PY1 Adjusted Stats
     ### Creating opponent-adjusted stats

@@ -50,6 +50,17 @@ parameters {
 // The model to be estimated. I model the output 'y' to be normally distributed 
 // with mean 'mu' equal to a linear deterministic function and SD 'sigma'.
 model {
+  // priors
+  b0 ~ normal(20, 1);
+  beta_def_epa ~ normal(3, 3);
+  beta_def_ypp ~ normal(1, 4);
+  beta_def_success_rt ~ normal(3, 3);
+  beta_def_explosiveness ~ normal(2, 5);
+  beta_def_third_conv_rate ~ normal(1, 10);
+  beta_def_pts_per_opp ~ normal(1, 10);
+  beta_def_plays_pg ~ normal(0.5, 0.5);
+  beta_VoA_Output ~ normal(2, 10);
+  sigma ~ gamma(10, 1);
   // Define linear predictor directly in the model block
   def_ppg ~ normal(b0 + beta_def_epa * def_epa + beta_def_ypp * def_ypp + beta_def_success_rt * def_success_rt + beta_def_explosiveness * def_explosiveness + beta_def_third_conv_rate * def_third_conv_rate + beta_def_pts_per_opp * def_pts_per_opp + beta_def_plays_pg * def_plays_pg + beta_VoA_Output * VoA_Output, sigma);
 }

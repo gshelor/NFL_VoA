@@ -39,6 +39,14 @@ parameters {
 // 'y' to be normally distributed with mean 'mu'
 // and standard deviation 'sigma'.
 model {
+  // priors
+  b0 ~ normal(0, 10);
+  beta_net_kick_return_avg ~ normal(0, 10);
+  beta_net_punt_return_avg ~ normal(0, 5);
+  beta_net_fg_rate ~ gamma(2, 1);
+  beta_net_st_epa ~ gamma(5, 5);
+  beta_net_xp_rate ~ gamma(1, 1);
+  sigma ~ gamma(0.25, 5);
   // Define linear predictor directly in the model block
   net_st_ppg ~ normal(b0 + beta_net_st_epa * net_st_epa + beta_net_kick_return_avg * net_kick_return_avg + beta_net_punt_return_avg * net_punt_return_avg + beta_net_fg_rate * net_fg_rate + beta_net_xp_rate * net_xp_rate, sigma);
 }
