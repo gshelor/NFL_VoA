@@ -4,7 +4,7 @@ start_time <- Sys.time()
 ### loading packages
 library(pacman)
 # fmt: skip
-p_load(tidyverse, gt, nflverse, here, gtExtras, RColorBrewer, webshot2, cmdstanr, betareg)
+p_load(tidyverse, gt, nflverse, here, gtExtras, RColorBrewer, webshot2, cmdstanr, betareg, ranger, arrow, randomForest, tidybayes, posterior)
 ### Inputting season
 season <- readline(prompt = "What season is it? ")
 ### Inputting upcoming week number
@@ -210,10 +210,16 @@ margin_projection <- function(away, home, neutral) {
 #   separate(col = "Game", into = c("away_team", "home_team"), sep = " at ") |>
 #   drop_na(away_team, home_team) |>
 #   filter(home_team == Proj_winner | away_team == Proj_winner) |>
-#   mutate(home_WP_pct = case_when(Proj_winner == home_team ~ WP_pct,
-#                                  TRUE ~ 1 - WP_pct),
-#          proj_margin = case_when(Proj_winner == home_team ~ Proj_margin,
-#                                       TRUE ~ -1 * Proj_margin))
+#   mutate(
+#     home_WP_pct = case_when(
+#       Proj_winner == home_team ~ WP_pct,
+#       TRUE ~ 1 - WP_pct
+#     ),
+#     proj_margin = case_when(
+#       Proj_winner == home_team ~ Proj_margin,
+#       TRUE ~ -1 * Proj_margin
+#     )
+#   )
 
 ### I wanted to fit a stan model but that didn't work so I'm trying a beta regression model with betareg to do something different, see how it goes
 # set.seed(802)
@@ -225,48 +231,205 @@ summary(WP_betareg)
 
 # SP_WPdata$predicted_home_winprob <- predict(WP_betareg)
 
-# VoP_WP_datalist <- list(N = nrow(SP_WPdata), win_prob = SP_WPdata$home_WP_pct, win_margin = SP_WPdata$Proj_margin)
+##### Fitting Stan Model of Win Probability based on Past VoA/VoP game projections #####
+### reading in csvs of past games from all past seasons and games played through this season when available to have additional data to maximize fit
+if (as.integer(upcoming) == 1) {
+  PrevVoAGames_PY1 <- read_csv(here(
+    "Data",
+    paste0("VoA", as.integer(season) - 1),
+    "AccuracyMetrics",
+    "Games",
+    paste0(
+      nfl_text,
+      "VoA",
+      as.integer(season) - 1,
+      week_text,
+      "1",
+      week_text,
+      "22",
+      "GameAccuracyMetrics.csv"
+    )
+  )) |>
+    select(Proj_Margin, straight_up_win)
+  PrevVoAGames_PY2 <- read_csv(here(
+    "Data",
+    paste0("VoA", as.integer(season) - 2),
+    "AccuracyMetrics",
+    "Games",
+    paste0(
+      nfl_text,
+      "VoA",
+      as.integer(season) - 2,
+      week_text,
+      "1",
+      week_text,
+      "22",
+      "GameAccuracyMetrics.csv"
+    )
+  )) |>
+    select(proj_margin, straight_up_win)
+  colnames(PrevVoAGames_PY2) <- c("Proj_Margin", "straight_up_win")
+
+  ### combining multiple seasons worth of projected games
+  PrevVoAGames <- rbind(PrevVoAGames_PY1, PrevVoAGames_PY2)
+} else {
+  PrevVoAGames_PY1 <- read_csv(here(
+    "Data",
+    paste0("VoA", as.integer(season) - 1),
+    "AccuracyMetrics",
+    "Games",
+    paste0(
+      nfl_text,
+      "VoA",
+      as.integer(season) - 1,
+      week_text,
+      "1",
+      week_text,
+      "22",
+      "GameAccuracyMetrics.csv"
+    )
+  )) |>
+    select(Proj_Margin, straight_up_win)
+  PrevVoAGames_PY2 <- read_csv(here(
+    "Data",
+    paste0("VoA", as.integer(season) - 2),
+    "AccuracyMetrics",
+    "Games",
+    paste0(
+      nfl_text,
+      "VoA",
+      as.integer(season) - 2,
+      week_text,
+      "1",
+      week_text,
+      "22",
+      "GameAccuracyMetrics.csv"
+    )
+  )) |>
+    select(proj_margin, straight_up_win)
+  colnames(PrevVoAGames_PY2) <- c("Proj_Margin", "straight_up_win")
+
+  PrevVoAGames <- read_parquet(here(
+    "Data",
+    paste0("VoA", season),
+    "AccuracyMetrics",
+    "Games",
+    paste0(
+      nfl_text,
+      "VoA",
+      season,
+      week_text,
+      "1",
+      week_text,
+      as.integer(upcoming) - 1,
+      "GameAccuracyMetrics.parquet"
+    )
+  )) |>
+    select(Proj_Margin, straight_up_win)
+
+  ### combining this season's projected games with previous seasons' projected games help with training new model
+  PrevVoAGames <- rbind(
+    PrevVoAGames,
+    rbind(PrevVoAGames_PY1, PrevVoAGames_PY2)
+  )
+}
+
+
+VoP_WP_datalist <- list(
+  N = nrow(PrevVoAGames),
+  win_loss = PrevVoAGames$straight_up_win,
+  win_margin = abs(PrevVoAGames$Proj_Margin)
+)
 
 ### fitting stan model
-# init_func <- function(){
-#   list(b0 = 50, b1 = 1, sigma = 5)
+set.seed(802)
+options(mc.cores = parallel::detectCores() / 2)
+WP_VoP_model <- cmdstan_model(here("Scripts", "Stan", "NFLVoP_WinProb.stan"))
+WP_VoP_fit <- WP_VoP_model$sample(
+  data = VoP_WP_datalist,
+  chains = 3,
+  iter_sampling = 10000,
+  iter_warmup = 2500,
+  seed = 802
+)
+WP_VoP_fit
+
+print(WP_VoP_fit$cmdstan_diagnose())
+
+WP_VoP_fit$save_object(here("Data", "FittedModels", "NFLVoPStanFit.rds"))
+
+WP_VoP_pars <- WP_VoP_fit$draws(c("alpha", "beta_score"), format = "draws_df")
+
+# predict_win_probability <- function(
+#   posterior_samples_df,
+#   score_differential
+# ) {
+#   alpha <- posterior_samples_df$alpha
+#   beta_score <- posterior_samples_df$beta_score
+
+#   logit_p <- alpha + beta_score * score_differential
+#   p_win <- 1 / (1 + exp(-logit_p))
+
+#   return(p_win)
 # }
+
+# win_prob_preds <- predict_win_probability(
+#   WP_VoP_pars,
+#   upcoming_games_df$Proj_Margin
+# )
+
+### Add normal noise vectorized using the sigma array
+# P <- length(WP_VoP_pars$alpha)
+# T_num <- nrow(upcoming_games_df)
+
+### generating a matrix of ratings using the matrix of samples from the posterior distributions
 # set.seed(802)
-# options(mc.cores = parallel::detectCores())
-# VoP_WP_fit <- stan(file=here("Scripts","Stan", "NFLVoP_WinProb.stan"), data = VoP_WP_datalist, chains = 3, iter = 15000, warmup = 5000, seed = 802)
-# VoP_WP_fit
+# VoP_WinProbs <- matrix(
+#   predict_win_probability(WP_VoP_pars, abs(upcoming_games_df$Proj_Margin)),
+#   nrow = T_num,
+#   ncol = P
+# )
 
-### Extracting Parameters
-# VoP_WP_pars <- rstan::extract(VoP_WP_fit, c("b0", "b1", "sigma"))
-
-### creating matrix to hold ratings
-### adding in process uncertainty
-# VoP_WinProbs <- matrix(NA, length(VoP_WP_pars$b0), nrow(FullSeason_Games))
-
-### creating ratings
 # set.seed(802)
-# for (p in 1:length(VoP_WP_pars$b0)){
-#   for(t in 1:nrow(FullSeason_Games)){
-#     VoP_winprob <- rnorm(1, mean = VoP_WP_pars$b0[p] + VoP_WP_pars$b1[p] * abs(FullSeason_Games$spread_line[t]), sd = VoP_WP_pars$sigma[p])
-#     VoP_WinProbs[p,t] <- VoP_winprob
-#   }
-# }
-
-### generating median Win Probability
-# MedianPred <- apply(VoP_WinProbs,2,median)
-
-# FullSeason_Games$MedianWP <- MedianPred
+# VoAWinProb_model <- glm(
+#   straight_up_win ~ Proj_Margin - 1,
+#   data = PrevVoAGames,
+#   family = "binomial"
+# )
+# summary(VoAWinProb_model)
+# write_rds(
+#   VoAWinProb_model,
+#   here("Data", "FittedModels", "VoALogRegWinProbModel.rds"),
+#   compress = "gz"
+# )
 
 if (as.numeric(upcoming) == 1) {
   ### adding projected winner, projected win margin, and win probability
   ### home field advantage of 2 points when neutral_site == FALSE
+  ### Create the Design Matrix (Teams x Predictors)
+  WPDesignMatrix <- as.matrix(cbind(
+    alpha = 1,
+    beta_score = abs(FullSeason_Games$Proj_Margin)
+  ))
+
+  ### Parameter Matrix (Posterior samples x Predictors)
+  WP_VoP_pars_matrix <- as.matrix(WP_VoP_pars[, colnames(WPDesignMatrix)])
+
+  ### Calculate Means for ALL (p, t) pairs in one operation
+  ### Off_VoA_pars_matrix %*% t(DesignMatrix) produces a matrix of size (N_draws x N_teams)
+  WPMeans_matrix <- WP_VoP_pars_matrix %*% t(WPDesignMatrix)
+
+  VoP_WinProbs <- 1 / (1 + exp(-WPMeans_matrix))
+
+  VoP_median_win_probs <- apply(VoP_WinProbs, 2, median)
   FullSeason_Games <- FullSeason_Games |>
     mutate(
       home_win_prob = predict(WP_betareg, newdata = FullSeason_Games),
-      win_prob = case_when(
+      betareg_win_prob = case_when(
         proj_winner == home_team ~ home_win_prob,
         TRUE ~ 1 - home_win_prob
-      )
+      ),
+      win_prob = VoP_median_win_probs
     )
   # mutate(win_prob = 50.37036489 + (2.38892221 * Proj_Margin) + (-0.02809534 * (Proj_Margin^2)))
   ### making sure no game has win probability for projected winner lower than 50 or higher than 100
@@ -279,14 +442,31 @@ if (as.numeric(upcoming) == 1) {
   upcoming_games_df <- FullSeason_Games |>
     filter(week == as.numeric(upcoming))
 } else {
-  ### making gt table of upcoming games df to display games with close spreads
+  ### adding win probability to df so I can include it in the final gt table
+  ### Create the Design Matrix (Teams x Predictors)
+  WPDesignMatrix <- as.matrix(cbind(
+    alpha = 1,
+    beta_score = abs(upcoming_games_df$Proj_Margin)
+  ))
+
+  ### Parameter Matrix (Posterior samples x Predictors)
+  WP_VoP_pars_matrix <- as.matrix(WP_VoP_pars[, colnames(WPDesignMatrix)])
+
+  ### Calculate Means for ALL (p, t) pairs in one operation
+  ### Off_VoA_pars_matrix %*% t(DesignMatrix) produces a matrix of size (N_draws x N_teams)
+  WPMeans_matrix <- WP_VoP_pars_matrix %*% t(WPDesignMatrix)
+
+  VoP_WinProbs <- 1 / (1 + exp(-WPMeans_matrix))
+
+  VoP_median_win_probs <- apply(VoP_WinProbs, 2, median)
   upcoming_games_df <- upcoming_games_df |>
     mutate(
       home_win_prob = predict(WP_betareg, newdata = upcoming_games_df),
-      win_prob = case_when(
+      betareg_win_prob = case_when(
         proj_winner == home_team ~ home_win_prob,
         TRUE ~ 1 - home_win_prob
-      )
+      ),
+      win_prob = VoP_median_win_probs
     ) #|>
   # select(game_id, season, week, neutral_site, home_team, home_VoA_Rating, away_team, away_VoA_Rating, Proj_Winner, Proj_Margin, Initial_Win_Prob) ## |>
   # arrange(desc(Proj_Margin))
@@ -421,6 +601,7 @@ upcoming_games_df <- upcoming_games_df |>
     proj_margin_abs,
     proj_winner,
     home_win_prob,
+    betareg_win_prob,
     win_prob
   )
 
@@ -508,6 +689,7 @@ upcoming_games_gt <- upcoming_games_df |>
     stadium,
     wind,
     home_win_prob,
+    betareg_win_prob,
     Proj_Margin
   )) |>
   tab_footnote(
@@ -609,6 +791,7 @@ upcoming_games_projmargin_gt <- upcoming_games_projmargin |>
     stadium,
     wind,
     home_win_prob,
+    betareg_win_prob,
     Proj_Margin
   )) |>
   tab_footnote(

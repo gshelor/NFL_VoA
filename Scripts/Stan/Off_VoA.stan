@@ -10,7 +10,7 @@ data {
   vector[N] off_ppg; // offensive ppg, used as basis for offensive VoA rating
   vector[N] off_epa; // weighted EPA per play
   vector[N] off_ypp; // weighted Yards per play
-  vector[N] off_success_rt; // weighted Play success rate
+  vector[N] off_success_rate; // weighted Play success rate
   vector[N] off_explosiveness; // weighted offensive explosiveness rate
   vector[N] third_conv_rate; // weighted third down conversion rate
   vector[N] off_pts_per_opp; // weighted points per scoring opportunity
@@ -25,7 +25,7 @@ parameters {
   real b0; // intercept
   real beta_off_epa; // Coefficient for EPA/play
   real beta_off_ypp; // Coefficient for yards per play
-  real beta_off_success_rt; // Coefficient for off success rate
+  real beta_off_success_rate; // Coefficient for off success rate
   real beta_off_explosiveness; // Coefficient for off explosiveness rate
   real beta_third_conv_rate; // coefficient for third down conversion rate
   real beta_off_pts_per_opp; // coefficient for offensive points per scoring opportunity
@@ -54,7 +54,7 @@ model {
   b0 ~ normal(20, 1);
   beta_off_epa ~ normal(2, 5);
   beta_off_ypp ~ normal(1, 5);
-  beta_off_success_rt ~ normal(2, 5);
+  beta_off_success_rate ~ normal(2, 5);
   beta_off_explosiveness ~ normal(1, 5);
   beta_third_conv_rate ~ normal(0.5, 10);
   beta_off_pts_per_opp ~ normal(1, 10);
@@ -62,7 +62,7 @@ model {
   beta_VoA_Output ~ normal(-3, 20);
   sigma ~ gamma(10, 1);
   // Define linear predictor directly in the model block
-  off_ppg ~ normal(b0 + beta_off_epa * off_epa + beta_off_ypp * off_ypp + beta_off_success_rt * off_success_rt + beta_off_explosiveness * off_explosiveness + beta_third_conv_rate * third_conv_rate + beta_off_pts_per_opp * off_pts_per_opp + beta_off_plays_pg * off_plays_pg + beta_VoA_Output * VoA_Output, sigma);
+  off_ppg ~ normal(b0 + beta_off_epa * off_epa + beta_off_ypp * off_ypp + beta_off_success_rate * off_success_rate + beta_off_explosiveness * off_explosiveness + beta_third_conv_rate * third_conv_rate + beta_off_pts_per_opp * off_pts_per_opp + beta_off_plays_pg * off_plays_pg + beta_VoA_Output * VoA_Output, sigma);
 }
 
 

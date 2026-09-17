@@ -205,9 +205,9 @@ if (as.numeric(nfl_week) == 0) {
     filter(play_type == "extra_point")
   PY1_FGs <- PBP_PY1 |>
     filter(play_type == "field_goal")
-  PY1_kickoffs <- PBP_PY1 |>
+  PY1_Kickoffs <- PBP_PY1 |>
     filter(play_type == "kickoff")
-  PY1_punts <- PBP_PY1 |>
+  PY1_Punts <- PBP_PY1 |>
     filter(play_type == "punt")
 
   ### PY2
@@ -251,9 +251,9 @@ if (as.numeric(nfl_week) == 0) {
     filter(play_type == "extra_point")
   PY2_FGs <- PBP_PY2 |>
     filter(play_type == "field_goal")
-  PY2_kickoffs <- PBP_PY2 |>
+  PY2_Kickoffs <- PBP_PY2 |>
     filter(play_type == "kickoff")
-  PY2_punts <- PBP_PY2 |>
+  PY2_Punts <- PBP_PY2 |>
     filter(play_type == "punt")
 
   ### PY3
@@ -297,9 +297,9 @@ if (as.numeric(nfl_week) == 0) {
     filter(play_type == "extra_point")
   PY3_FGs <- PBP_PY3 |>
     filter(play_type == "field_goal")
-  PY3_kickoffs <- PBP_PY3 |>
+  PY3_Kickoffs <- PBP_PY3 |>
     filter(play_type == "kickoff")
-  PY3_punts <- PBP_PY3 |>
+  PY3_Punts <- PBP_PY3 |>
     filter(play_type == "punt")
 
   ### PY4
@@ -343,9 +343,9 @@ if (as.numeric(nfl_week) == 0) {
     filter(play_type == "extra_point")
   PY4_FGs <- PBP_PY4 |>
     filter(play_type == "field_goal")
-  PY4_kickoffs <- PBP_PY4 |>
+  PY4_Kickoffs <- PBP_PY4 |>
     filter(play_type == "kickoff")
-  PY4_punts <- PBP_PY4 |>
+  PY4_Punts <- PBP_PY4 |>
     filter(play_type == "punt")
 
   ### PY5
@@ -389,9 +389,9 @@ if (as.numeric(nfl_week) == 0) {
     filter(play_type == "extra_point")
   PY5_FGs <- PBP_PY5 |>
     filter(play_type == "field_goal")
-  PY5_kickoffs <- PBP_PY5 |>
+  PY5_Kickoffs <- PBP_PY5 |>
     filter(play_type == "kickoff")
-  PY5_punts <- PBP_PY5 |>
+  PY5_Punts <- PBP_PY5 |>
     filter(play_type == "punt")
 
   ### creating dataframe to eventually store VoA Variables and ratings
@@ -458,7 +458,7 @@ if (as.numeric(nfl_week) == 0) {
   scoringopp_plays <- PBP |>
     filter(ydstogo <= 40) |>
     drop_na(drive)
-  turnovers <- PBP |>
+  Turnovers <- PBP |>
     filter(interception == 1 | fumble_lost == 1)
   TwoPts <- PBP |>
     filter(play_type_nfl == "PAT2")
@@ -529,7 +529,7 @@ if (as.numeric(nfl_week) == 0) {
   scoringopp_plays <- PBP |>
     filter(ydstogo <= 40) |>
     drop_na(drive)
-  turnovers <- PBP |>
+  Turnovers <- PBP |>
     filter(interception == 1 | fumble_lost == 1)
   TwoPts <- PBP |>
     filter(play_type_nfl == "PAT2")
@@ -591,7 +591,7 @@ if (as.numeric(nfl_week) == 0) {
   scoringopp_plays <- PBP |>
     filter(ydstogo <= 40) |>
     drop_na(drive)
-  turnovers <- PBP |>
+  Turnovers <- PBP |>
     filter(interception == 1 | fumble_lost == 1)
   TwoPts <- PBP |>
     filter(play_type_nfl == "PAT2")
@@ -631,8 +631,8 @@ if (as.numeric(nfl_week) == 0) {
     TDs = PY1_TDs,
     TwoPts = PY1_2pts,
     FGs = PY1_FGs,
-    Punts = PY1_punts,
-    Kickoffs = PY1_kickoffs,
+    Punts = PY1_Punts,
+    Kickoffs = PY1_Kickoffs,
     XPts = PY1_XPts
   )
   ### PY2
@@ -649,8 +649,8 @@ if (as.numeric(nfl_week) == 0) {
     TDs = PY2_TDs,
     TwoPts = PY2_2pts,
     FGs = PY2_FGs,
-    Punts = PY2_punts,
-    Kickoffs = PY2_kickoffs,
+    Punts = PY2_Punts,
+    Kickoffs = PY2_Kickoffs,
     XPts = PY2_XPts
   )
   ### PY3
@@ -667,8 +667,8 @@ if (as.numeric(nfl_week) == 0) {
     TDs = PY3_TDs,
     TwoPts = PY3_2pts,
     FGs = PY3_FGs,
-    Punts = PY3_punts,
-    Kickoffs = PY3_kickoffs,
+    Punts = PY3_Punts,
+    Kickoffs = PY3_Kickoffs,
     XPts = PY3_XPts
   )
   ### PY4
@@ -685,8 +685,8 @@ if (as.numeric(nfl_week) == 0) {
     TDs = PY4_TDs,
     TwoPts = PY4_2pts,
     FGs = PY4_FGs,
-    Punts = PY4_punts,
-    Kickoffs = PY4_kickoffs,
+    Punts = PY4_Punts,
+    Kickoffs = PY4_Kickoffs,
     XPts = PY4_XPts
   )
   ### PY5
@@ -703,8 +703,8 @@ if (as.numeric(nfl_week) == 0) {
     TDs = PY5_TDs,
     TwoPts = PY5_2pts,
     FGs = PY5_FGs,
-    Punts = PY5_punts,
-    Kickoffs = PY5_kickoffs,
+    Punts = PY5_Punts,
+    Kickoffs = PY5_Kickoffs,
     XPts = PY5_XPts
   )
   ### extracting stats for dataset which will be used for inference/creating current ratings
@@ -721,8 +721,8 @@ if (as.numeric(nfl_week) == 0) {
     PY1_TDs = PY1_TDs,
     PY1_2pts = PY1_2pts,
     PY1_FGs = PY1_FGs,
-    PY1_Punts = PY1_punts,
-    PY1_Kickoffs = PY1_kickoffs,
+    PY1_Punts = PY1_Punts,
+    PY1_Kickoffs = PY1_Kickoffs,
     PY1_XPts = PY1_XPts,
     ### PY2 PBP args
     PY2_rushpass_plays = PY2_rushpass_plays,
@@ -736,8 +736,8 @@ if (as.numeric(nfl_week) == 0) {
     PY2_TDs = PY2_TDs,
     PY2_2pts = PY2_2pts,
     PY2_FGs = PY2_FGs,
-    PY2_Punts = PY2_punts,
-    PY2_Kickoffs = PY2_kickoffs,
+    PY2_Punts = PY2_Punts,
+    PY2_Kickoffs = PY2_Kickoffs,
     PY2_XPts = PY2_XPts,
     ### PY3 PBP args
     PY3_rushpass_plays = PY3_rushpass_plays,
@@ -751,8 +751,8 @@ if (as.numeric(nfl_week) == 0) {
     PY3_TDs = PY3_TDs,
     PY3_2pts = PY3_2pts,
     PY3_FGs = PY3_FGs,
-    PY3_Punts = PY3_punts,
-    PY3_Kickoffs = PY3_kickoffs,
+    PY3_Punts = PY3_Punts,
+    PY3_Kickoffs = PY3_Kickoffs,
     PY3_XPts = PY3_XPts
   )
 
@@ -785,8 +785,8 @@ if (as.numeric(nfl_week) == 0) {
     TDs = TDs,
     TwoPts = TwoPts,
     FGs = FGs,
-    Punts = punts,
-    Kickoffs = kickoffs,
+    Punts = Punts,
+    Kickoffs = Kickoffs,
     XPts = XPts
   )
 
@@ -810,8 +810,8 @@ if (as.numeric(nfl_week) == 0) {
     TDs = TDs,
     TwoPts = TwoPts,
     FGs = FGs,
-    Punts = punts,
-    Kickoffs = kickoffs,
+    Punts = Punts,
+    Kickoffs = Kickoffs,
     XPts = XPts
   )
 
@@ -833,9 +833,9 @@ if (as.numeric(nfl_week) == 0) {
       weighted_off_epa = (adj_off_epa_PY1 * 0.7) +
         (adj_off_epa_PY2 * 0.25) +
         (adj_off_epa_PY3 * 0.05),
-      weighted_off_success_rt = (off_success_rt_PY1 * 0.7) +
-        (off_success_rt_PY2 * 0.25) +
-        (off_success_rt_PY3 * 0.05),
+      weighted_off_success_rate = (off_success_rate_PY1 * 0.7) +
+        (off_success_rate_PY2 * 0.25) +
+        (off_success_rate_PY3 * 0.05),
       weighted_off_explosiveness = (adj_off_explosiveness_PY1 * 0.7) +
         (adj_off_explosiveness_PY2 * 0.25) +
         (adj_off_explosiveness_PY3 * 0.05),
@@ -873,9 +873,9 @@ if (as.numeric(nfl_week) == 0) {
       weighted_def_epa = (adj_def_epa_PY1 * 0.7) +
         (adj_def_epa_PY2 * 0.25) +
         (adj_def_epa_PY3 * 0.05),
-      weighted_def_success_rt = (def_success_rt_PY1 * 0.7) +
-        (def_success_rt_PY2 * 0.25) +
-        (def_success_rt_PY3 * 0.05),
+      weighted_def_success_rate = (def_success_rate_PY1 * 0.7) +
+        (def_success_rate_PY2 * 0.25) +
+        (def_success_rate_PY3 * 0.05),
       weighted_def_explosiveness = (adj_def_explosiveness_PY1 * 0.7) +
         (adj_def_explosiveness_PY2 * 0.25) +
         (adj_def_explosiveness_PY3 * 0.05),
@@ -968,9 +968,9 @@ if (as.numeric(nfl_week) == 0) {
       weighted_off_epa = (adj_off_epa_PY1 * 0.6) +
         (adj_off_epa_PY2 * 0.05) +
         (adj_off_epa * 0.35),
-      weighted_off_success_rt = (off_success_rt_PY1 * 0.6) +
-        (off_success_rt_PY2 * 0.05) +
-        (off_success_rt * 0.35),
+      weighted_off_success_rate = (off_success_rate_PY1 * 0.6) +
+        (off_success_rate_PY2 * 0.05) +
+        (off_success_rate * 0.35),
       weighted_off_explosiveness = (adj_off_explosiveness_PY1 * 0.6) +
         (adj_off_explosiveness_PY2 * 0.05) +
         (adj_off_explosiveness * 0.35),
@@ -1008,9 +1008,9 @@ if (as.numeric(nfl_week) == 0) {
       weighted_def_epa = (adj_def_epa_PY1 * 0.6) +
         (adj_def_epa_PY2 * 0.05) +
         (adj_def_epa * 0.35),
-      weighted_def_success_rt = (def_success_rt_PY1 * 0.6) +
-        (def_success_rt_PY2 * 0.05) +
-        (def_success_rt * 0.35),
+      weighted_def_success_rate = (def_success_rate_PY1 * 0.6) +
+        (def_success_rate_PY2 * 0.05) +
+        (def_success_rate * 0.35),
       weighted_def_explosiveness = (adj_def_explosiveness_PY1 * 0.6) +
         (adj_def_explosiveness_PY2 * 0.05) +
         (adj_def_explosiveness * 0.35),
@@ -1099,8 +1099,8 @@ if (as.numeric(nfl_week) == 0) {
     mutate(
       weighted_off_ypp = (adj_off_ypp_PY1 * 0.6) + (adj_off_ypp * 0.4),
       weighted_off_epa = (adj_off_epa_PY1 * 0.6) + (adj_off_epa * 0.4),
-      weighted_off_success_rt = (off_success_rt_PY1 * 0.6) +
-        (off_success_rt * 0.4),
+      weighted_off_success_rate = (off_success_rate_PY1 * 0.6) +
+        (off_success_rate * 0.4),
       weighted_off_explosiveness = (adj_off_explosiveness_PY1 * 0.6) +
         (adj_off_explosiveness * 0.4),
       weighted_off_third_conv_rate = (off_third_conv_rate_PY1 * 0.6) +
@@ -1119,8 +1119,8 @@ if (as.numeric(nfl_week) == 0) {
       ### weighted defensive stats now
       weighted_def_ypp = (adj_def_ypp_PY1 * 0.6) + (adj_def_ypp * 0.4),
       weighted_def_epa = (adj_def_epa_PY1 * 0.6) + (adj_def_epa * 0.4),
-      weighted_def_success_rt = (def_success_rt_PY1 * 0.6) +
-        (def_success_rt * 0.4),
+      weighted_def_success_rate = (def_success_rate_PY1 * 0.6) +
+        (def_success_rate * 0.4),
       weighted_def_explosiveness = (adj_def_explosiveness_PY1 * 0.6) +
         (adj_def_explosiveness * 0.4),
       weighted_def_third_conv_rate = (def_third_conv_rate_PY1 * 0.6) +
@@ -1182,8 +1182,8 @@ if (as.numeric(nfl_week) == 0) {
     mutate(
       weighted_off_ypp = (adj_off_ypp_PY1 * 0.5) + (adj_off_ypp * 0.5),
       weighted_off_epa = (adj_off_epa_PY1 * 0.5) + (adj_off_epa * 0.5),
-      weighted_off_success_rt = (off_success_rt_PY1 * 0.5) +
-        (off_success_rt * 0.5),
+      weighted_off_success_rate = (off_success_rate_PY1 * 0.5) +
+        (off_success_rate * 0.5),
       weighted_off_explosiveness = (adj_off_explosiveness_PY1 * 0.5) +
         (adj_off_explosiveness * 0.5),
       weighted_off_third_conv_rate = (off_third_conv_rate_PY1 * 0.5) +
@@ -1202,8 +1202,8 @@ if (as.numeric(nfl_week) == 0) {
       ### weighted defensive stats now
       weighted_def_ypp = (adj_def_ypp_PY1 * 0.5) + (adj_def_ypp * 0.5),
       weighted_def_epa = (adj_def_epa_PY1 * 0.5) + (adj_def_epa * 0.5),
-      weighted_def_success_rt = (def_success_rt_PY1 * 0.5) +
-        (def_success_rt * 0.5),
+      weighted_def_success_rate = (def_success_rate_PY1 * 0.5) +
+        (def_success_rate * 0.5),
       weighted_def_explosiveness = (adj_def_explosiveness_PY1 * 0.5) +
         (adj_def_explosiveness * 0.5),
       weighted_def_third_conv_rate = (def_third_conv_rate_PY1 * 0.5) +
@@ -1265,8 +1265,8 @@ if (as.numeric(nfl_week) == 0) {
     mutate(
       weighted_off_ypp = (adj_off_ypp_PY1 * 0.4) + (adj_off_ypp * 0.6),
       weighted_off_epa = (adj_off_epa_PY1 * 0.4) + (adj_off_epa * 0.6),
-      weighted_off_success_rt = (off_success_rt_PY1 * 0.4) +
-        (off_success_rt * 0.6),
+      weighted_off_success_rate = (off_success_rate_PY1 * 0.4) +
+        (off_success_rate * 0.6),
       weighted_off_explosiveness = (adj_off_explosiveness_PY1 * 0.4) +
         (adj_off_explosiveness * 0.6),
       weighted_off_third_conv_rate = (off_third_conv_rate_PY1 * 0.4) +
@@ -1285,8 +1285,8 @@ if (as.numeric(nfl_week) == 0) {
       ### weighted defensive stats now
       weighted_def_ypp = (adj_def_ypp_PY1 * 0.4) + (adj_def_ypp * 0.6),
       weighted_def_epa = (adj_def_epa_PY1 * 0.4) + (adj_def_epa * 0.6),
-      weighted_def_success_rt = (def_success_rt_PY1 * 0.4) +
-        (def_success_rt * 0.6),
+      weighted_def_success_rate = (def_success_rate_PY1 * 0.4) +
+        (def_success_rate * 0.6),
       weighted_def_explosiveness = (adj_def_explosiveness_PY1 * 0.4) +
         (adj_def_explosiveness * 0.6),
       weighted_def_third_conv_rate = (def_third_conv_rate_PY1 * 0.4) +
@@ -1348,8 +1348,8 @@ if (as.numeric(nfl_week) == 0) {
     mutate(
       weighted_off_ypp = (adj_off_ypp_PY1 * 0.35) + (adj_off_ypp * 0.65),
       weighted_off_epa = (adj_off_epa_PY1 * 0.35) + (adj_off_epa * 0.65),
-      weighted_off_success_rt = (off_success_rt_PY1 * 0.35) +
-        (off_success_rt * 0.65),
+      weighted_off_success_rate = (off_success_rate_PY1 * 0.35) +
+        (off_success_rate * 0.65),
       weighted_off_explosiveness = (adj_off_explosiveness_PY1 * 0.35) +
         (adj_off_explosiveness * 0.65),
       weighted_off_third_conv_rate = (off_third_conv_rate_PY1 * 0.35) +
@@ -1368,8 +1368,8 @@ if (as.numeric(nfl_week) == 0) {
       ### weighted defensive stats now
       weighted_def_ypp = (adj_def_ypp_PY1 * 0.35) + (adj_def_ypp * 0.65),
       weighted_def_epa = (adj_def_epa_PY1 * 0.35) + (adj_def_epa * 0.65),
-      weighted_def_success_rt = (def_success_rt_PY1 * 0.35) +
-        (def_success_rt * 0.65),
+      weighted_def_success_rate = (def_success_rate_PY1 * 0.35) +
+        (def_success_rate * 0.65),
       weighted_def_explosiveness = (adj_def_explosiveness_PY1 * 0.35) +
         (adj_def_explosiveness * 0.65),
       weighted_def_third_conv_rate = (def_third_conv_rate_PY1 * 0.35) +
@@ -1431,8 +1431,8 @@ if (as.numeric(nfl_week) == 0) {
     mutate(
       weighted_off_ypp = (adj_off_ypp_PY1 * 0.3) + (adj_off_ypp * 0.7),
       weighted_off_epa = (adj_off_epa_PY1 * 0.3) + (adj_off_epa * 0.7),
-      weighted_off_success_rt = (off_success_rt_PY1 * 0.3) +
-        (off_success_rt * 0.7),
+      weighted_off_success_rate = (off_success_rate_PY1 * 0.3) +
+        (off_success_rate * 0.7),
       weighted_off_explosiveness = (adj_off_explosiveness_PY1 * 0.3) +
         (adj_off_explosiveness * 0.7),
       weighted_off_third_conv_rate = (off_third_conv_rate_PY1 * 0.3) +
@@ -1451,8 +1451,8 @@ if (as.numeric(nfl_week) == 0) {
       ### weighted defensive stats now
       weighted_def_ypp = (adj_def_ypp_PY1 * 0.3) + (adj_def_ypp * 0.7),
       weighted_def_epa = (adj_def_epa_PY1 * 0.3) + (adj_def_epa * 0.7),
-      weighted_def_success_rt = (def_success_rt_PY1 * 0.3) +
-        (def_success_rt * 0.7),
+      weighted_def_success_rate = (def_success_rate_PY1 * 0.3) +
+        (def_success_rate * 0.7),
       weighted_def_explosiveness = (adj_def_explosiveness_PY1 * 0.3) +
         (adj_def_explosiveness * 0.7),
       weighted_def_third_conv_rate = (def_third_conv_rate_PY1 * 0.3) +
@@ -1514,8 +1514,8 @@ if (as.numeric(nfl_week) == 0) {
     mutate(
       weighted_off_ypp = (adj_off_ypp_PY1 * 0.25) + (adj_off_ypp * 0.75),
       weighted_off_epa = (adj_off_epa_PY1 * 0.25) + (adj_off_epa * 0.75),
-      weighted_off_success_rt = (off_success_rt_PY1 * 0.25) +
-        (off_success_rt * 0.75),
+      weighted_off_success_rate = (off_success_rate_PY1 * 0.25) +
+        (off_success_rate * 0.75),
       weighted_off_explosiveness = (adj_off_explosiveness_PY1 * 0.25) +
         (adj_off_explosiveness * 0.75),
       weighted_off_third_conv_rate = (off_third_conv_rate_PY1 * 0.25) +
@@ -1534,8 +1534,8 @@ if (as.numeric(nfl_week) == 0) {
       ### weighted defensive stats now
       weighted_def_ypp = (adj_def_ypp_PY1 * 0.25) + (adj_def_ypp * 0.75),
       weighted_def_epa = (adj_def_epa_PY1 * 0.25) + (adj_def_epa * 0.75),
-      weighted_def_success_rt = (def_success_rt_PY1 * 0.25) +
-        (def_success_rt * 0.75),
+      weighted_def_success_rate = (def_success_rate_PY1 * 0.25) +
+        (def_success_rate * 0.75),
       weighted_def_explosiveness = (adj_def_explosiveness_PY1 * 0.25) +
         (adj_def_explosiveness * 0.75),
       weighted_def_third_conv_rate = (def_third_conv_rate_PY1 * 0.25) +
@@ -1597,8 +1597,8 @@ if (as.numeric(nfl_week) == 0) {
     mutate(
       weighted_off_ypp = (adj_off_ypp_PY1 * 0.1) + (adj_off_ypp * 0.9),
       weighted_off_epa = (adj_off_epa_PY1 * 0.1) + (adj_off_epa * 0.9),
-      weighted_off_success_rt = (off_success_rt_PY1 * 0.1) +
-        (off_success_rt * 0.9),
+      weighted_off_success_rate = (off_success_rate_PY1 * 0.1) +
+        (off_success_rate * 0.9),
       weighted_off_explosiveness = (adj_off_explosiveness_PY1 * 0.1) +
         (adj_off_explosiveness * 0.9),
       weighted_off_third_conv_rate = (off_third_conv_rate_PY1 * 0.1) +
@@ -1617,8 +1617,8 @@ if (as.numeric(nfl_week) == 0) {
       ### weighted defensive stats now
       weighted_def_ypp = (adj_def_ypp_PY1 * 0.1) + (adj_def_ypp * 0.9),
       weighted_def_epa = (adj_def_epa_PY1 * 0.1) + (adj_def_epa * 0.9),
-      weighted_def_success_rt = (def_success_rt_PY1 * 0.1) +
-        (def_success_rt * 0.9),
+      weighted_def_success_rate = (def_success_rate_PY1 * 0.1) +
+        (def_success_rate * 0.9),
       weighted_def_explosiveness = (adj_def_explosiveness_PY1 * 0.1) +
         (adj_def_explosiveness * 0.9),
       weighted_def_third_conv_rate = (def_third_conv_rate_PY1 * 0.1) +
@@ -1683,8 +1683,8 @@ if (as.integer(nfl_week) == 0) {
 }
 
 ##### Ranking Variables #####
-if (as.numeric(nfl_week) <= 10) {
-  ##### Weeks 0-10 Variable Ranks #####
+if (as.numeric(nfl_week) == 0) {
+  ##### Preseason Variable Ranks #####
   ### since dfs used to fit model don't use PY suffixes in the col names, using the function for creating rank columns on those dfs before they get combined
   VoAVariablesTrain_PY1 <- rank_voa_cols(VoAVariablesTrain_PY1)
   VoAVariablesTrain_PY2 <- rank_voa_cols(VoAVariablesTrain_PY2)
@@ -1696,7 +1696,9 @@ if (as.numeric(nfl_week) <= 10) {
     mutate(
       Rank_weighted_off_ypp = dense_rank(desc(weighted_off_ypp)),
       Rank_weighted_off_epa = dense_rank(desc(weighted_off_epa)),
-      Rank_weighted_off_success_rt = dense_rank(desc(weighted_off_success_rt)),
+      Rank_weighted_off_success_rate = dense_rank(desc(
+        weighted_off_success_rate
+      )),
       Rank_weighted_off_explosiveness = dense_rank(desc(
         weighted_off_explosiveness
       )),
@@ -1717,7 +1719,7 @@ if (as.numeric(nfl_week) <= 10) {
       ### ranking defensive variables now
       Rank_weighted_def_ypp = dense_rank(weighted_def_ypp),
       Rank_weighted_def_epa = dense_rank(weighted_def_epa),
-      Rank_weighted_def_success_rt = dense_rank(weighted_def_success_rt),
+      Rank_weighted_def_success_rate = dense_rank(weighted_def_success_rate),
       Rank_weighted_def_explosiveness = dense_rank(weighted_def_explosiveness),
       Rank_weighted_def_third_conv_rate = dense_rank(
         weighted_def_third_conv_rate
@@ -1751,6 +1753,70 @@ if (as.numeric(nfl_week) <= 10) {
       Rank_weighted_net_xp_made_pg = dense_rank(desc(weighted_net_xp_made_pg)),
       Rank_weighted_net_st_ppg = dense_rank(desc(weighted_net_st_ppg))
     )
+} else if (as.integer(nfl_week) <= 10) {
+  ### ranking data used for inference/current ratings
+  VoAVariables <- VoAVariables |>
+    mutate(
+      Rank_weighted_off_ypp = dense_rank(desc(weighted_off_ypp)),
+      Rank_weighted_off_epa = dense_rank(desc(weighted_off_epa)),
+      Rank_weighted_off_success_rate = dense_rank(desc(
+        weighted_off_success_rate
+      )),
+      Rank_weighted_off_explosiveness = dense_rank(desc(
+        weighted_off_explosiveness
+      )),
+      Rank_weighted_off_third_conv_rate = dense_rank(desc(
+        weighted_off_third_conv_rate
+      )),
+      Rank_weighted_off_fourth_conv_rate = dense_rank(desc(
+        weighted_off_fourth_conv_rate
+      )),
+      Rank_weighted_off_pass_ypa = dense_rank(desc(weighted_off_pass_ypa)),
+      Rank_weighted_off_pass_ypc = dense_rank(desc(weighted_off_pass_ypc)),
+      Rank_weighted_off_rush_ypa = dense_rank(desc(weighted_off_rush_ypa)),
+      Rank_weighted_off_pts_per_opp = dense_rank(desc(
+        weighted_off_pts_per_opp
+      )),
+      Rank_weighted_off_turnovers = dense_rank(weighted_off_turnovers),
+      Rank_weighted_off_ppg = dense_rank(desc(weighted_off_ppg)),
+      ### ranking defensive variables now
+      Rank_weighted_def_ypp = dense_rank(weighted_def_ypp),
+      Rank_weighted_def_epa = dense_rank(weighted_def_epa),
+      Rank_weighted_def_success_rate = dense_rank(weighted_def_success_rate),
+      Rank_weighted_def_explosiveness = dense_rank(weighted_def_explosiveness),
+      Rank_weighted_def_third_conv_rate = dense_rank(
+        weighted_def_third_conv_rate
+      ),
+      Rank_weighted_def_fourth_conv_rate = dense_rank(
+        weighted_def_fourth_conv_rate
+      ),
+      Rank_weighted_def_pass_ypa = dense_rank(weighted_def_pass_ypa),
+      Rank_weighted_def_pass_ypc = dense_rank(weighted_def_pass_ypc),
+      Rank_weighted_def_rush_ypa = dense_rank(weighted_def_rush_ypa),
+      Rank_weighted_def_pts_per_opp = dense_rank(weighted_def_pts_per_opp),
+      Rank_weighted_def_turnovers = dense_rank(desc(weighted_def_turnovers)),
+      Rank_weighted_def_ppg = dense_rank(weighted_def_ppg),
+      ### ranking ST variables now
+      Rank_weighted_net_st_epa = dense_rank(desc(weighted_net_st_epa)),
+      Rank_weighted_net_punt_return_yds = dense_rank(desc(
+        weighted_net_punt_return_yds
+      )),
+      Rank_weighted_net_punt_return_TDs = dense_rank(desc(
+        weighted_net_punt_return_TDs
+      )),
+      Rank_weighted_net_kick_return_yds = dense_rank(desc(
+        weighted_net_kick_return_yds
+      )),
+      Rank_weighted_net_kick_return_TDs = dense_rank(desc(
+        weighted_net_kick_return_TDs
+      )),
+      Rank_weighted_net_xp_rate = dense_rank(desc(weighted_net_xp_rate)),
+      Rank_weighted_net_xp_made_pg = dense_rank(desc(weighted_net_xp_made_pg)),
+      Rank_weighted_net_xp_rate = dense_rank(desc(weighted_net_xp_rate)),
+      Rank_weighted_net_xp_made_pg = dense_rank(desc(weighted_net_xp_made_pg)),
+      Rank_weighted_net_st_ppg = dense_rank(desc(weighted_net_st_ppg))
+    )
+  VoAVariables <- rank_voa_cols(VoAVariables)
 } else {
   ##### Week 11-End of Season Variable Ranks #####
   ### Ranking variables when only current season data is being used
@@ -1822,8 +1888,8 @@ if (as.numeric(nfl_week) == 0) {
 }
 
 ##### Using Stan Model to create unit/team strength ratings #####
-if (as.numeric(nfl_week) <= 10) {
-  ##### Week 0-10 Stan Models #####
+if (as.numeric(nfl_week) == 0) {
+  ##### Preseason Stan Models #####
   ### VoA Offensive Rating Model
   ### making list of data to declare what goes into stan model
   Off_VoA_datalist <- list(
@@ -1831,7 +1897,7 @@ if (as.numeric(nfl_week) <= 10) {
     off_ppg = VoATrain$adj_off_ppg,
     off_epa = VoATrain$adj_off_epa,
     off_ypp = VoATrain$adj_off_ypp,
-    off_success_rt = VoATrain$off_success_rt,
+    off_success_rate = VoATrain$off_success_rate,
     off_explosiveness = VoATrain$adj_off_explosiveness,
     third_conv_rate = VoATrain$off_third_conv_rate,
     off_pts_per_opp = VoATrain$off_pts_per_opp,
@@ -1869,7 +1935,7 @@ if (as.numeric(nfl_week) <= 10) {
       "b0",
       "beta_off_epa",
       "beta_off_ypp",
-      "beta_off_success_rt",
+      "beta_off_success_rate",
       "beta_off_explosiveness",
       "beta_third_conv_rate",
       "beta_off_pts_per_opp",
@@ -1880,35 +1946,80 @@ if (as.numeric(nfl_week) <= 10) {
     format = "draws_df"
   )
 
+  ### writing parameter draws as tabular file since saving the fit as an rds file doesn't work because of stupid bullshit
+  write_parquet(
+    Off_VoA_pars,
+    here("Data", "FittedModels", "OffVoAParams.parquet")
+  )
+
   ### creating matrix to hold ratings
   ### adding in process uncertainty
-  Off_VoA_Ratings <- matrix(NA, length(Off_VoA_pars$b0), nrow(VoAVariables))
+  # Off_VoA_Ratings <- matrix(NA, length(Off_VoA_pars$b0), nrow(VoAVariables))
 
-  ### creating ratings
+  # ### creating ratings
+  # set.seed(802)
+  # for (p in 1:length(Off_VoA_pars$b0)) {
+  #   for (t in 1:nrow(VoAVariables)) {
+  #     Off_VoA_Rating <- rnorm(
+  #       1,
+  #       mean = Off_VoA_pars$b0[p] +
+  #         Off_VoA_pars$beta_off_epa[p] * VoAVariables$weighted_off_epa[t] +
+  #         Off_VoA_pars$beta_off_ypp[p] * VoAVariables$weighted_off_ypp[t] +
+  #         Off_VoA_pars$beta_off_success_rate[p] *
+  #           VoAVariables$weighted_off_success_rate[t] +
+  #         Off_VoA_pars$beta_off_explosiveness[p] *
+  #           VoAVariables$weighted_off_explosiveness[t] +
+  #         Off_VoA_pars$beta_third_conv_rate[p] *
+  #           VoAVariables$weighted_off_third_conv_rate[t] +
+  #         Off_VoA_pars$beta_off_pts_per_opp[p] *
+  #           VoAVariables$weighted_off_pts_per_opp[t] +
+  #         Off_VoA_pars$beta_off_plays_pg[p] *
+  #           VoAVariables$weighted_off_plays_pg[t] +
+  #         Off_VoA_pars$beta_VoA_Output[p] * (1 / (VoAVariables$VoA_Output[t])),
+  #       sd = Off_VoA_pars$sigma[p]
+  #     )
+  #     Off_VoA_Ratings[p, t] <- Off_VoA_Rating
+  #   }
+  # }
+
+  ### Create the Design Matrix (Teams x Predictors)
+  OffDesignMatrix <- as.matrix(cbind(
+    b0 = 1,
+    beta_off_epa = VoAVariables$weighted_off_epa,
+    beta_off_ypp = VoAVariables$weighted_off_ypp,
+    beta_off_success_rate = VoAVariables$weighted_off_success_rate,
+    beta_off_explosiveness = VoAVariables$weighted_off_explosiveness,
+    beta_third_conv_rate = VoAVariables$weighted_off_third_conv_rate,
+    beta_off_pts_per_opp = VoAVariables$weighted_off_pts_per_opp,
+    beta_off_plays_pg = VoAVariables$weighted_off_plays_pg,
+    beta_VoA_Output = VoAVariables$VoA_Output
+  ))
+
+  #### Parameter Matrix (Posterior samples x Predictors)
+  Off_VoA_pars_matrix <- as.matrix(Off_VoA_pars[, colnames(OffDesignMatrix)])
+
+  ### Calculate Means for ALL (p, t) pairs in one operation
+  ### Off_VoA_pars_matrix %*% t(DesignMatrix) produces a matrix of size (N_draws x N_teams)
+  OffMeans_matrix <- Off_VoA_pars_matrix %*% t(OffDesignMatrix)
+
+  ### Add normal noise vectorized using the sigma array
+  P <- length(Off_VoA_pars$b0)
+  T_num <- nrow(VoAVariables)
+
+  ### applying rnorm to generate a matrix of ratings using the matrix of samples from the posterior distributions
   set.seed(802)
-  for (p in 1:length(Off_VoA_pars$b0)) {
-    for (t in 1:nrow(VoAVariables)) {
-      Off_VoA_Rating <- rnorm(
-        1,
-        mean = Off_VoA_pars$b0[p] +
-          Off_VoA_pars$beta_off_epa[p] * VoAVariables$weighted_off_epa[t] +
-          Off_VoA_pars$beta_off_ypp[p] * VoAVariables$weighted_off_ypp[t] +
-          Off_VoA_pars$beta_off_success_rt[p] *
-            VoAVariables$weighted_off_success_rt[t] +
-          Off_VoA_pars$beta_off_explosiveness[p] *
-            VoAVariables$weighted_off_explosiveness[t] +
-          Off_VoA_pars$beta_third_conv_rate[p] *
-            VoAVariables$weighted_off_third_conv_rate[t] +
-          Off_VoA_pars$beta_off_pts_per_opp[p] *
-            VoAVariables$weighted_off_pts_per_opp[t] +
-          Off_VoA_pars$beta_off_plays_pg[p] *
-            VoAVariables$weighted_off_plays_pg[t] +
-          Off_VoA_pars$beta_VoA_Output[p] * (1 / (VoAVariables$VoA_Output[t])),
-        sd = Off_VoA_pars$sigma[p]
-      )
-      Off_VoA_Ratings[p, t] <- Off_VoA_Rating
-    }
-  }
+  Off_VoA_Ratings <- matrix(
+    rnorm(P * T_num, mean = OffMeans_matrix, sd = Off_VoA_pars$sigma),
+    nrow = P,
+    ncol = T_num
+  )
+
+  ### fixing any values in the posterior sample that are below 0, since that is not possible for this metric
+  Off_VoA_Ratings <- ifelse(
+    Off_VoA_Ratings <= 0,
+    abs(rnorm(1, 0, sd(Off_VoA_Ratings))) / 5,
+    Off_VoA_Ratings
+  )
 
   ### generating median and mean and quantile ratings
   MeanPred <- apply(Off_VoA_Ratings, 2, mean)
@@ -1928,7 +2039,7 @@ if (as.numeric(nfl_week) <= 10) {
     def_ppg = VoATrain$adj_def_ppg,
     def_epa = VoATrain$adj_def_epa,
     def_ypp = VoATrain$adj_def_ypp,
-    def_success_rt = VoATrain$def_success_rt,
+    def_success_rate = VoATrain$def_success_rate,
     def_explosiveness = VoATrain$adj_def_explosiveness,
     def_third_conv_rate = VoATrain$def_third_conv_rate,
     def_pts_per_opp = VoATrain$def_pts_per_opp,
@@ -1951,11 +2062,11 @@ if (as.numeric(nfl_week) <= 10) {
 
   ### saving Off_VoA_fit as an RDS file so that I'm not re-compiling and/or re-fitting the model every single week
   ## hoping that using more years of complete season data will help produce a more stable model
-  write_rds(
-    Def_VoA_fit,
-    file = here("Data", "FittedModels", "DefVoAStanFit.rds"),
-    compress = "gz"
-  )
+  # write_rds(
+  #   Def_VoA_fit,
+  #   file = here("Data", "FittedModels", "DefVoAStanFit.rds"),
+  #   compress = "gz"
+  # )
 
   ### Print the diagnostics
   print(Def_VoA_fit$cmdstan_diagnose())
@@ -1966,7 +2077,7 @@ if (as.numeric(nfl_week) <= 10) {
       "b0",
       "beta_def_epa",
       "beta_def_ypp",
-      "beta_def_success_rt",
+      "beta_def_success_rate",
       "beta_def_explosiveness",
       "beta_def_third_conv_rate",
       "beta_def_pts_per_opp",
@@ -1977,35 +2088,80 @@ if (as.numeric(nfl_week) <= 10) {
     format = "draws_df"
   )
 
+  ### writing parameter draws as tabular file since saving the fit as an rds file doesn't work because of stupid bullshit
+  write_parquet(
+    Def_VoA_pars,
+    here("Data", "FittedModels", "DefVoAParams.parquet")
+  )
+
   ### creating matrix to hold ratings
   ### adding in process uncertainty
-  Def_VoA_Ratings <- matrix(NA, length(Def_VoA_pars$b0), nrow(VoAVariables))
+  # Def_VoA_Ratings <- matrix(NA, length(Def_VoA_pars$b0), nrow(VoAVariables))
 
-  ### creating ratings
+  # ### creating ratings
+  # set.seed(802)
+  # for (p in 1:length(Def_VoA_pars$b0)) {
+  #   for (t in 1:nrow(VoAVariables)) {
+  #     Def_VoA_Rating <- rnorm(
+  #       1,
+  #       mean = Def_VoA_pars$b0[p] +
+  #         Def_VoA_pars$beta_def_epa[p] * VoAVariables$weighted_def_epa[t] +
+  #         Def_VoA_pars$beta_def_ypp[p] * VoAVariables$weighted_def_ypp[t] +
+  #         Def_VoA_pars$beta_def_success_rate[p] *
+  #           VoAVariables$weighted_def_success_rate[t] +
+  #         Def_VoA_pars$beta_def_explosiveness[p] *
+  #           VoAVariables$weighted_def_explosiveness[t] +
+  #         Def_VoA_pars$beta_def_third_conv_rate[p] *
+  #           VoAVariables$weighted_def_third_conv_rate[t] +
+  #         Def_VoA_pars$beta_def_pts_per_opp[p] *
+  #           VoAVariables$weighted_def_pts_per_opp[t] +
+  #         Def_VoA_pars$beta_def_plays_pg[p] *
+  #           VoAVariables$weighted_def_plays_pg[t] +
+  #         Def_VoA_pars$beta_VoA_Output[p] * VoAVariables$VoA_Output[t],
+  #       sd = Def_VoA_pars$sigma[p]
+  #     )
+  #     Def_VoA_Ratings[p, t] <- Def_VoA_Rating
+  #   }
+  # }
+
+  ### Create the Design Matrix (Teams x Predictors)
+  DefDesignMatrix <- as.matrix(cbind(
+    b0 = 1,
+    beta_def_epa = VoAVariables$weighted_def_epa,
+    beta_def_ypp = VoAVariables$weighted_def_ypp,
+    beta_def_success_rate = VoAVariables$weighted_def_success_rate,
+    beta_def_explosiveness = VoAVariables$weighted_def_explosiveness,
+    beta_def_third_conv_rate = VoAVariables$weighted_def_third_conv_rate,
+    beta_def_pts_per_opp = VoAVariables$weighted_def_pts_per_opp,
+    beta_def_plays_pg = VoAVariables$weighted_def_plays_pg,
+    beta_VoA_Output = VoAVariables$VoA_Output
+  ))
+
+  #### Parameter Matrix (Posterior samples x Predictors)
+  Def_VoA_pars_matrix <- as.matrix(Def_VoA_pars[, colnames(DefDesignMatrix)])
+
+  ### Calculate Means for ALL (p, t) pairs in one operation
+  ### Off_VoA_pars_matrix %*% t(DesignMatrix) produces a matrix of size (N_draws x N_teams)
+  DefMeans_matrix <- Def_VoA_pars_matrix %*% t(DefDesignMatrix)
+
+  ### Add normal noise vectorized using the sigma array
+  P <- length(Def_VoA_pars$b0)
+  T_num <- nrow(VoAVariables)
+
+  ### applying rnorm to generate a matrix of ratings using the matrix of samples from the posterior distributions
   set.seed(802)
-  for (p in 1:length(Def_VoA_pars$b0)) {
-    for (t in 1:nrow(VoAVariables)) {
-      Def_VoA_Rating <- rnorm(
-        1,
-        mean = Def_VoA_pars$b0[p] +
-          Def_VoA_pars$beta_def_epa[p] * VoAVariables$weighted_def_epa[t] +
-          Def_VoA_pars$beta_def_ypp[p] * VoAVariables$weighted_def_ypp[t] +
-          Def_VoA_pars$beta_def_success_rt[p] *
-            VoAVariables$weighted_def_success_rt[t] +
-          Def_VoA_pars$beta_def_explosiveness[p] *
-            VoAVariables$weighted_def_explosiveness[t] +
-          Def_VoA_pars$beta_def_third_conv_rate[p] *
-            VoAVariables$weighted_def_third_conv_rate[t] +
-          Def_VoA_pars$beta_def_pts_per_opp[p] *
-            VoAVariables$weighted_def_pts_per_opp[t] +
-          Def_VoA_pars$beta_def_plays_pg[p] *
-            VoAVariables$weighted_def_plays_pg[t] +
-          Def_VoA_pars$beta_VoA_Output[p] * VoAVariables$VoA_Output[t],
-        sd = Def_VoA_pars$sigma[p]
-      )
-      Def_VoA_Ratings[p, t] <- Def_VoA_Rating
-    }
-  }
+  Def_VoA_Ratings <- matrix(
+    rnorm(P * T_num, mean = DefMeans_matrix, sd = Def_VoA_pars$sigma),
+    nrow = P,
+    ncol = T_num
+  )
+
+  ### fixing any values in the posterior sample that are below 0, since that is not possible for this metric
+  Def_VoA_Ratings <- ifelse(
+    Def_VoA_Ratings <= 0,
+    abs(rnorm(1, 0, sd(Def_VoA_Ratings))) / 5,
+    Def_VoA_Ratings
+  )
 
   ### generating median and mean and quantile ratings
   MeanPred <- apply(Def_VoA_Ratings, 2, mean)
@@ -2045,11 +2201,11 @@ if (as.numeric(nfl_week) <= 10) {
 
   ### saving Off_VoA_fit as an RDS file so that I'm not re-compiling and/or re-fitting the model every single week
   ## hoping that using more years of complete season data will help produce a more stable model
-  write_rds(
-    ST_VoA_fit,
-    file = here("Data", "FittedModels", "STVoAStanFit.rds"),
-    compress = "gz"
-  )
+  # write_rds(
+  #   ST_VoA_fit,
+  #   file = here("Data", "FittedModels", "STVoAStanFit.rds"),
+  #   compress = "gz"
+  # )
 
   ### Print the diagnostics
   print(ST_VoA_fit$cmdstan_diagnose())
@@ -2068,35 +2224,232 @@ if (as.numeric(nfl_week) <= 10) {
     format = "draws_df"
   )
 
-  ### creating matrix to store special teams VoA_Ratings
-  ST_VoA_Ratings <- matrix(
-    NA,
-    nrow = length(ST_VoA_pars$b0),
-    ncol = nrow(VoAVariables)
+  ### writing parameter draws as tabular file since saving the fit as an rds file doesn't work because of stupid bullshit
+  write_parquet(
+    ST_VoA_pars,
+    here("Data", "FittedModels", "STVoAParams.parquet")
   )
 
-  ### creating special teams VoA_Ratings
+  ### creating matrix to store special teams VoA_Ratings
+  # ST_VoA_Ratings <- matrix(
+  #   NA,
+  #   nrow = length(ST_VoA_pars$b0),
+  #   ncol = nrow(VoAVariables)
+  # )
+
+  # ### creating special teams VoA_Ratings
+  # set.seed(802)
+  # for (p in 1:length(ST_VoA_pars$b0)) {
+  #   for (t in 1:nrow(VoAVariables)) {
+  #     ST_VoA_Rating <- rnorm(
+  #       1,
+  #       mean = ST_VoA_pars$b0[p] +
+  #         ST_VoA_pars$beta_net_st_epa[p] *
+  #           VoAVariables$weighted_net_st_epa[t] +
+  #         ST_VoA_pars$beta_net_kick_return_avg[p] *
+  #           VoAVariables$weighted_net_kick_return_yds[t] +
+  #         ST_VoA_pars$beta_net_punt_return_avg[p] *
+  #           VoAVariables$weighted_net_punt_return_yds[t] +
+  #         ST_VoA_pars$beta_net_fg_rate[p] *
+  #           VoAVariables$weighted_net_fg_rate[t] +
+  #         ST_VoA_pars$beta_net_xp_rate[p] *
+  #           VoAVariables$weighted_net_xp_rate[t],
+  #       sd = ST_VoA_pars$sigma[p]
+  #     )
+  #     ST_VoA_Ratings[p, t] <- ST_VoA_Rating
+  #   }
+  # }
+
+  ### Create the Design Matrix (Teams x Predictors)
+  STDesignMatrix <- as.matrix(cbind(
+    b0 = 1,
+    beta_net_st_epa = VoAVariables$weighted_net_st_epa,
+    beta_net_kick_return_avg = VoAVariables$weighted_net_kick_return_yds,
+    beta_net_punt_return_avg = VoAVariables$weighted_net_punt_return_yds,
+    beta_net_fg_rate = VoAVariables$weighted_net_fg_rate,
+    beta_net_xp_rate = VoAVariables$weighted_net_xp_rate
+  ))
+
+  #### Parameter Matrix (Posterior samples x Predictors)
+  ST_VoA_pars_matrix <- as.matrix(ST_VoA_pars[, colnames(STDesignMatrix)])
+
+  ### Calculate Means for ALL (p, t) pairs in one operation
+  ### Off_VoA_pars_matrix %*% t(DesignMatrix) produces a matrix of size (N_draws x N_teams)
+  STMeans_matrix <- ST_VoA_pars_matrix %*% t(STDesignMatrix)
+
+  ### Add normal noise vectorized using the sigma array
+  P <- length(ST_VoA_pars$b0)
+  T_num <- nrow(VoAVariables)
+
+  ### applying rnorm to generate a matrix of ratings using the matrix of samples from the posterior distributions
   set.seed(802)
-  for (p in 1:length(ST_VoA_pars$b0)) {
-    for (t in 1:nrow(VoAVariables)) {
-      ST_VoA_Rating <- rnorm(
-        1,
-        mean = ST_VoA_pars$b0[p] +
-          ST_VoA_pars$beta_net_st_epa[p] *
-            VoAVariables$weighted_net_st_epa[t] +
-          ST_VoA_pars$beta_net_kick_return_avg[p] *
-            VoAVariables$weighted_net_kick_return_yds[t] +
-          ST_VoA_pars$beta_net_punt_return_avg[p] *
-            VoAVariables$weighted_net_punt_return_yds[t] +
-          ST_VoA_pars$beta_net_fg_rate[p] *
-            VoAVariables$weighted_net_fg_rate[t] +
-          ST_VoA_pars$beta_net_xp_rate[p] *
-            VoAVariables$weighted_net_xp_rate[t],
-        sd = ST_VoA_pars$sigma[p]
-      )
-      ST_VoA_Ratings[p, t] <- ST_VoA_Rating
-    }
-  }
+  ST_VoA_Ratings <- matrix(
+    rnorm(P * T_num, mean = STMeans_matrix, sd = ST_VoA_pars$sigma),
+    nrow = P,
+    ncol = T_num
+  )
+
+  ### generating median and mean and quantile ratings
+  MeanPred <- apply(ST_VoA_Ratings, 2, mean)
+  MedianPred <- apply(ST_VoA_Ratings, 2, median)
+  Upper <- apply(ST_VoA_Ratings, 2, quantile, prob = 0.975)
+  Lower <- apply(ST_VoA_Ratings, 2, quantile, prob = 0.025)
+
+  VoAVariables$STVoA_MeanRating <- MeanPred
+  VoAVariables$STVoA_MedRating <- MedianPred
+  VoAVariables$STVoA_95PctRating <- Upper
+  VoAVariables$STVoA_05PctRating <- Lower
+} else if (as.integer(nfl_week) <= 10) {
+  ##### Week 1-10 Stan Models #####
+  ### not refitting or recompliling, just taking parameters from preseason
+  ### Offensive Model
+  ### reading in parameters from pre-fit model
+  Off_VoA_pars <- read_parquet(here(
+    "Data",
+    "FittedModels",
+    "OffVoAParams.parquet"
+  ))
+
+  ### Create the Design Matrix (Teams x Predictors)
+  OffDesignMatrix <- as.matrix(cbind(
+    b0 = 1,
+    beta_off_epa = VoAVariables$weighted_off_epa,
+    beta_off_ypp = VoAVariables$weighted_off_ypp,
+    beta_off_success_rate = VoAVariables$weighted_off_success_rate,
+    beta_off_explosiveness = VoAVariables$weighted_off_explosiveness,
+    beta_third_conv_rate = VoAVariables$weighted_off_third_conv_rate,
+    beta_off_pts_per_opp = VoAVariables$weighted_off_pts_per_opp,
+    beta_off_plays_pg = VoAVariables$weighted_off_plays_pg,
+    beta_VoA_Output = VoAVariables$VoA_Output
+  ))
+
+  #### Parameter Matrix (Posterior samples x Predictors)
+  Off_VoA_pars_matrix <- as.matrix(Off_VoA_pars[, colnames(OffDesignMatrix)])
+
+  ### Calculate Means for ALL (p, t) pairs in one operation
+  ### Off_VoA_pars_matrix %*% t(DesignMatrix) produces a matrix of size (N_draws x N_teams)
+  OffMeans_matrix <- Off_VoA_pars_matrix %*% t(OffDesignMatrix)
+
+  ### Add normal noise vectorized using the sigma array
+  P <- length(Off_VoA_pars$b0)
+  T_num <- nrow(VoAVariables)
+
+  ### applying rnorm to generate a matrix of ratings using the matrix of samples from the posterior distributions
+  set.seed(802)
+  Off_VoA_Ratings <- matrix(
+    rnorm(P * T_num, mean = OffMeans_matrix, sd = Off_VoA_pars$sigma),
+    nrow = P,
+    ncol = T_num
+  )
+
+  ### fixing any values in the posterior sample that are below 0, since that is not possible for this metric
+  Off_VoA_Ratings <- ifelse(
+    Off_VoA_Ratings <= 0,
+    abs(rnorm(1, 0, sd(Off_VoA_Ratings))) / 5,
+    Off_VoA_Ratings
+  )
+
+  ### generating median and mean and quantile ratings
+  MeanPred <- apply(Off_VoA_Ratings, 2, mean)
+  MedianPred <- apply(Off_VoA_Ratings, 2, median)
+  Upper <- apply(Off_VoA_Ratings, 2, quantile, prob = .975)
+  Lower <- apply(Off_VoA_Ratings, 2, quantile, prob = .025)
+
+  VoAVariables$OffVoA_MeanRating <- MeanPred
+  VoAVariables$OffVoA_MedRating <- MedianPred
+  VoAVariables$OffVoA_95PctRating <- Upper
+  VoAVariables$OffVoA_05PctRating <- Lower
+
+  ### Defensive Model
+  ### reading in parameter draws from pre-fit model
+  Def_VoA_pars <- read_parquet(
+    here("Data", "FittedModels", "DefVoAParams.parquet")
+  )
+
+  ### Create the Design Matrix (Teams x Predictors)
+  DefDesignMatrix <- as.matrix(cbind(
+    b0 = 1,
+    beta_def_epa = VoAVariables$weighted_def_epa,
+    beta_def_ypp = VoAVariables$weighted_def_ypp,
+    beta_def_success_rate = VoAVariables$weighted_def_success_rate,
+    beta_def_explosiveness = VoAVariables$weighted_def_explosiveness,
+    beta_def_third_conv_rate = VoAVariables$weighted_def_third_conv_rate,
+    beta_def_pts_per_opp = VoAVariables$weighted_def_pts_per_opp,
+    beta_def_plays_pg = VoAVariables$weighted_def_plays_pg,
+    beta_VoA_Output = VoAVariables$VoA_Output
+  ))
+
+  #### Parameter Matrix (Posterior samples x Predictors)
+  Def_VoA_pars_matrix <- as.matrix(Def_VoA_pars[, colnames(DefDesignMatrix)])
+
+  ### Calculate Means for ALL (p, t) pairs in one operation
+  ### Off_VoA_pars_matrix %*% t(DesignMatrix) produces a matrix of size (N_draws x N_teams)
+  DefMeans_matrix <- Def_VoA_pars_matrix %*% t(DefDesignMatrix)
+
+  ### Add normal noise vectorized using the sigma array
+  P <- length(Def_VoA_pars$b0)
+  T_num <- nrow(VoAVariables)
+
+  ### applying rnorm to generate a matrix of ratings using the matrix of samples from the posterior distributions
+  set.seed(802)
+  Def_VoA_Ratings <- matrix(
+    rnorm(P * T_num, mean = DefMeans_matrix, sd = Def_VoA_pars$sigma),
+    nrow = P,
+    ncol = T_num
+  )
+
+  ### fixing any values in the posterior sample that are below 0, since that is not possible for this metric
+  Def_VoA_Ratings <- ifelse(
+    Def_VoA_Ratings <= 0,
+    abs(rnorm(1, 0, sd(Def_VoA_Ratings))) / 5,
+    Def_VoA_Ratings
+  )
+
+  ### generating median and mean and quantile ratings
+  MeanPred <- apply(Def_VoA_Ratings, 2, mean)
+  MedianPred <- apply(Def_VoA_Ratings, 2, median)
+  Upper <- apply(Def_VoA_Ratings, 2, quantile, prob = 0.975)
+  Lower <- apply(Def_VoA_Ratings, 2, quantile, prob = 0.025)
+
+  VoAVariables$DefVoA_MeanRating <- MeanPred
+  VoAVariables$DefVoA_MedRating <- MedianPred
+  VoAVariables$DefVoA_95PctRating <- Upper
+  VoAVariables$DefVoA_05PctRating <- Lower
+
+  ### Special Teams Model
+  ### reading in parameter draws from pre-fit model
+  ST_VoA_pars <- read_parquet(
+    here("Data", "FittedModels", "STVoAParams.parquet")
+  )
+
+  ### Create the Design Matrix (Teams x Predictors)
+  STDesignMatrix <- as.matrix(cbind(
+    b0 = 1,
+    beta_net_st_epa = VoAVariables$weighted_net_st_epa,
+    beta_net_kick_return_avg = VoAVariables$weighted_net_kick_return_yds,
+    beta_net_punt_return_avg = VoAVariables$weighted_net_punt_return_yds,
+    beta_net_fg_rate = VoAVariables$weighted_net_fg_rate,
+    beta_net_xp_rate = VoAVariables$weighted_net_xp_rate
+  ))
+
+  #### Parameter Matrix (Posterior samples x Predictors)
+  ST_VoA_pars_matrix <- as.matrix(ST_VoA_pars[, colnames(STDesignMatrix)])
+
+  ### Calculate Means for ALL (p, t) pairs in one operation
+  ### Off_VoA_pars_matrix %*% t(DesignMatrix) produces a matrix of size (N_draws x N_teams)
+  STMeans_matrix <- ST_VoA_pars_matrix %*% t(STDesignMatrix)
+
+  ### Add normal noise vectorized using the sigma array
+  P <- length(ST_VoA_pars$b0)
+  T_num <- nrow(VoAVariables)
+
+  ### applying rnorm to generate a matrix of ratings using the matrix of samples from the posterior distributions
+  set.seed(802)
+  ST_VoA_Ratings <- matrix(
+    rnorm(P * T_num, mean = STMeans_matrix, sd = ST_VoA_pars$sigma),
+    nrow = P,
+    ncol = T_num
+  )
 
   ### generating median and mean and quantile ratings
   MeanPred <- apply(ST_VoA_Ratings, 2, mean)
@@ -2110,153 +2463,109 @@ if (as.numeric(nfl_week) <= 10) {
   VoAVariables$STVoA_05PctRating <- Lower
 } else {
   ##### Week 11-End of Season Stan Models #####
-  ### VoA Offensive Rating Model
-  ### making list of data to declare what goes into stan model
-  # Off_VoA_datalist <- list(
-  #   N = nrow(VoAVariables),
-  #   off_ppg = VoAVariables$adj_off_ppg,
-  #   off_epa = VoAVariables$adj_off_epa,
-  #   off_ypp = VoAVariables$adj_off_ypp,
-  #   off_success_rt = VoAVariables$off_success_rt,
-  #   off_explosiveness = VoAVariables$adj_off_explosiveness,
-  #   third_conv_rate = VoAVariables$off_third_conv_rate,
-  #   off_pts_per_opp = VoAVariables$off_pts_per_opp,
-  #   off_plays_pg = VoAVariables$off_plays_pg,
-  #   VoA_Output = (1 / VoAVariables$VoA_Output)
-  # )
+  ### not refitting or recompliling, just taking parameters from preseason
+  ### Offensive Model
+  ### reading in parameters from pre-fit model
+  Off_VoA_pars <- read_parquet(here(
+    "Data",
+    "FittedModels",
+    "OffVoAParams.parquet"
+  ))
 
-  # ### fitting stan model
-  # set.seed(802)
-  # options(mc.cores = parallel::detectCores() / 2)
-  # Off_VoA_model <- cmdstan_model(here("Scripts", "Stan", "Off_VoA.stan"))
-  # Off_VoA_fit <- Off_VoA_model$sample(
-  #   data = Off_VoA_datalist,
-  #   chains = 3,
-  #   iter_sampling = 10000,
-  #   iter_warmup = 3000,
-  #   seed = 802
-  # )
-  # Off_VoA_fit
+  ### Create the Design Matrix (Teams x Predictors)
+  OffDesignMatrix <- as.matrix(cbind(
+    b0 = 1,
+    beta_off_epa = VoAVariables$adj_off_epa,
+    beta_off_ypp = VoAVariables$adj_off_ypp,
+    beta_off_success_rate = VoAVariables$off_success_rate,
+    beta_off_explosiveness = VoAVariables$adj_off_explosiveness,
+    beta_third_conv_rate = VoAVariables$off_third_conv_rate,
+    beta_off_pts_per_opp = VoAVariables$off_pts_per_opp,
+    beta_off_plays_pg = VoAVariables$adj_off_plays_pg,
+    beta_VoA_Output = VoAVariables$VoA_Output
+  ))
 
-  ### loading offensive Stan model
-  Off_VoA_fit <- read_rds(here("Data", "FittedModels", "OffVoAStanFit.rds"))
+  #### Parameter Matrix (Posterior samples x Predictors)
+  Off_VoA_pars_matrix <- as.matrix(Off_VoA_pars[, colnames(OffDesignMatrix)])
 
-  ### Print the diagnostics
-  print(Off_VoA_fit$cmdstan_diagnose())
+  ### Calculate Means for ALL (p, t) pairs in one operation
+  ### Off_VoA_pars_matrix %*% t(DesignMatrix) produces a matrix of size (N_draws x N_teams)
+  OffMeans_matrix <- Off_VoA_pars_matrix %*% t(OffDesignMatrix)
 
-  ### Extracting Parameters
-  Off_VoA_pars <- Off_VoA_fit$draws(
-    variables = c(
-      "b0",
-      "beta_off_epa",
-      "beta_off_ypp",
-      "beta_off_success_rt",
-      "beta_off_explosiveness",
-      "beta_third_conv_rate",
-      "beta_off_pts_per_opp",
-      "beta_off_plays_pg",
-      "beta_VoA_Output",
-      "sigma"
-    ),
-    format = "draws_df"
+  ### Add normal noise vectorized using the sigma array
+  P <- length(Off_VoA_pars$b0)
+  T_num <- nrow(VoAVariables)
+
+  ### applying rnorm to generate a matrix of ratings using the matrix of samples from the posterior distributions
+  set.seed(802)
+  Off_VoA_Ratings <- matrix(
+    rnorm(P * T_num, mean = OffMeans_matrix, sd = Off_VoA_pars$sigma),
+    nrow = P,
+    ncol = T_num
   )
 
-  ### creating matrix to hold ratings
-  ### adding in process uncertainty
-  Off_VoA_Ratings <- matrix(NA, length(Off_VoA_pars$b0), nrow(VoAVariables))
-
-  ### creating ratings
-  set.seed(802)
-  for (p in 1:length(Off_VoA_pars$b0)) {
-    for (t in 1:nrow(VoAVariables)) {
-      Off_VoA_Rating <- rnorm(
-        1,
-        mean = Off_VoA_pars$b0[p] +
-          Off_VoA_pars$beta_off_epa[p] * VoAVariables$adj_off_epa[t] +
-          Off_VoA_pars$beta_off_ypp[p] * VoAVariables$adj_off_ypp[t] +
-          Off_VoA_pars$beta_off_success_rt[p] *
-            VoAVariables$off_success_rt[t] +
-          Off_VoA_pars$beta_off_explosiveness[p] *
-            VoAVariables$adj_off_explosiveness[t] +
-          Off_VoA_pars$beta_third_conv_rate[p] *
-            VoAVariables$off_third_conv_rate[t] +
-          Off_VoA_pars$beta_off_pts_per_opp[p] *
-            VoAVariables$off_pts_per_opp[t] +
-          Off_VoA_pars$beta_off_plays_pg[p] * VoAVariables$off_plays_pg[t] +
-          Off_VoA_pars$beta_VoA_Output[p] * (1 / (VoAVariables$VoA_Output[t])),
-        sd = Off_VoA_pars$sigma[p]
-      )
-      Off_VoA_Ratings[p, t] <- Off_VoA_Rating
-    }
-  }
+  ### fixing any values in the posterior sample that are below 0, since that is not possible for this metric
+  Off_VoA_Ratings <- ifelse(
+    Off_VoA_Ratings <= 0,
+    abs(rnorm(1, 0, sd(Off_VoA_Ratings))) / 5,
+    Off_VoA_Ratings
+  )
 
   ### generating median and mean and quantile ratings
   MeanPred <- apply(Off_VoA_Ratings, 2, mean)
   MedianPred <- apply(Off_VoA_Ratings, 2, median)
-  Upper <- apply(Off_VoA_Ratings, 2, quantile, prob = 0.975)
-  Lower <- apply(Off_VoA_Ratings, 2, quantile, prob = 0.025)
+  Upper <- apply(Off_VoA_Ratings, 2, quantile, prob = .975)
+  Lower <- apply(Off_VoA_Ratings, 2, quantile, prob = .025)
 
   VoAVariables$OffVoA_MeanRating <- MeanPred
   VoAVariables$OffVoA_MedRating <- MedianPred
   VoAVariables$OffVoA_95PctRating <- Upper
   VoAVariables$OffVoA_05PctRating <- Lower
 
-  ### VoA Defensive Rating Model
-  ### making list of data to declare what goes into stan model
-  # Def
-
-  ### loading defensive Stan model
-  Def_VoA_fit <- read_rds(here("Data", "FittedModels", "DefVoAStanFit.rds"))
-  Def_VoA_fit
-
-  ### Print the diagnostics
-  print(Def_VoA_fit$cmdstan_diagnose())
-
-  ### Extracting Parameters
-  Def_VoA_pars <- Def_VoA_fit$draws(
-    variables = c(
-      "b0",
-      "beta_def_epa",
-      "beta_def_ypp",
-      "beta_def_success_rt",
-      "beta_def_explosiveness",
-      "beta_def_third_conv_rate",
-      "beta_def_pts_per_opp",
-      "beta_def_plays_pg",
-      "beta_VoA_Output",
-      "sigma"
-    ),
-    format = "draws_df"
+  ### Defensive Model
+  ### reading in parameter draws from pre-fit model
+  Def_VoA_pars <- read_parquet(
+    here("Data", "FittedModels", "DefVoAParams.parquet")
   )
 
-  ### creating matrix to hold ratings
-  ### adding in process uncertainty
-  Def_VoA_Ratings <- matrix(NA, length(Def_VoA_pars$b0), nrow(VoAVariables))
+  ### Create the Design Matrix (Teams x Predictors)
+  DefDesignMatrix <- as.matrix(cbind(
+    b0 = 1,
+    beta_def_epa = VoAVariables$adj_def_epa,
+    beta_def_ypp = VoAVariables$adj_def_ypp,
+    beta_def_success_rate = VoAVariables$def_success_rate,
+    beta_def_explosiveness = VoAVariables$adj_def_explosiveness,
+    beta_def_third_conv_rate = VoAVariables$def_third_conv_rate,
+    beta_def_pts_per_opp = VoAVariables$def_pts_per_opp,
+    beta_def_plays_pg = VoAVariables$adj_def_plays_pg,
+    beta_VoA_Output = VoAVariables$VoA_Output
+  ))
 
-  ### creating ratings
+  #### Parameter Matrix (Posterior samples x Predictors)
+  Def_VoA_pars_matrix <- as.matrix(Def_VoA_pars[, colnames(DefDesignMatrix)])
+
+  ### Calculate Means for ALL (p, t) pairs in one operation
+  ### Off_VoA_pars_matrix %*% t(DesignMatrix) produces a matrix of size (N_draws x N_teams)
+  DefMeans_matrix <- Def_VoA_pars_matrix %*% t(DefDesignMatrix)
+
+  ### Add normal noise vectorized using the sigma array
+  P <- length(Def_VoA_pars$b0)
+  T_num <- nrow(VoAVariables)
+
+  ### applying rnorm to generate a matrix of ratings using the matrix of samples from the posterior distributions
   set.seed(802)
-  for (p in 1:length(Def_VoA_pars$b0)) {
-    for (t in 1:nrow(VoAVariables)) {
-      Def_VoA_Rating <- rnorm(
-        1,
-        mean = Def_VoA_pars$b0[p] +
-          Def_VoA_pars$beta_def_epa[p] * VoAVariables$adj_def_epa[t] +
-          Def_VoA_pars$beta_def_ypp[p] * VoAVariables$adj_def_ypp[t] +
-          Def_VoA_pars$beta_def_success_rt[p] *
-            VoAVariables$def_success_rt[t] +
-          Def_VoA_pars$beta_def_explosiveness[p] *
-            VoAVariables$adj_def_explosiveness[t] +
-          Def_VoA_pars$beta_def_third_conv_rate[p] *
-            VoAVariables$def_third_conv_rate[t] +
-          Def_VoA_pars$beta_def_pts_per_opp[p] *
-            VoAVariables$def_pts_per_opp[t] +
-          Def_VoA_pars$beta_def_plays_pg[p] * VoAVariables$def_plays_pg[t] +
-          Def_VoA_pars$beta_VoA_Output[p] * VoAVariables$VoA_Output[t],
-        sd = Def_VoA_pars$sigma[p]
-      )
-      Def_VoA_Ratings[p, t] <- Def_VoA_Rating
-    }
-  }
+  Def_VoA_Ratings <- matrix(
+    rnorm(P * T_num, mean = DefMeans_matrix, sd = Def_VoA_pars$sigma),
+    nrow = P,
+    ncol = T_num
+  )
+
+  ### fixing any values in the posterior sample that are below 0, since that is not possible for this metric
+  Def_VoA_Ratings <- ifelse(
+    Def_VoA_Ratings <= 0,
+    abs(rnorm(1, 0, sd(Def_VoA_Ratings))) / 5,
+    Def_VoA_Ratings
+  )
 
   ### generating median and mean and quantile ratings
   MeanPred <- apply(Def_VoA_Ratings, 2, mean)
@@ -2269,76 +2578,40 @@ if (as.numeric(nfl_week) <= 10) {
   VoAVariables$DefVoA_95PctRating <- Upper
   VoAVariables$DefVoA_05PctRating <- Lower
 
-  ### Special Teams VoA
-  ### making list of data to declare what goes into Stan model
-  # ST_VoA_datalist <- list(
-  #   N = nrow(VoAVariables),
-  #   net_st_ppg = VoAVariables$net_st_ppg,
-  #   net_st_epa = VoAVariables$st_net_epa,
-  #   net_kick_return_avg = VoAVariables$net_kick_return_yds,
-  #   net_punt_return_avg = VoAVariables$net_punt_return_yds,
-  #   net_fg_rate = VoAVariables$net_fg_rate,
-  #   net_xp_rate = VoAVariables$net_xp_rate
-  # )
-
-  # ### fitting special teams Stan model
-  # set.seed(802)
-  # ST_VoA_model <- cmdstan_model(here("Scripts", "Stan", "ST_VoA.stan"))
-  # ST_VoA_fit <- ST_VoA_model$sample(
-  #   data = ST_VoA_datalist,
-  #   chains = 3,
-  #   iter_sampling = 5000,
-  #   iter_warmup = 2500,
-  #   seed = 802
-  # )
-
-  ### loading offensive Stan model
-  ST_VoA_fit <- read_rds(here("Data", "FittedModels", "STVoAStanFit.rds"))
-  ST_VoA_fit
-
-  ### Print the diagnostics
-  print(ST_VoA_fit$cmdstan_diagnose())
-
-  ### extracting parameters
-  ST_VoA_pars <- ST_VoA_fit$draws(
-    variables = c(
-      "b0",
-      "beta_net_st_epa",
-      "beta_net_kick_return_avg",
-      "beta_net_punt_return_avg",
-      "beta_net_fg_rate",
-      "beta_net_xp_rate",
-      "sigma"
-    ),
-    format = "draws_df"
+  ### Special Teams Model
+  ### reading in parameter draws from pre-fit model
+  ST_VoA_pars <- read_parquet(
+    here("Data", "FittedModels", "STVoAParams.parquet")
   )
 
-  ### creating matrix to store special teams VoA_Ratings
-  ST_VoA_Ratings <- matrix(
-    NA,
-    nrow = length(ST_VoA_pars$b0),
-    ncol = nrow(VoAVariables)
-  )
+  ### Create the Design Matrix (Teams x Predictors)
+  STDesignMatrix <- as.matrix(cbind(
+    b0 = 1,
+    beta_net_st_epa = VoAVariables$st_net_epa,
+    beta_net_kick_return_avg = VoAVariables$net_kick_return_yds,
+    beta_net_punt_return_avg = VoAVariables$net_punt_return_yds,
+    beta_net_fg_rate = VoAVariables$net_fg_rate,
+    beta_net_xp_rate = VoAVariables$net_xp_rate
+  ))
 
-  ### creating special teams VoA_Ratings
+  #### Parameter Matrix (Posterior samples x Predictors)
+  ST_VoA_pars_matrix <- as.matrix(ST_VoA_pars[, colnames(STDesignMatrix)])
+
+  ### Calculate Means for ALL (p, t) pairs in one operation
+  ### Off_VoA_pars_matrix %*% t(DesignMatrix) produces a matrix of size (N_draws x N_teams)
+  STMeans_matrix <- ST_VoA_pars_matrix %*% t(STDesignMatrix)
+
+  ### Add normal noise vectorized using the sigma array
+  P <- length(ST_VoA_pars$b0)
+  T_num <- nrow(VoAVariables)
+
+  ### applying rnorm to generate a matrix of ratings using the matrix of samples from the posterior distributions
   set.seed(802)
-  for (p in 1:length(ST_VoA_pars$b0)) {
-    for (t in 1:nrow(VoAVariables)) {
-      ST_VoA_Rating <- rnorm(
-        1,
-        mean = ST_VoA_pars$b0[p] +
-          ST_VoA_pars$beta_net_st_epa[p] * VoAVariables$st_net_epa[t] +
-          ST_VoA_pars$beta_net_kick_return_avg[p] *
-            VoAVariables$net_kick_return_yds[t] +
-          ST_VoA_pars$beta_net_punt_return_avg[p] *
-            VoAVariables$net_punt_return_yds[t] +
-          ST_VoA_pars$beta_net_fg_rate[p] * VoAVariables$net_fg_rate[t] +
-          ST_VoA_pars$beta_net_xp_rate[p] * VoAVariables$net_xp_rate[t],
-        sd = ST_VoA_pars$sigma[p]
-      )
-      ST_VoA_Ratings[p, t] <- ST_VoA_Rating
-    }
-  }
+  ST_VoA_Ratings <- matrix(
+    rnorm(P * T_num, mean = STMeans_matrix, sd = ST_VoA_pars$sigma),
+    nrow = P,
+    ncol = T_num
+  )
 
   ### generating median and mean and quantile ratings
   MeanPred <- apply(ST_VoA_Ratings, 2, mean)

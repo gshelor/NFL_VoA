@@ -10,7 +10,7 @@ data {
   vector[N] def_ppg; // weighted defensive ppg, used as basis for defensive VoA rating
   vector[N] def_epa; // weighted EPA per play
   vector[N] def_ypp; // weighted Yards per play
-  vector[N] def_success_rt; // weighted Play success rate
+  vector[N] def_success_rate; // weighted Play success rate
   vector[N] def_explosiveness; // weighted defensive explosiveness rate
   vector[N] def_third_conv_rate; // weighted third down conversion rate
   vector[N] def_pts_per_opp; // weighted points per scoring opportunity
@@ -25,7 +25,7 @@ parameters {
   real b0; // intercept
   real beta_def_epa; // Coefficient for EPA
   real beta_def_ypp; // Coefficient for yards per play
-  real beta_def_success_rt; // Coefficient for def success rate
+  real beta_def_success_rate; // Coefficient for def success rate
   real beta_def_explosiveness; // Coefficient for def explosiveness rate
   real beta_def_third_conv_rate; // coefficient for third down conversion rate
   real beta_def_pts_per_opp; // coefficient for defensive points per scoring opportunity
@@ -54,7 +54,7 @@ model {
   b0 ~ normal(20, 1);
   beta_def_epa ~ normal(3, 3);
   beta_def_ypp ~ normal(1, 4);
-  beta_def_success_rt ~ normal(3, 3);
+  beta_def_success_rate ~ normal(3, 3);
   beta_def_explosiveness ~ normal(2, 5);
   beta_def_third_conv_rate ~ normal(1, 10);
   beta_def_pts_per_opp ~ normal(1, 10);
@@ -62,7 +62,7 @@ model {
   beta_VoA_Output ~ normal(2, 10);
   sigma ~ gamma(10, 1);
   // Define linear predictor directly in the model block
-  def_ppg ~ normal(b0 + beta_def_epa * def_epa + beta_def_ypp * def_ypp + beta_def_success_rt * def_success_rt + beta_def_explosiveness * def_explosiveness + beta_def_third_conv_rate * def_third_conv_rate + beta_def_pts_per_opp * def_pts_per_opp + beta_def_plays_pg * def_plays_pg + beta_VoA_Output * VoA_Output, sigma);
+  def_ppg ~ normal(b0 + beta_def_epa * def_epa + beta_def_ypp * def_ypp + beta_def_success_rate * def_success_rate + beta_def_explosiveness * def_explosiveness + beta_def_third_conv_rate * def_third_conv_rate + beta_def_pts_per_opp * def_pts_per_opp + beta_def_plays_pg * def_plays_pg + beta_VoA_Output * VoA_Output, sigma);
 }
 
 

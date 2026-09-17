@@ -10,7 +10,7 @@ create_voa_vars <- function(nfl_week) {
             team = unique(PY_PBP$home_team),
             off_ypp_PY1 = -999,
             off_epa_PY1 = -999,
-            off_success_rt_PY1 = -999,
+            off_success_rate_PY1 = -999,
             off_explosiveness_PY1 = -999,
             off_third_conv_rate_PY1 = -999,
             off_fourth_conv_rate_PY1 = -999,
@@ -23,7 +23,7 @@ create_voa_vars <- function(nfl_week) {
             off_ppg_PY1 = -999,
             def_ypp_PY1 = -999,
             def_epa_PY1 = -999,
-            def_success_rt_PY1 = -999,
+            def_success_rate_PY1 = -999,
             def_explosiveness_PY1 = -999,
             def_third_conv_rate_PY1 = -999,
             def_fourth_conv_rate_PY1 = -999,
@@ -53,7 +53,7 @@ create_voa_vars <- function(nfl_week) {
             net_st_ppg_PY1 = -999,
             off_ypp_PY2 = -999,
             off_epa_PY2 = -999,
-            off_success_rt_PY2 = -999,
+            off_success_rate_PY2 = -999,
             off_explosiveness_PY2 = -999,
             off_third_conv_rate_PY2 = -999,
             off_fourth_conv_rate_PY2 = -999,
@@ -66,7 +66,7 @@ create_voa_vars <- function(nfl_week) {
             off_ppg_PY2 = -999,
             def_ypp_PY2 = -999,
             def_epa_PY2 = -999,
-            def_success_rt_PY2 = -999,
+            def_success_rate_PY2 = -999,
             def_explosiveness_PY2 = -999,
             def_third_conv_rate_PY2 = -999,
             def_fourth_conv_rate_PY2 = -999,
@@ -96,7 +96,7 @@ create_voa_vars <- function(nfl_week) {
             net_st_ppg_PY2 = -999,
             off_ypp_PY3 = -999,
             off_epa_PY3 = -999,
-            off_success_rt_PY3 = -999,
+            off_success_rate_PY3 = -999,
             off_explosiveness_PY3 = -999,
             off_third_conv_rate_PY3 = -999,
             off_fourth_conv_rate_PY3 = -999,
@@ -109,7 +109,7 @@ create_voa_vars <- function(nfl_week) {
             off_ppg_PY3 = -999,
             def_ypp_PY3 = -999,
             def_epa_PY3 = -999,
-            def_success_rt_PY3 = -999,
+            def_success_rate_PY3 = -999,
             def_explosiveness_PY3 = -999,
             def_third_conv_rate_PY3 = -999,
             def_fourth_conv_rate_PY3 = -999,
@@ -146,7 +146,7 @@ create_voa_vars <- function(nfl_week) {
             team = unique(c(PBP$home_team, PBP$away_team)),
             off_ypp = -999,
             off_epa = -999,
-            off_success_rt = -999,
+            off_success_rate = -999,
             off_explosiveness = -999,
             off_third_conv_rate = -999,
             off_fourth_conv_rate = -999,
@@ -159,7 +159,7 @@ create_voa_vars <- function(nfl_week) {
             off_ppg = -999,
             def_ypp = -999,
             def_epa = -999,
-            def_success_rt = -999,
+            def_success_rate = -999,
             def_explosiveness = -999,
             def_third_conv_rate = -999,
             def_fourth_conv_rate = -999,
@@ -204,7 +204,7 @@ create_voa_vars_train <- function(year) {
         team = unique(PY_PBP$home_team),
         off_ypp = -999,
         off_epa = -999,
-        off_success_rt = -999,
+        off_success_rate = -999,
         off_explosiveness = -999,
         off_third_conv_rate = -999,
         off_fourth_conv_rate = -999,
@@ -217,7 +217,7 @@ create_voa_vars_train <- function(year) {
         off_ppg = -999,
         def_ypp = -999,
         def_epa = -999,
-        def_success_rt = -999,
+        def_success_rate = -999,
         def_explosiveness = -999,
         def_third_conv_rate = -999,
         def_fourth_conv_rate = -999,
@@ -428,7 +428,7 @@ extract_pbp_stats <- function(
         ### Evaluating Stats
         VoA_df$off_ypp[x] <- mean(temp_offplays$yards_gained)
         VoA_df$off_epa[x] <- mean(temp_offplays$epa)
-        VoA_df$off_success_rt[x] <- nrow(temp_offsuccessplays) /
+        VoA_df$off_success_rate[x] <- nrow(temp_offsuccessplays) /
             nrow(temp_offplays)
         VoA_df$off_explosiveness[x] <- mean(temp_offsuccessplays$epa)
         VoA_df$off_third_conv_rate[x] <- nrow(temp_conv_offthirddowns) /
@@ -455,7 +455,7 @@ extract_pbp_stats <- function(
         ## PY1 defensive stats now
         VoA_df$def_ypp[x] <- mean(temp_defplays$yards_gained)
         VoA_df$def_epa[x] <- mean(temp_defplays$epa)
-        VoA_df$def_success_rt[x] <- nrow(temp_defsuccessplays) /
+        VoA_df$def_success_rate[x] <- nrow(temp_defsuccessplays) /
             nrow(temp_defplays)
         VoA_df$def_explosiveness[x] <- mean(temp_defsuccessplays$epa)
         VoA_df$def_third_conv_rate[x] <- nrow(temp_conv_defthirddowns) /
@@ -548,6 +548,11 @@ extract_pbp_stats <- function(
             st_punt_return_yds_allowed = case_when(
                 is.na(st_punt_return_yds_allowed) ~ 0,
                 TRUE ~ st_punt_return_yds_allowed
+            ),
+            fg_rate = case_when(is.na(fg_rate) ~ 0, TRUE ~ fg_rate),
+            fg_rate_allowed = case_when(
+                is.na(fg_rate_allowed) ~ 0,
+                TRUE ~ fg_rate_allowed
             )
         ) |>
         mutate(
@@ -625,68 +630,79 @@ extract_pbp_stats <- function(
             adj_def_epa = adj_def_epa + avg_epa
         )
 
-    ### opponent adjusted plays per game
-    PlaysPG_Adjustment <- PBP_EPAAdjustment |>
-        group_by(game_id) |>
-        summarize(
-            home_off_plays = sum(posteam == home_team),
-            away_off_plays = sum(posteam == away_team),
-            home_team = as.factor(unique(home_team)[1]),
-            away_team = as.factor(unique(away_team)[1]),
-            location = unique(location)[1]
-        ) |>
-        pivot_longer(
-            cols = ends_with("_plays"),
-            names_to = "home_away_col_names",
-            values_to = "team_plays"
-        ) |>
-        mutate(
-            team = case_when(
-                home_away_col_names == "home_off_plays" ~ home_team,
-                TRUE ~ away_team
-            ),
-            opp_team = case_when(
-                home_away_col_names == "home_off_plays" ~ away_team,
-                TRUE ~ home_team
-            ),
-            hfa = as.factor(case_when(
-                location == "Neutral" ~ 0,
-                home_team == team ~ 1,
-                TRUE ~ -1
-            ))
+    if (as.integer(nfl_week) == 1) {
+        ### the factoring is being a giant fucking pain in the ass, fuck you R you stupid piece of shit
+        VoA_df <- VoA_df |>
+            mutate(
+                adj_off_plays_pg = off_plays_pg,
+                adj_def_plays_pg = def_plays_pg
+            )
+    } else {
+        ### opponent adjusted plays per game
+        PlaysPG_Adjustment <- PBP_EPAAdjustment |>
+            group_by(game_id) |>
+            summarize(
+                home_off_plays = sum(posteam == home_team),
+                away_off_plays = sum(posteam == away_team),
+                home_team = as.factor(unique(home_team)[1]),
+                away_team = as.factor(unique(away_team)[1]),
+                location = unique(location)[1]
+            ) |>
+            pivot_longer(
+                cols = ends_with("_plays"),
+                names_to = "home_away_col_names",
+                values_to = "team_plays"
+            ) |>
+            mutate(
+                team = case_when(
+                    home_away_col_names == "home_off_plays" ~ home_team,
+                    TRUE ~ away_team
+                ),
+                opp_team = case_when(
+                    home_away_col_names == "home_off_plays" ~ away_team,
+                    TRUE ~ home_team
+                ),
+                hfa = as.factor(
+                    case_when(
+                        as.character(location) == "Neutral" ~ 0,
+                        as.character(home_team) == as.character(team) ~ 1,
+                        TRUE ~ -1
+                    )
+                )
+            )
+
+        ### fitting mixed effects model, treating team and opposing team as random effects
+        set.seed(802)
+        plays_mixed_model <- lmer(
+            team_plays ~ hfa + (1 | team) + (1 | opp_team),
+            data = PlaysPG_Adjustment
         )
 
-    ### fitting mixed effects model, treating team and opposing team as random effects
-    set.seed(802)
-    plays_mixed_model <- lmer(
-        team_plays ~ hfa + (1 | team) + (1 | opp_team),
-        data = PlaysPG_Adjustment
-    )
+        ### Extract random effects (team adjustments)
+        team_effects <- ranef(plays_mixed_model)
 
-    ### Extract random effects (team adjustments)
-    team_effects <- ranef(plays_mixed_model)
+        ### Extract offensive adjustments
+        off_adj <- as.data.frame(team_effects$team) |>
+            rename(adj_off_plays_pg = `(Intercept)`) |>
+            mutate(team = rownames(team_effects$team))
 
-    ### Extract offensive adjustments
-    off_adj <- as.data.frame(team_effects$team) |>
-        rename(adj_off_plays_pg = `(Intercept)`) |>
-        mutate(team = rownames(team_effects$team))
+        ### extract defensive adjustment
+        def_adj <- as.data.frame(team_effects$opp_team) |>
+            rename(adj_def_plays_pg = `(Intercept)`) |>
+            mutate(team = rownames(team_effects$opp_team))
 
-    ### extract defensive adjustment
-    def_adj <- as.data.frame(team_effects$opp_team) |>
-        rename(adj_def_plays_pg = `(Intercept)`) |>
-        mutate(team = rownames(team_effects$opp_team))
+        ### average plays per game (model intercept)
+        avg_plays_pg <- fixef(plays_mixed_model)["(Intercept)"]
 
-    ### average plays per game (model intercept)
-    avg_plays_pg <- fixef(plays_mixed_model)["(Intercept)"]
-
-    ### combine and join back to VoA_df
-    VoA_df <- VoA_df |>
-        left_join(off_adj, by = "team") |>
-        left_join(def_adj, by = "team") |>
-        mutate(
-            adj_off_plays_pg = adj_off_plays_pg + avg_plays_pg,
-            adj_def_plays_pg = adj_def_plays_pg + avg_plays_pg
-        )
+        ### combine and join back to VoA_df
+        VoA_df <- VoA_df |>
+            left_join(off_adj, by = "team") |>
+            left_join(def_adj, by = "team") |>
+            mutate(
+                adj_off_plays_pg = adj_off_plays_pg + avg_plays_pg,
+                adj_def_plays_pg = adj_def_plays_pg + avg_plays_pg
+            )
+    }
 
     ### Explosiveness
     ### subsetting columns for epa/play (explosiveness, so only EPA/play on successful plays) adjustment
@@ -1324,7 +1340,7 @@ extract_VoAVars_pbp_stats <- function(
         ### PY1 stats
         VoA_df$off_ypp_PY1[x] <- mean(temp_PY1_offplays$yards_gained)
         VoA_df$off_epa_PY1[x] <- mean(temp_PY1_offplays$epa)
-        VoA_df$off_success_rt_PY1[x] <- nrow(temp_PY1_offsuccessplays) /
+        VoA_df$off_success_rate_PY1[x] <- nrow(temp_PY1_offsuccessplays) /
             nrow(temp_PY1_offplays)
         VoA_df$off_explosiveness_PY1[x] <- mean(
             temp_PY1_offsuccessplays$epa
@@ -1365,7 +1381,7 @@ extract_VoAVars_pbp_stats <- function(
         ## PY1 defensive stats now
         VoA_df$def_ypp_PY1[x] <- mean(temp_PY1_defplays$yards_gained)
         VoA_df$def_epa_PY1[x] <- mean(temp_PY1_defplays$epa)
-        VoA_df$def_success_rt_PY1[x] <- nrow(temp_PY1_defsuccessplays) /
+        VoA_df$def_success_rate_PY1[x] <- nrow(temp_PY1_defsuccessplays) /
             nrow(temp_PY1_defplays)
         VoA_df$def_explosiveness_PY1[x] <- mean(
             temp_PY1_defsuccessplays$epa
@@ -1463,7 +1479,7 @@ extract_VoAVars_pbp_stats <- function(
         ### evaluating PY2 variables
         VoA_df$off_ypp_PY2[x] <- mean(temp_PY2_offplays$yards_gained)
         VoA_df$off_epa_PY2[x] <- mean(temp_PY2_offplays$epa)
-        VoA_df$off_success_rt_PY2[x] <- nrow(temp_PY2_offsuccessplays) /
+        VoA_df$off_success_rate_PY2[x] <- nrow(temp_PY2_offsuccessplays) /
             nrow(temp_PY2_offplays)
         VoA_df$off_explosiveness_PY2[x] <- mean(
             temp_PY2_offsuccessplays$epa
@@ -1504,7 +1520,7 @@ extract_VoAVars_pbp_stats <- function(
         ## PY2 defensive stats now
         VoA_df$def_ypp_PY2[x] <- mean(temp_PY2_defplays$yards_gained)
         VoA_df$def_epa_PY2[x] <- mean(temp_PY2_defplays$epa)
-        VoA_df$def_success_rt_PY2[x] <- nrow(temp_PY2_defsuccessplays) /
+        VoA_df$def_success_rate_PY2[x] <- nrow(temp_PY2_defsuccessplays) /
             nrow(temp_PY2_defplays)
         VoA_df$def_explosiveness_PY2[x] <- mean(
             temp_PY2_defsuccessplays$epa
@@ -1602,7 +1618,7 @@ extract_VoAVars_pbp_stats <- function(
         ### evaluating PY3 variables
         VoA_df$off_ypp_PY3[x] <- mean(temp_PY3_offplays$yards_gained)
         VoA_df$off_epa_PY3[x] <- mean(temp_PY3_offplays$epa)
-        VoA_df$off_success_rt_PY3[x] <- nrow(temp_PY3_offsuccessplays) /
+        VoA_df$off_success_rate_PY3[x] <- nrow(temp_PY3_offsuccessplays) /
             nrow(temp_PY3_offplays)
         VoA_df$off_explosiveness_PY3[x] <- mean(
             temp_PY3_offsuccessplays$epa
@@ -1643,7 +1659,7 @@ extract_VoAVars_pbp_stats <- function(
         ## PY3 defensive stats now
         VoA_df$def_ypp_PY3[x] <- mean(temp_PY3_defplays$yards_gained)
         VoA_df$def_epa_PY3[x] <- mean(temp_PY3_defplays$epa)
-        VoA_df$def_success_rt_PY3[x] <- nrow(temp_PY3_defsuccessplays) /
+        VoA_df$def_success_rate_PY3[x] <- nrow(temp_PY3_defsuccessplays) /
             nrow(temp_PY3_defplays)
         VoA_df$def_explosiveness_PY3[x] <- mean(
             temp_PY3_defsuccessplays$epa
@@ -2738,7 +2754,7 @@ rank_voa_cols <- function(VoA_df) {
         mutate(
             Rank_off_ypp = dense_rank(desc(off_ypp)),
             Rank_off_epa = dense_rank(desc(off_epa)),
-            Rank_off_success_rt = dense_rank(desc(off_success_rt)),
+            Rank_off_success_rate = dense_rank(desc(off_success_rate)),
             Rank_off_explosiveness = dense_rank(desc(off_explosiveness)),
             Rank_off_third_conv_rate = dense_rank(desc(off_third_conv_rate)),
             Rank_off_fourth_conv_rate = dense_rank(desc(off_fourth_conv_rate)),
@@ -2756,7 +2772,7 @@ rank_voa_cols <- function(VoA_df) {
             ### ranking defensive variables now
             Rank_def_ypp = dense_rank(def_ypp),
             Rank_def_epa = dense_rank(def_epa),
-            Rank_def_success_rt = dense_rank(def_success_rt),
+            Rank_def_success_rate = dense_rank(def_success_rate),
             Rank_def_explosiveness = dense_rank(def_explosiveness),
             Rank_def_third_conv_rate = dense_rank(def_third_conv_rate),
             Rank_def_fourth_conv_rate = dense_rank(def_fourth_conv_rate),
