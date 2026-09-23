@@ -3,19 +3,7 @@
 ##### loading packages, reading in data #####
 library(pacman)
 # fmt: skip
-p_load(
-  tidyverse,
-  gt,
-  nflverse,
-  here,
-  gtExtras,
-  ModelMetrics,
-  ggpubr,
-  webshot2,
-  RColorBrewer,
-  Metrics,
-  arrow
-)
+p_load(tidyverse, gt, nflverse, here, gtExtras, ModelMetrics, ggpubr, webshot2, RColorBrewer, Metrics, arrow)
 
 ### identifying season and week of season
 season <- readline("What season is it? ")
@@ -45,9 +33,12 @@ LastWeekGames <- load_schedules(as.numeric(season)) |>
     home_team,
     home_score,
     result,
+    location,
     total,
     overtime,
-    spread_line
+    spread_line,
+    home_moneyline,
+    away_moneyline
   )
 
 LastWeekGames <- full_join(LastWeekGames, PrevWeekVoA_Proj, by = "game_id")
@@ -74,6 +65,26 @@ LastWeekGames <- LastWeekGames |>
       TRUE ~ 0
     ),
     AE_ATS_win = case_when(VoA_ae < vegas_ae ~ 1, TRUE ~ 0)
+  ) |>
+  mutate(
+    payout = case_when(
+      straight_up_win == 0 ~ -1,
+      ### home wins
+      Proj_Margin > 0 & home_moneyline < 0 ~ 1 + (100 / abs(home_moneyline)),
+      Proj_Margin > 0 & home_moneyline > 0 ~ 1 + (home_moneyline / 100),
+      ### away wins
+      Proj_Margin < 0 & away_moneyline < 0 ~ 1 + (100 / abs(away_moneyline)),
+      Proj_Margin < 0 & away_moneyline > 0 ~ 1 + (away_moneyline / 100),
+      ### the above scenarios should cover everything but I guess in the rare event they don't let's assume no bet placed and therefore payout is 0
+      TRUE ~ 0
+    )
+  ) |>
+  mutate(
+    profit = case_when(
+      straight_up_win == 0 ~ -1,
+      payout == 0 ~ 0,
+      TRUE ~ payout - 1
+    )
   )
 
 WeekMeanAccuracyMetrics <- data.frame(
@@ -88,7 +99,9 @@ WeekMeanAccuracyMetrics <- data.frame(
   straight_up_win_pct = mean(LastWeekGames$straight_up_win),
   vegas_straight_up_win_pct = mean(LastWeekGames$vegas_straight_up_win),
   ATS_win_pct = mean(LastWeekGames$ATS_win),
-  AE_ATS_win_pct = mean(LastWeekGames$AE_ATS_win)
+  AE_ATS_win_pct = mean(LastWeekGames$AE_ATS_win),
+  total_payout = sum(LastWeekGames$payout),
+  total_profit = sum(LastWeekGames$profit)
 )
 
 
@@ -234,7 +247,9 @@ if (as.numeric(nfl_week) >= 6) {
       straight_up_win_pct = mean(straight_up_win),
       vegas_straight_up_win_pct = mean(vegas_straight_up_win),
       ATS_win_pct = mean(ATS_win),
-      AE_ATS_win_pct = mean(AE_ATS_win)
+      AE_ATS_win_pct = mean(AE_ATS_win),
+      total_payout = sum(payout),
+      total_profit = sum(profit)
     )
 
   write_csv(

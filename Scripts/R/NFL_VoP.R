@@ -4,7 +4,7 @@ start_time <- Sys.time()
 ### loading packages
 library(pacman)
 # fmt: skip
-p_load(tidyverse, gt, nflverse, here, gtExtras, RColorBrewer, webshot2, cmdstanr, betareg, ranger, arrow, randomForest, tidybayes, posterior)
+p_load(tidyverse, gt, nflverse, here, gtExtras, RColorBrewer, webshot2, cmdstanr, betareg, arrow, tidybayes, posterior)
 ### Inputting season
 season <- readline(prompt = "What season is it? ")
 ### Inputting upcoming week number
