@@ -220,7 +220,7 @@ if (as.numeric(nfl_week) == 1) {
 }
 
 
-if (as.numeric(nfl_week) >= 4) {
+if (as.numeric(nfl_week) >= 6) {
   SeasonMetrics <- CompletedGames |>
     group_by(season) |>
     summarize(
