@@ -334,7 +334,7 @@ if (as.integer(upcoming) == 1) {
   )
 }
 
-
+### list of inputs to stan model
 VoP_WP_datalist <- list(
   N = nrow(PrevVoAGames),
   win_loss = PrevVoAGames$straight_up_win,
@@ -349,7 +349,7 @@ WP_VoP_fit <- WP_VoP_model$sample(
   data = VoP_WP_datalist,
   chains = 3,
   iter_sampling = 10000,
-  iter_warmup = 2500,
+  iter_warmup = 5000,
   seed = 802
 )
 WP_VoP_fit

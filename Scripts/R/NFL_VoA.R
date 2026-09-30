@@ -480,11 +480,11 @@ if (as.numeric(nfl_week) == 0) {
 } else if (as.numeric(nfl_week) <= 10) {
   ##### Weeks 3-10 Data Pull #####
   ### reading in PY data saved in week 0
-  PY_VoAVars <- read_csv(here(
+  PY_VoAVars <- read_parquet(here(
     "Data",
     paste0("VoA", season),
     "PYData",
-    "PYData.csv"
+    "PYData.parquet"
   )) |>
     select(team, ends_with("PY1"))
 
