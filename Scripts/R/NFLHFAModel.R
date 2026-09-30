@@ -66,6 +66,6 @@ full_games <- rbind(games, games_PY1)
 
 
 set.seed(802)
-hfa_model <- lmer(result ~ hfa + (1 | team) + (1 | opp_team), data = games_PY1)
+hfa_model <- lmer(result ~ hfa + (1 | team) + (1 | opp_team), data = full_games)
 
 hfa_coef <- data.frame(fixef(hfa_model))
