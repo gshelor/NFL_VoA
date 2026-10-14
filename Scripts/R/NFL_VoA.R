@@ -6,7 +6,7 @@
 StartTime <- Sys.time()
 library(pacman)
 # fmt: skip
-p_load(tidyverse, gt, nflfastR, nflverse, here, gtExtras, cmdstanr, ggpubr, webshot2, parallel, RColorBrewer, data.table, arrow, lme4)
+p_load(tidyverse, gt, nflfastR, nflverse, here, gtExtras, cmdstanr, ggpubr, webshot2, parallel, RColorBrewer, data.table, arrow, lme4, dtplyr)
 
 ### running script which reads in functions used in data cleaning/model prep
 source(here("Scripts", "R", "NFL_VoAFuncs.R"))
