@@ -269,10 +269,10 @@ if (as.numeric(nfl_week) >= 6) {
 if (as.numeric(nfl_week) >= 2) {
   VegasRMSECompPlot <- ggplot(CompletedWeeks, mapping = aes(x = week)) +
     theme_bw() +
-    geom_point(mapping = aes(y = RMSE)) +
-    geom_point(mapping = aes(y = vegas_RMSE), colour = 'blue') +
-    geom_line(mapping = aes(y = RMSE)) +
-    geom_line(mapping = aes(y = vegas_RMSE), colour = 'blue') +
+    geom_point(mapping = aes(y = VoA_rmse)) +
+    geom_point(mapping = aes(y = vegas_rmse), colour = 'blue') +
+    geom_line(mapping = aes(y = VoA_rmse)) +
+    geom_line(mapping = aes(y = vegas_rmse), colour = 'blue') +
     ggtitle(label = "RMSE (Vegas in blue) by Week") +
     xlab("Week") +
     theme(plot.title = element_text(hjust = 0.5))
