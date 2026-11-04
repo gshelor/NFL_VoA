@@ -45,6 +45,7 @@ LastWeekGames <- full_join(LastWeekGames, PrevWeekVoA_Proj, by = "game_id")
 
 LastWeekGames <- LastWeekGames |>
   mutate(
+    wp_bet = dense_rank(Proj_Margin),
     VoA_ae = Metrics::ae(result, Proj_Margin),
     vegas_ae = Metrics::ae(result, spread_line),
     VoA_se = Metrics::se(result, Proj_Margin),
@@ -68,24 +69,29 @@ LastWeekGames <- LastWeekGames |>
   ) |>
   mutate(
     payout = case_when(
-      straight_up_win == 0 ~ -1,
+      straight_up_win == 0 ~ wp_bet * -1,
       ### home wins
-      Proj_Margin > 0 & home_moneyline < 0 ~ 1 + (100 / abs(home_moneyline)),
-      Proj_Margin > 0 & home_moneyline > 0 ~ 1 + (home_moneyline / 100),
+      Proj_Margin > 0 & home_moneyline < 0 ~ wp_bet +
+        (wp_bet * 100 / abs(home_moneyline)),
+      Proj_Margin > 0 & home_moneyline > 0 ~ wp_bet +
+        (wp_bet * home_moneyline / 100),
       ### away wins
-      Proj_Margin < 0 & away_moneyline < 0 ~ 1 + (100 / abs(away_moneyline)),
-      Proj_Margin < 0 & away_moneyline > 0 ~ 1 + (away_moneyline / 100),
+      Proj_Margin < 0 & away_moneyline < 0 ~ wp_bet +
+        (wp_bet * 100 / abs(away_moneyline)),
+      Proj_Margin < 0 & away_moneyline > 0 ~ wp_bet +
+        (wp_bet * away_moneyline / 100),
       ### the above scenarios should cover everything but I guess in the rare event they don't let's assume no bet placed and therefore payout is 0
       TRUE ~ 0
     )
   ) |>
   mutate(
     profit = case_when(
-      straight_up_win == 0 ~ -1,
+      straight_up_win == 0 ~ wp_bet * -1,
       payout == 0 ~ 0,
-      TRUE ~ payout - 1
+      TRUE ~ payout - wp_bet
     )
-  )
+  ) |>
+  select(-wp_bet)
 
 WeekMeanAccuracyMetrics <- data.frame(
   week = as.numeric(nfl_week),
