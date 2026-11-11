@@ -20,7 +20,7 @@ PrevWeekVoA_Proj <- read_csv(here(
   "VoP",
   paste0(season, nfl_text, week_text, nfl_week, "VoP.csv")
 )) |>
-  select(game_id, Proj_Margin)
+  select(game_id, Proj_Margin, proj_margin_abs)
 
 LastWeekGames <- load_schedules(as.numeric(season)) |>
   filter(week == as.numeric(nfl_week)) |>
@@ -45,7 +45,7 @@ LastWeekGames <- full_join(LastWeekGames, PrevWeekVoA_Proj, by = "game_id")
 
 LastWeekGames <- LastWeekGames |>
   mutate(
-    wp_bet = dense_rank(Proj_Margin),
+    wp_bet = dense_rank(proj_margin_abs),
     VoA_ae = Metrics::ae(result, Proj_Margin),
     vegas_ae = Metrics::ae(result, spread_line),
     VoA_se = Metrics::se(result, Proj_Margin),
@@ -91,7 +91,8 @@ LastWeekGames <- LastWeekGames |>
       TRUE ~ payout - wp_bet
     )
   ) |>
-  select(-wp_bet)
+  select(-wp_bet) |>
+  select(-proj_margin_abs)
 
 WeekMeanAccuracyMetrics <- data.frame(
   week = as.numeric(nfl_week),
