@@ -606,7 +606,7 @@ if (as.numeric(nfl_week) == 0) {
     filter(play_type == "punt")
 
   ### creating dataframe to eventually store VoA Variables and ratings
-  VoAVariables <- create_voa_vars()
+  VoAVariables <- create_voa_vars(as.integer(nfl_week))
 
   ### reading in completed games for error calculation
   # CompletedGames <- get_clean_games()
